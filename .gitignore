@@ -1,3 +1,7 @@
+_CoqProject~
+Makefile
+Makefile.conf
+.DS_STORE
 .*.aux
 .*.d
 *.a
@@ -20,6 +24,7 @@
 *.vo
 *.vok
 *.vos
+*.v~
 .coq-native/
 .csdp.cache
 .lia.cache

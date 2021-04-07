@@ -1,0 +1,12 @@
+COQC = coqc
+COQDEP = coqdep
+-R . "poly"
+
+Prelude/Basics.v
+Prelude/All.v
+
+Syntax/Signature/Kinds.v
+Syntax/Signature/TypeContexts.v
+Syntax/Signature/Types.v
+Syntax/Signature/TypeWeakening.v
+Syntax/Signature/TypeSubstitution.v
