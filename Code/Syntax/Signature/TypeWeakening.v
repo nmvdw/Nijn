@@ -79,7 +79,7 @@ Section Weakening.
     : MonTy ar Γ₁.
   Proof.
     induction A as [ Γ₂ v | Γ₂ b A IHA | Γ₂ A₁ IHA₁ A₂ IHA₂ ].
-    - exact (var (wk_TyVar s v)).
+    - exact (Ty_var (wk_TyVar s v)).
     - exact (base b (fun z => IHA z s)).
     - exact (IHA₁ s ⟶ IHA₂ s).
   Defined.

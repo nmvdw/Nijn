@@ -10,3 +10,4 @@ Syntax/Signature/TypeContexts.v
 Syntax/Signature/Types.v
 Syntax/Signature/TypeWeakening.v
 Syntax/Signature/TypeSubstitution.v
+Syntax/Signature/TermContexts.v

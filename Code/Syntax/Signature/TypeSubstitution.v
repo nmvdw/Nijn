@@ -2,6 +2,7 @@ Require Import Prelude.All.
 Require Import Syntax.Signature.Kinds.
 Require Import Syntax.Signature.TypeContexts.
 Require Import Syntax.Signature.Types.
+Require Import Syntax.Signature.TypeWeakening.
 
 Open Scope signature.
 
@@ -14,6 +15,52 @@ Section Substitution.
   | Ty_empty : forall (Γ : TyCon), TySub Γ ∙
   | Ty_con : forall {Γ₁ Γ₂ : TyCon} (A : MonTy ar Γ₁), TySub Γ₁ Γ₂ -> TySub Γ₁ (⋆,, Γ₂).
 
+  (** Standard sbustitutions *)
+  Definition pr_SubTy
+             {Γ₁ Γ₂ : TyCon}
+             (s : TySub Γ₁ (⋆,, Γ₂))
+    : TySub Γ₁ Γ₂.
+  Proof.
+    inversion s.
+    assumption.
+  Defined.
+
+  Definition drop_TySub
+             {Γ₁ Γ₂ : TyCon}
+             (s : TySub Γ₁ Γ₂)
+    : TySub (⋆,, Γ₁) Γ₂.
+  Proof.
+    induction s as [ Γ | Γ₁ Γ₂ A s ].
+    - exact (Ty_empty _).
+    - exact (Ty_con (wk_MonTy ar (drop_TyWk (id_TyWk _)) A) IHs).
+  Defined.
+
+  Definition keep_TySub
+             {Γ₁ Γ₂ : TyCon}
+             (s : TySub Γ₁ Γ₂)
+    : TySub (⋆,, Γ₁) (⋆,, Γ₂)
+    := Ty_con (Ty_var TyVz) (drop_TySub s).
+
+  Definition TyWkToTySub
+             {Γ₁ Γ₂ : TyCon}
+             (s : TyWk Γ₁ Γ₂)
+    : TySub Γ₁ Γ₂.
+  Proof.
+    induction s as [ | Γ₁ Γ₂ s IHs | Γ₁ Γ₂ s IHs ].
+    - apply Ty_empty.
+    - exact (drop_TySub IHs).
+    - exact (keep_TySub IHs).
+  Defined.
+      
+  Definition id_SubTy
+             (Γ : TyCon)
+    : TySub Γ Γ.
+  Proof.
+    induction Γ as [ | Γ IHΓ ].
+    - apply Ty_empty.
+    - exact (keep_TySub IHΓ).
+  Defined.
+  
   (** Substitution of variables *)
   Definition sub_TyVar
              {Γ₁ Γ₂ : TyCon}
@@ -57,10 +104,7 @@ Section Substitution.
     - intros Γ₁ s.
       refine (∏ _).
       apply IHA.
-  Admitted.
-
-  Definition id_SubTy
-             (Γ : TyCon)
-    : TySub Γ Γ.
-  Admitted.
+      apply keep_TySub.
+      exact s.
+  Defined.
 End Substitution.

@@ -17,5 +17,5 @@ Notation "'⋆,,' Γ" := (extend Γ) (at level 70) : signature.
 Variables in a type context (De Bruijn indices)
  *)
 Inductive TyVar : TyCon -> Type :=
-| TyVz : forall (Γ : TyCon), TyVar (⋆,, Γ)
-| TyVs : forall (Γ : TyCon), TyVar Γ -> TyVar (⋆,, Γ).
+| TyVz : forall {Γ : TyCon}, TyVar (⋆,, Γ)
+| TyVs : forall {Γ : TyCon}, TyVar Γ -> TyVar (⋆,, Γ).
