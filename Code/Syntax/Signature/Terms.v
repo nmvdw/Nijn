@@ -10,10 +10,10 @@ Inductive Tm {B : Type} {F : Type}
     Tm ar C (ar f)
 | TmVar : forall (ar : F -> Ty B) (C : Con B) (A : Ty B),
     Var C A -> Tm ar C A
-| Lam : forall (ar : F -> Ty B) (C : Con B) (A₁ A₂ : Ty B),
-    Tm ar (A₁ ,, C) A₂ -> Tm ar C (A₁ ⟶ A₂)
-| App : forall (ar : F -> Ty B) (C : Con B) (A₁ A₂ : Ty B),
-    Tm ar C (A₁ ⟶ A₂) -> Tm ar C A₁ -> Tm ar C A₂.
+| Lam : forall (ar : F -> Ty B) (C : Con B) (A1 A2 : Ty B),
+    Tm ar (A1 ,, C) A2 -> Tm ar C (A1 ⟶ A2)
+| App : forall (ar : F -> Ty B) (C : Con B) (A1 A2 : Ty B),
+    Tm ar C (A1 ⟶ A2) -> Tm ar C A1 -> Tm ar C A2.
 
 Arguments BaseTm {_} {_} {_} {_} _.
 Arguments TmVar {_} {_} {_} {_} {_} _.

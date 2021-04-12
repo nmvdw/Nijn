@@ -13,8 +13,8 @@ Notation "A ,, Γ" := (Extend A Γ) (at level 70, right associativity) : signatu
 Inductive Var {B : Type} : Con B -> Ty B -> Type :=
 | Vz : forall (C : Con B) (A : Ty B),
     Var (A ,, C) A
-| Vs : forall (C : Con B) (A₁ A₂ : Ty B),
-    Var C A₂ -> Var (A₁ ,, C) A₂.
+| Vs : forall (C : Con B) (A1 A2 : Ty B),
+    Var C A2 -> Var (A1 ,, C) A2.
 
 Arguments Vz {_} {_} {_}.
 Arguments Vs {_} {_} {_} {_} _.
