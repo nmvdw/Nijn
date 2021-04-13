@@ -8,26 +8,18 @@ Admitted.
 
 Section OrderInterpretation.
   Context {B : Type}
-          (semB : B -> Type)
-          `{forall (b : B), CompatRel (semB b)}
+          (semB : B -> CompatRel)
           `{forall (b : B), isCompatRel (semB b)}.
 
   Fixpoint sem_Ty
            (A : Ty B)
-    : Type
+    : CompatRel
     := match A with
        | Base b => semB b
-       | A1 ⟶ A2 => sem_Ty A1 -> sem_Ty A2
+       | A1 ⟶ A2 => sem_Ty A1 ⇒ sem_Ty A2
        end.
 
   Global Instance sem_Ty_CompatRel
-         (A : Ty B)
-    : CompatRel (sem_Ty A).
-  Proof.
-    induction A ; apply _.
-  Defined.
-
-  Global Instance sem_Ty_isCompatRel
          (A : Ty B)
     : isCompatRel (sem_Ty A).
   Proof.
@@ -36,18 +28,11 @@ Section OrderInterpretation.
     
   Fixpoint sem_Con
            (C : Con B)
-    : Type
+    : CompatRel
     := match C with
-       | ∙ => unit
+       | ∙ => unit_CompatRel
        | A ,, C => sem_Ty A * sem_Con C
        end.
-
-  Global Instance sem_Con_CompatRel
-         (C : Con B)
-    : CompatRel (sem_Con C).
-  Proof.
-    induction C ; apply _.
-  Defined.
 
   Global Instance sem_Con_isCompatRel
          (C : Con B)
@@ -56,21 +41,21 @@ Section OrderInterpretation.
     induction C ; apply _.
   Qed.
 
-  Fixpoint sem_Var
+  Fixpoint sem_Var_map
            {C : Con B}
            {A : Ty B}
            (v : Var C A)
     : sem_Con C -> sem_Ty A
     := match v with
        | Vz => fst
-       | Vs v => fun x => sem_Var v (snd x)
+       | Vs v => fun x => sem_Var_map v (snd x)
        end.
 
   Global Instance sem_Var_strictMonotone
          {C : Con B}
          {A : Ty B}
          (v : Var C A)
-    : strictMonotone (sem_Var v).
+    : strictMonotone (sem_Var_map v).
   Proof.
     induction v ; apply _.
   Qed.
@@ -79,10 +64,17 @@ Section OrderInterpretation.
          {C : Con B}
          {A : Ty B}
          (v : Var C A)
-    : weakMonotone (sem_Var v).
+    : weakMonotone (sem_Var_map v).
   Proof.
     induction v ; apply _.
   Qed.
+
+  Definition sem_Var
+             {C : Con B}
+             {A : Ty B}
+             (v : Var C A)
+    : sem_Con C ⇒ sem_Ty A
+    := make_monotone (sem_Var_map v) _.
 
   Context {F : Type}
           {ar : F -> Ty B}
@@ -92,53 +84,19 @@ Section OrderInterpretation.
              {C : Con B}
              {A : Ty B}
              (t : Tm ar C A)
-    : sem_Con C -> sem_Ty A.
+    : weakMonotoneMap (sem_Con C) (sem_Ty A).
   Proof.
     induction t as [ ? ? f | ? ? ? v | ? ? ? ? f IHf | ? ? ? ? f IHf t IHt ].
-    - exact (fun _ => semF f).
+    - exact (const_WM _ _ (semF f)).
     - exact (sem_Var v).
-    - exact (fun x y => IHf semF (y , x)).
+    - exact (lambda_abs (IHf semF)).      
     - apply TODO.
   Defined.
 End OrderInterpretation.
 
-Global Instance sem_Tm_weakMonotone
-       {B : Type}
-       (semB : B -> Type)
-       `{forall (b : B), CompatRel (semB b)}
-       `{forall (b : B), isCompatRel (semB b)}
-       {F : Type}
-       {ar : F -> Ty B}
-       (semF : forall (f : F), sem_Ty semB (ar f))
-       {C : Con B}
-       {A : Ty B}
-       (t : Tm ar C A)
-  : weakMonotone (sem_Tm semB semF t).
-Proof.
-  induction t as [ ? ? f | ? ? ? v | ? ? ? ? f IHf | ? ? ? ? f IHf t IHt ].
-  - cbn.
-    apply _.
-  - apply _.
-  - unshelve esplit.
-    intros x y p z.
-    apply (@map_ge _ _ _ _ _ (IHf semF)).
-    split.
-    + apply ge_refl.
-    + exact p.
-  - (* unshelve esplit.
-    intros x y p ; simpl.
-    refine (ge_trans _ _).
-    + apply (@map_ge _ _ _ _ _(IHf semF) x y).
-      exact p.
-    + pose (@map_ge _ _ _ _ _(IHf semF)).
-      cbn in g.
-     *)
-    apply TODO.
-Qed.
-
 Definition sem_Wk
            {B : Type}
-           (semB : B -> Type)
+           (semB : B -> CompatRel)
            {C1 C2 : Con B}
            (w : Wk C1 C2)
   : sem_Con semB C1 -> sem_Con semB C2.
@@ -151,8 +109,7 @@ Defined.
 
 Global Instance sem_Wk_weakMonotone
        {B : Type}
-       (semB : B -> Type)
-       `{forall (b : B), CompatRel (semB b)}
+       (semB : B -> CompatRel)
        `{forall (b : B), isCompatRel (semB b)}
        {C1 C2 : Con B}
        (w : Wk C1 C2)
@@ -163,17 +120,14 @@ Qed.
 
 Global Instance sem_Wk_strictMonotone
        {B : Type}
-       (semB : B -> Type)
-       `{forall (b : B), CompatRel (semB b)}
+       (semB : B -> CompatRel)
        `{forall (b : B), isCompatRel (semB b)}
        {C1 C2 : Con B}
        (w : Wk C1 C2)
   : strictMonotone (sem_Wk semB w).
 Proof.
   induction w.
-  - simpl.
-    unshelve esplit.
-    simpl.
+  - intro ; cbn in *.
     contradiction.
   - apply _.
   - apply _.
@@ -181,7 +135,7 @@ Qed.
 
 Proposition sem_idWk
             {B : Type}
-            (semB : B -> Type)
+            (semB : B -> CompatRel)
             {C : Con B}
             (x : sem_Con semB C)
   : sem_Wk semB (idWk C) x = x.
@@ -196,7 +150,8 @@ Qed.
 
 Proposition sem_wkVar
             {B : Type}
-            (semB : B -> Type)
+            (semB : B -> CompatRel)
+            `{forall (b : B), isCompatRel (semB b)}
             {F : Type}
             {ar : F -> Ty B}
             (semF : forall (f : F), sem_Ty semB (ar f))
@@ -224,7 +179,8 @@ Qed.
 
 Proposition sem_keepWk
             {B : Type}
-            (semB : B -> Type)
+            (semB : B -> CompatRel)
+            `{forall (b : B), isCompatRel (semB b)}
             {F : Type}
             {ar : F -> Ty B}
             (semF : forall (f : F), sem_Ty semB (ar f))
@@ -245,10 +201,10 @@ Proof.
     + simpl.
       exact (sem_wkVar semB semF w v x).
   - simpl.
-    apply funext.
+    apply eq_weakMonotoneMap.
     intro a.
     simpl.
-    apply IHt ; auto.
+    refine (IHt semB H semF _ _ (Keep _ w) _ t _ _ _ _) ; auto.
   - (*simpl.
     rewrite IHt2 ; auto.
     rewrite IHt1 ; auto.
@@ -258,7 +214,8 @@ Qed.
 
 Proposition sem_dropIdWk
             {B : Type}
-            (semB : B -> Type)
+            (semB : B -> CompatRel)
+            `{forall (b : B), isCompatRel (semB b)}
             {F : Type}
             {ar : F -> Ty B}
             (semF : forall (f : F), sem_Ty semB (ar f))
@@ -280,9 +237,9 @@ Proof.
       rewrite IHv.
       reflexivity.
   - simpl.
-    apply funext.
-    intro z.
-    rewrite (sem_keepWk semB semF (Drop A2 (idWk C))).
+    apply eq_weakMonotoneMap.
+    intro z ; simpl.
+    rewrite (sem_keepWk semB semF (Drop A2 (idWk C)) t (y , x) z).
     do 2 f_equal.
     exact (sem_idWk semB x).
   - (*simpl.
@@ -293,7 +250,8 @@ Qed.
 
 Definition sem_Sub
            {B : Type}
-           (semB : B -> Type)
+           (semB : B -> CompatRel)
+           `{forall (b : B), isCompatRel (semB b)}
            {F : Type}
            {ar : F -> Ty B}
            (semF : forall (f : F), sem_Ty semB (ar f))
@@ -308,8 +266,7 @@ Defined.
 
 Global Instance sem_Sub_weakMonotone
        {B : Type}
-       (semB : B -> Type)
-       `{forall (b : B), CompatRel (semB b)}
+       (semB : B -> CompatRel)
        `{forall (b : B), isCompatRel (semB b)}
        {F : Type}
        {ar : F -> Ty B}
@@ -323,7 +280,8 @@ Qed.
 
 Proposition sem_dropSub
             {B : Type}
-            (semB : B -> Type)
+            (semB : B -> CompatRel)
+            `{forall (b : B), isCompatRel (semB b)}
             {F : Type}
             {ar : F -> Ty B}
             (semF : forall (f : F), sem_Ty semB (ar f))
@@ -340,13 +298,14 @@ Proof.
   - reflexivity.
   - simpl.
     rewrite IHs.
-    rewrite sem_dropIdWk.
+    rewrite (sem_dropIdWk _ _ t x y).
     reflexivity.
 Qed.
 
 Proposition sub_Lemma
             {B : Type}
-            (semB : B -> Type)
+            (semB : B -> CompatRel)
+            `{forall (b : B), isCompatRel (semB b)}
             {F : Type}
             {ar : F -> Ty B}
             (semF : forall (f : F), sem_Ty semB (ar f))
@@ -369,8 +328,9 @@ Proof.
     + dependent induction s.
       exact (IHv s).
   - simpl.
-    apply funext.
+    apply eq_weakMonotoneMap.
     intro y.
+    cbn.
     specialize (IHt semF _ (keepSub s) (y , x)).
     etransitivity.
     { 
