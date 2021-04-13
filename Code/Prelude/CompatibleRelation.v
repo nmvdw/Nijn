@@ -1,5 +1,6 @@
 Require Import Prelude.Funext.
 Require Import Lia.
+Require Import Coq.Program.Equality.
 
 Declare Scope compat.
 Open Scope compat.
@@ -46,15 +47,20 @@ Proof.
   apply all_eq.
 Qed.
 
-(** SHOULD BE FIXED *)
-Require Import Coq.Logic.ProofIrrelevance.
-
 Global Instance nat_le_isaprop
        (n m : nat)
   : isaprop (n <= m).
 Proof.
-  intros p q.
-  apply proof_irrelevance.
+  unfold isaprop.
+  induction m ; intros p q.
+  - dependent destruction p ; dependent destruction q.
+    reflexivity.
+  - dependent destruction p ; dependent destruction q.
+    + reflexivity.
+    + lia.
+    + lia.
+    + f_equal.
+      exact (IHm p q).
 Qed.
 
 Global Instance nat_gt_isaprop
