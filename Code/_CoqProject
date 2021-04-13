@@ -2,9 +2,13 @@ COQC = coqc
 COQDEP = coqdep
 -R . "nijn"
 
+Prelude/Funext.v
+Prelude/CompatibleRelation.v
+
 Syntax/Signature/Types.v
 Syntax/Signature/Contexts.v
 Syntax/Signature/Terms.v
 Syntax/Signature/TermWeakenings.v
 Syntax/Signature/TermSubstitutions.v
+Syntax/Signature/RewritingSystem.v
 Syntax/Signature.v

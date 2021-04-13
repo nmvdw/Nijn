@@ -8,7 +8,7 @@ Inductive Sub {B : Type} {F : Type} : (F -> Ty B) -> Con B -> Con B -> Type :=
 | ExtendSub : forall {ar : F -> Ty B} {C1 C2 : Con B} {A : Ty B},
     Sub ar C1 C2 -> Tm ar C1 A -> Sub ar C1 (A ,, C2).
 
-Notation "s , t" := (ExtendSub s t) (at level 30).
+Notation "s & t" := (ExtendSub s t) (at level 30).
 
 Fixpoint dropSub
          {B : Type}
@@ -20,7 +20,7 @@ Fixpoint dropSub
   : Sub ar (A ,, C1) C2
   := match s with
      | ToEmpty _ => ToEmpty _
-     | s , t => dropSub s , wkTm t (Drop A (idWk _))
+     | s & t => dropSub s & wkTm t (Drop A (idWk _))
      end.
 
 Definition keepSub
@@ -31,7 +31,7 @@ Definition keepSub
            {A : Ty B}
            (s : Sub ar C1 C2)
   : Sub ar (A ,, C1) (A ,, C2)
-  := dropSub s , TmVar Vz.
+  := dropSub s & TmVar Vz.
 
 Definition subVar
            {B : Type}
