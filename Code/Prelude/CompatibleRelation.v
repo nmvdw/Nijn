@@ -5,7 +5,98 @@ Require Import Coq.Program.Equality.
 Declare Scope compat.
 Open Scope compat.
 
+(** MOVE TO A SEPARATE FILE ON WF *)
+Inductive isWf {X : Type} (R : X -> X -> Prop) (x : X) : Prop :=
+| acc : (forall (y : X), R x y -> isWf R y) -> isWf R x.
+
+Class Wf {X : Type} (R : X -> X -> Prop)
+  := acc_el : forall (x : X), isWf R x.
+
+Definition lexico
+           {X Y : Type}
+           (RX : X -> X -> Prop)
+           (RY : Y -> Y -> Prop)
+  : X * Y -> X * Y -> Prop
+  := fun x y => (RX (fst x) (fst y)) \/ (fst x = fst y /\ RY (snd x) (snd y)).
+
+Global Instance lexico_Wf
+       {X Y : Type}
+       (RX : X -> X -> Prop)
+       (RY : Y -> Y -> Prop)
+       `{Wf _ RX}
+       `{Wf _ RY}
+  : Wf (lexico RX RY).
+Proof.
+  intros [x y].
+  pose (acc_el x) as Hx.
+  revert y.
+  induction Hx as [x Hx IHx].
+  intros y.
+  pose (acc_el y) as Hy.
+  induction Hy as [y Hy IHy].
+  apply acc.
+  intros [z1 z2] [Hz | [Hz1 Hz2]].
+  - simpl in *.
+    apply IHx.
+    assumption.
+  - simpl in *.
+    subst.
+    apply IHy.
+    apply Hz2.
+Qed.
+
+Lemma fiber_is_Wf_help
+      {X Y : Type}
+      {RX : X -> X -> Prop}
+      {RY : Y -> Y -> Prop}
+      {f : X -> Y}
+      (Hf : forall (x1 x2 : X), RX x1 x2 -> RY (f x1) (f x2))
+      (y : Y)
+  : isWf RY y -> forall (x : X), y = f x -> isWf RX x.
+Proof.
+  intros H.
+  induction H as [fx Hfx IHfx].
+  intros x p.
+  subst.
+  apply acc.
+  intros z Hz.
+  apply (IHfx (f z)).
+  - apply Hf.
+    exact Hz.
+  - reflexivity.
+Qed.
+
+Global Instance fiber_is_Wf
+       {X Y : Type}
+       {RX : X -> X -> Prop}
+       {RY : Y -> Y -> Prop}
+       `{Wf _ RY}
+       {f : X -> Y}
+       (Hf : forall (x1 x2 : X), RX x1 x2 -> RY (f x1) (f x2))
+  : Wf RX.
+Proof.
+  intro x.
+  pose (fx := f x).
+  pose (Hfx := acc_el fx).
+  exact (fiber_is_Wf_help Hf fx Hfx x eq_refl).
+Qed.
+(** END OF WF *)
+
 (** MOVE TO FILE ON BASICS *)
+Definition id {X : Type} (x : X) := x.
+Arguments id {_} _/.
+
+Definition comp
+           {X Y Z : Type}
+           (g : Y -> Z)
+           (f : X -> Y)
+           (x : X)
+  : Z
+  := g(f x).
+
+Notation "g 'o' f" := (comp g f) (at level 40, left associativity).
+Arguments comp {_ _ _} _ _ _/.
+
 Class isaprop
       (A : Prop)
   := all_eq : forall (x y : A), x = y.
@@ -179,22 +270,63 @@ Qed.
 
 Definition unit_CompatRel : CompatRel
   := {| carrier := unit ;
-        gt := fun _ _ => False ;
-        ge := fun _ _ => True |}.
+        gt _ _ := False ;
+        ge _ _ := True |}.
+
+Global Instance unit_Wf : Wf (fun (x y : unit_CompatRel) => x > y).
+Proof.
+  intro z.
+  apply acc.
+  cbn.
+  contradiction.
+Qed.
 
 Global Instance unit_isCompatRel : isCompatRel unit_CompatRel.
 Proof.
-  unshelve esplit ; cbn ; auto ; apply _.
+  unshelve esplit ; cbn ; auto ; try (apply _).
 Qed.
 
 Definition prod_CompatRel
            (X Y : CompatRel)
   : CompatRel
   := {| carrier := X * Y ;
-        gt := fun x y => (fst x > fst y) /\ (snd x > snd y) ;
-        ge := fun x y => (fst x >= fst y) /\ (snd x >= snd y) |}.
+        gt x y := (fst x > fst y) /\ (snd x > snd y) ;
+        ge x y := (fst x >= fst y) /\ (snd x >= snd y) |}.
 
 Notation "X * Y" := (prod_CompatRel X Y) : compat.
+
+Definition isWf_pair
+           (X Y : CompatRel)
+           {x : X} {y : Y}
+           (Hx : isWf (@gt X) x)
+           (Hy : isWf (@gt Y) y)
+  : isWf (@gt _) ((x , y) : prod_CompatRel X Y).
+Proof.
+  revert Hy.
+  revert y.
+  induction Hx as [x Hx IHx].
+  intros y HY.
+  induction HY as [y Hy].
+  apply acc.
+  intros [z1 z2] [Hz1 Hz2] ; simpl in *.
+  apply IHx.
+  - assumption.
+  - apply Hy.
+    assumption.
+Qed.
+
+Global Instance Wf_prod
+       (X Y : CompatRel)
+       `{Wf _ (@gt X)}
+       `{Wf _ (@gt Y)}
+  : Wf (@gt (X * Y)).
+Proof.
+  intros x.
+  destruct x as [x y].
+  apply isWf_pair.
+  - apply acc_el.
+  - apply acc_el.
+Qed.
 
 Global Instance prod_isCompatRel
        (X Y : CompatRel)
@@ -241,9 +373,9 @@ Definition depprod_CompatRel
            {X : Type}
            (Y : X -> CompatRel)
   : CompatRel
-  := {| carrier :=  (forall (x : X), Y x) ;
-        gt := fun f g => forall (x : X), f x > g x ;
-        ge := fun f g => forall (x : X), f x >= g x |}.
+  := {| carrier := (forall (x : X), Y x) ;
+        gt f g := forall (x : X), f x > g x ;
+        ge f g := forall (x : X), f x >= g x |}.
 
 Notation "∏ Y" := (depprod_CompatRel Y) (at level 10).
 
@@ -293,8 +425,27 @@ Qed.
 Definition nat_CompatRel
   : CompatRel
   := {| carrier := nat ;
-        gt := fun n m => n > m ;
-        ge := fun n m => n >= m |}%nat.
+        gt n m := n > m ;
+        ge n m := n >= m |}%nat.
+
+Global Instance nat_Wf
+  : Wf (@gt nat_CompatRel).
+Proof.
+  intro n.
+  induction n as [ | n IHn ].
+  - apply acc.
+    intros ; simpl in *.
+    lia.
+  - inversion IHn.
+    apply acc.
+    intros y Hy.
+    assert (n > y \/ n = y)%nat as X by (simpl in * ; lia).
+    destruct X.
+    + apply H.
+      assumption.
+    + subst.
+      exact IHn.
+Qed.
 
 Global Instance nat_isCompatRel
   : isCompatRel nat_CompatRel.
@@ -349,8 +500,8 @@ Definition fun_CompatRel
            (X Y : CompatRel)
   : CompatRel
   := {| carrier := weakMonotoneMap X Y ;
-        gt := fun f g => forall (x : X), f x > g x ;
-        ge := fun f g => forall (x : X), f x >= g x  |}.
+        gt f g := forall (x : X), f x > g x ;
+        ge f g := forall (x : X), f x >= g x  |}.
 
 Notation "X ⇒ Y" := (fun_CompatRel X Y) (at level 99).
 
@@ -373,7 +524,7 @@ Proof.
   - intros f g h p q x.
     exact (gt_ge (p x) (q x)).
 Qed.
-
+      
 Global Instance const_weakMonotone
        (X Y : CompatRel)
        `{isCompatRel Y}
@@ -390,10 +541,6 @@ Definition const_WM
            (y : Y)
   : X ⇒ Y
   := make_monotone (fun (_ : X) => y) _.
-
-Definition id {X : Type} (x : X) := x.
-Arguments id {_} _/.
-
 
 Global Instance id_strictMonotone (X : CompatRel)
   : strictMonotone (@id X).
@@ -413,17 +560,6 @@ Definition id_WM
            (X : CompatRel)
   : X ⇒ X
   := make_monotone id _.
-
-Definition comp
-           {X Y Z : Type}
-           (g : Y -> Z)
-           (f : X -> Y)
-           (x : X)
-  : Z
-  := g(f x).
-
-Notation "g 'o' f" := (comp g f) (at level 40, left associativity).
-Arguments comp {_ _ _} _ _ _/.
 
 Global Instance comp_strictMonotone
        {X Y Z : CompatRel}
