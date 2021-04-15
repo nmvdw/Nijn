@@ -3,6 +3,9 @@ COQDEP = coqdep
 -R . "nijn"
 
 Prelude/Funext.v
+Prelude/Basics.v
+Prelude/Props.v
+Prelude/Wellfounded.v
 Prelude/CompatibleRelation.v
 
 Syntax/Signature/Types.v

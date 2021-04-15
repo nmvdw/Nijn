@@ -3,6 +3,7 @@ Require Import Syntax.Signature.Contexts.
 
 Open Scope signature.
 
+(*
 Inductive Tm {B : Type} {F : Type}
   : (F -> Ty B) -> Con B -> Ty B -> Type
   :=
@@ -13,6 +14,17 @@ Inductive Tm {B : Type} {F : Type}
 | Lam : forall (ar : F -> Ty B) (C : Con B) (A1 A2 : Ty B),
     Tm ar (A1 ,, C) A2 -> Tm ar C (A1 ⟶ A2)
 | App : forall (ar : F -> Ty B) (C : Con B) (A1 A2 : Ty B),
+    Tm ar C (A1 ⟶ A2) -> Tm ar C A1 -> Tm ar C A2.
+ *)
+
+Inductive Tm {B : Type} {F : Type} (ar : F -> Ty B) (C : Con B) : Ty B -> Type :=
+| BaseTm : forall (f : F),
+    Tm ar C (ar f)
+| TmVar : forall (A : Ty B),
+    Var C A -> Tm ar C A
+| Lam : forall (A1 A2 : Ty B),
+    Tm ar (A1 ,, C) A2 -> Tm ar C (A1 ⟶ A2)
+| App : forall (A1 A2 : Ty B),
     Tm ar C (A1 ⟶ A2) -> Tm ar C A1 -> Tm ar C A2.
 
 Arguments BaseTm {_} {_} {_} {_} _.

@@ -1,170 +1,12 @@
 Require Import Prelude.Funext.
+Require Import Prelude.Basics.
+Require Import Prelude.Props.
+Require Import Prelude.Wellfounded.
 Require Import Lia.
 Require Import Coq.Program.Equality.
 
 Declare Scope compat.
 Open Scope compat.
-
-(** MOVE TO A SEPARATE FILE ON WF *)
-Inductive isWf {X : Type} (R : X -> X -> Prop) (x : X) : Prop :=
-| acc : (forall (y : X), R x y -> isWf R y) -> isWf R x.
-
-Class Wf {X : Type} (R : X -> X -> Prop)
-  := acc_el : forall (x : X), isWf R x.
-
-Definition lexico
-           {X Y : Type}
-           (RX : X -> X -> Prop)
-           (RY : Y -> Y -> Prop)
-  : X * Y -> X * Y -> Prop
-  := fun x y => (RX (fst x) (fst y)) \/ (fst x = fst y /\ RY (snd x) (snd y)).
-
-Global Instance lexico_Wf
-       {X Y : Type}
-       (RX : X -> X -> Prop)
-       (RY : Y -> Y -> Prop)
-       `{Wf _ RX}
-       `{Wf _ RY}
-  : Wf (lexico RX RY).
-Proof.
-  intros [x y].
-  pose (acc_el x) as Hx.
-  revert y.
-  induction Hx as [x Hx IHx].
-  intros y.
-  pose (acc_el y) as Hy.
-  induction Hy as [y Hy IHy].
-  apply acc.
-  intros [z1 z2] [Hz | [Hz1 Hz2]].
-  - simpl in *.
-    apply IHx.
-    assumption.
-  - simpl in *.
-    subst.
-    apply IHy.
-    apply Hz2.
-Qed.
-
-Lemma fiber_is_Wf_help
-      {X Y : Type}
-      {RX : X -> X -> Prop}
-      {RY : Y -> Y -> Prop}
-      {f : X -> Y}
-      (Hf : forall (x1 x2 : X), RX x1 x2 -> RY (f x1) (f x2))
-      (y : Y)
-  : isWf RY y -> forall (x : X), y = f x -> isWf RX x.
-Proof.
-  intros H.
-  induction H as [fx Hfx IHfx].
-  intros x p.
-  subst.
-  apply acc.
-  intros z Hz.
-  apply (IHfx (f z)).
-  - apply Hf.
-    exact Hz.
-  - reflexivity.
-Qed.
-
-Global Instance fiber_is_Wf
-       {X Y : Type}
-       {RX : X -> X -> Prop}
-       {RY : Y -> Y -> Prop}
-       `{Wf _ RY}
-       {f : X -> Y}
-       (Hf : forall (x1 x2 : X), RX x1 x2 -> RY (f x1) (f x2))
-  : Wf RX.
-Proof.
-  intro x.
-  pose (fx := f x).
-  pose (Hfx := acc_el fx).
-  exact (fiber_is_Wf_help Hf fx Hfx x eq_refl).
-Qed.
-(** END OF WF *)
-
-(** MOVE TO FILE ON BASICS *)
-Definition id {X : Type} (x : X) := x.
-Arguments id {_} _/.
-
-Definition comp
-           {X Y Z : Type}
-           (g : Y -> Z)
-           (f : X -> Y)
-           (x : X)
-  : Z
-  := g(f x).
-
-Notation "g 'o' f" := (comp g f) (at level 40, left associativity).
-Arguments comp {_ _ _} _ _ _/.
-
-Class isaprop
-      (A : Prop)
-  := all_eq : forall (x y : A), x = y.
-
-Global Instance False_isaprop : isaprop False.
-Proof.
-  intro ; contradiction.
-Qed.
-
-Global Instance True_isaprop : isaprop True.
-Proof.
-  intros x y.
-  destruct x, y.
-  reflexivity.
-Qed.
-
-Global Instance and_isaprop
-       {A B : Prop}
-       `{isaprop A}
-       `{isaprop B}
-  : isaprop (A /\ B).
-Proof.
-  intros x y.
-  destruct x as [a1 b1], y as [a2 b2].
-  rewrite (all_eq a1 a2).
-  rewrite (all_eq b1 b2).
-  reflexivity.
-Qed.
-
-Global Instance forall_isaprop
-       {X : Type}
-       {B : X -> Prop}
-       `{forall (x : X), isaprop (B x)}
-  : isaprop (forall (x : X), B x).
-Proof.
-  intros f g.
-  apply funext.
-  intro x.
-  apply all_eq.
-Qed.
-
-Global Instance nat_le_isaprop
-       (n m : nat)
-  : isaprop (n <= m).
-Proof.
-  unfold isaprop.
-  induction m ; intros p q.
-  - dependent destruction p ; dependent destruction q.
-    reflexivity.
-  - dependent destruction p ; dependent destruction q.
-    + reflexivity.
-    + lia.
-    + lia.
-    + f_equal.
-      exact (IHm p q).
-Qed.
-
-Global Instance nat_gt_isaprop
-       (n m : nat)
-  : isaprop (n > m)
-  := _.
-
-Global Instance nat_ge_isaprop
-       (n m : nat)
-  : isaprop (n >= m)
-  := _.
-
-(** END MOVE *)
 
 Record CompatRel :=
   {
@@ -682,15 +524,15 @@ Definition pair_WM
 Global Instance lambda_abs_on_X_monotone
        {X Y Z : CompatRel}
        `{isCompatRel X}
-       (f : X * Y ⇒ Z)
+       (f : Y * X ⇒ Z)
        (x : X)
-  : weakMonotone (fun y => f (x , y)).
+  : weakMonotone (fun y => f (y , x)).
 Proof.
   intros z1 z2 p.
   apply map_ge.
   split.
-  - apply ge_refl.
   - exact p.
+  - apply ge_refl.
 Qed.
 
 Definition lambda_abs_on_X
