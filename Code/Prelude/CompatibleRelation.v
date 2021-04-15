@@ -115,7 +115,7 @@ Definition unit_CompatRel : CompatRel
         gt _ _ := False ;
         ge _ _ := True |}.
 
-Global Instance unit_Wf : Wf (fun (x y : unit_CompatRel) => x > y).
+Proposition unit_Wf : Wf (fun (x y : unit_CompatRel) => x > y).
 Proof.
   intro z.
   apply acc.
@@ -157,17 +157,17 @@ Proof.
     assumption.
 Qed.
 
-Global Instance Wf_prod
-       (X Y : CompatRel)
-       `{Wf _ (@gt X)}
-       `{Wf _ (@gt Y)}
+Proposition Wf_prod
+            (X Y : CompatRel)
+            (HX : Wf (@gt X))
+            (HY : Wf (@gt Y))
   : Wf (@gt (X * Y)).
 Proof.
   intros x.
   destruct x as [x y].
   apply isWf_pair.
-  - apply acc_el.
-  - apply acc_el.
+  - apply HX.
+  - apply HY.
 Qed.
 
 Global Instance prod_isCompatRel
@@ -270,8 +270,7 @@ Definition nat_CompatRel
         gt n m := n > m ;
         ge n m := n >= m |}%nat.
 
-Global Instance nat_Wf
-  : Wf (@gt nat_CompatRel).
+Proposition nat_Wf : Wf (@gt nat_CompatRel).
 Proof.
   intro n.
   induction n as [ | n IHn ].

@@ -1,8 +1,8 @@
 Inductive isWf {X : Type} (R : X -> X -> Prop) (x : X) : Prop :=
 | acc : (forall (y : X), R x y -> isWf R y) -> isWf R x.
 
-Class Wf {X : Type} (R : X -> X -> Prop)
-  := acc_el : forall (x : X), isWf R x.
+Definition Wf {X : Type} (R : X -> X -> Prop)
+  := forall (x : X), isWf R x.
 
 Definition lexico
            {X Y : Type}
@@ -11,20 +11,20 @@ Definition lexico
   : X * Y -> X * Y -> Prop
   := fun x y => (RX (fst x) (fst y)) \/ (fst x = fst y /\ RY (snd x) (snd y)).
 
-Global Instance lexico_Wf
-       {X Y : Type}
-       (RX : X -> X -> Prop)
-       (RY : Y -> Y -> Prop)
-       `{Wf _ RX}
-       `{Wf _ RY}
+Proposition lexico_Wf
+            {X Y : Type}
+            (RX : X -> X -> Prop)
+            (RY : Y -> Y -> Prop)
+            (HX : Wf RX)
+            (HY : Wf RY)
   : Wf (lexico RX RY).
 Proof.
   intros [x y].
-  pose (acc_el x) as Hx.
+  pose (HX x) as Hx.
   revert y.
   induction Hx as [x Hx IHx].
   intros y.
-  pose (acc_el y) as Hy.
+  pose (HY y) as Hy.
   induction Hy as [y Hy IHy].
   apply acc.
   intros [z1 z2] [Hz | [Hz1 Hz2]].
@@ -58,18 +58,18 @@ Proof.
   - reflexivity.
 Qed.
 
-Global Instance fiber_is_Wf
-       {X Y : Type}
-       {RX : X -> X -> Prop}
-       {RY : Y -> Y -> Prop}
-       `{Wf _ RY}
-       {f : X -> Y}
-       (Hf : forall (x1 x2 : X), RX x1 x2 -> RY (f x1) (f x2))
+Proposition fiber_is_Wf
+            {X Y : Type}
+            {RX : X -> X -> Prop}
+            {RY : Y -> Y -> Prop}
+            (HY : Wf RY)
+            (f : X -> Y)
+            (Hf : forall (x1 x2 : X), RX x1 x2 -> RY (f x1) (f x2))
   : Wf RX.
 Proof.
   intro x.
   pose (fx := f x).
-  pose (Hfx := acc_el fx).
+  pose (Hfx := HY fx).
   exact (fiber_is_Wf_help Hf fx Hfx x eq_refl).
 Qed.
 
@@ -92,14 +92,14 @@ Definition shift
 Definition no_infinite_chain_help
            {X : Type}
            (R : X -> X -> Prop)
-           `{Wf _ R}
+           (HX : Wf R)
   : forall (x : X)
            (f : infinite_chain R)
            (p : f 0 = x),
     False.
 Proof.
   intro x.
-  pose (Hx :=  acc_el x).
+  pose (Hx :=  HX x).
   induction Hx as [x Hx IHx].
   intros f p.
   assert (R x (f 1)) as Hxf.
@@ -113,9 +113,9 @@ Qed.
 Definition no_infinite_chain
            {X : Type}
            (R : X -> X -> Prop)
-           `{Wf _ R}
+           (HX : Wf R)
   : infinite_chain R -> False.
 Proof.
   intro f.
-  exact (no_infinite_chain_help R (f 0) f eq_refl).
+  exact (no_infinite_chain_help R HX (f 0) f eq_refl).
 Qed.

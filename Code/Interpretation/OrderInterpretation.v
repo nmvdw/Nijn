@@ -1,10 +1,44 @@
 Require Import Prelude.Funext.
+Require Import Prelude.Wellfounded.
 Require Import Prelude.CompatibleRelation.
 Require Import Syntax.Signature.
+Require Import Syntax.StrongNormalization.SN.
 Require Import Coq.Program.Equality.
 
 Definition TODO {A : Type} : A.
 Admitted.
+
+Record Interpretation {B F R : Type} (X : AFS B F R) :=
+  {
+    semTy : Ty B -> CompatRel ;
+    semCon : Con B -> CompatRel ;
+    semTm : forall {C : Con B} {A : Ty B},
+        Tm (Arity X) C A -> semCon C -> semTy A ;
+    semRew : forall (r : R)
+                    (C : Con B)
+                    (s : Sub (Arity X) C (Vars X r))
+                    (x : semCon C),
+        semTm (subTm (Lhs X r) s) x > semTm (subTm (Rhs X r) s) x ;
+    semBeta : forall {C : Con B}
+                     {A1 A2 : Ty B}
+                     (f : Tm (Arity X) (A1,, C) A2)
+                     (t : Tm (Arity X) C A1)
+                     (x : semCon C),
+        semTm ((λ f) · t) x >= semTm (subTm f (beta_sub t)) x
+  }.
+
+Arguments semTy {_ _ _ _} _ _.
+Arguments semCon {_ _ _ _} _ _.
+Arguments semTm {_ _ _ _} _ {_ _} _ _.
+Arguments semRew {_ _ _ _} _ {_} _ _.
+Arguments semBeta {_ _ _ _} _ {_ _ _} _ _ _.
+
+Definition isWf_interpretation
+           {B F R : Type}
+           {X : AFS B F R}
+           (I : Interpretation X)
+  : Prop
+  := forall (b : B), Wf (fun (x y : semTy I (Base b)) => x > y).
 
 Section OrderInterpretation.
   Context {B : Type}
@@ -86,10 +120,10 @@ Section OrderInterpretation.
              (t : Tm ar C A)
     : weakMonotoneMap (sem_Con C) (sem_Ty A).
   Proof.
-    induction t as [ ? ? f | ? ? ? v | ? ? ? ? f IHf | ? ? ? ? f IHf t IHt ].
+    induction t as [ ? f | ? ? v | ? ? ? ? IHf | ? ? ? f IHf t IHt ].
     - exact (const_WM _ _ (semF f)).
     - exact (sem_Var v).
-    - exact (lambda_abs (IHf semF)).      
+    - exact (lambda_abs IHf).      
     - apply TODO.
   Defined.
 End OrderInterpretation.
@@ -290,7 +324,7 @@ Proposition sem_dropSub
             {A : Ty B}
             (y : sem_Ty semB A)
             (x : sem_Con semB C1)
-  : sem_Sub semB semF (dropSub s) (y , x)
+  : sem_Sub semB semF (dropSub _ s) (y , x)
     =
     sem_Sub semB semF s x.
 Proof.
@@ -331,7 +365,7 @@ Proof.
     apply eq_weakMonotoneMap.
     intro y.
     cbn.
-    specialize (IHt semF _ (keepSub s) (y , x)).
+    specialize (IHt _ (keepSub _ s) (y , x)).
     etransitivity.
     { 
       apply IHt.
@@ -347,3 +381,111 @@ Proof.
      *)
     apply TODO.
 Qed.
+
+Record AFSAlgebra {B F R : Type} (X : AFS B F R) :=
+  {
+    sem_baseTy : B -> CompatRel ;
+    sem_baseTy_el : forall (b : B), sem_baseTy b ;
+    sem_baseTyWf : forall (b : B), Wf (fun (x y : sem_baseTy b) => x > y) ;
+    sem_baseTy_isCompatRel : forall (b : B), isCompatRel (sem_baseTy b) ;
+    sem_baseTm : forall (f : F), sem_Ty sem_baseTy (Arity X f) ;
+  }.
+
+Arguments sem_baseTy {_ _ _ _}.
+Arguments sem_baseTy_el {_ _ _ _}.
+Arguments sem_baseTyWf {_ _ _ _} _ _ _.
+Arguments sem_baseTy_isCompatRel {_ _ _ _}.
+Arguments sem_baseTm {_ _ _ _}.
+
+Theorem AFSAlgebra_to_Interpretation
+        {B F R : Type}
+        {X : AFS B F R}
+        (Xalg : AFSAlgebra X)
+  : Interpretation X.
+Proof.
+  unshelve esplit.
+  - apply sem_Ty.
+    exact (sem_baseTy Xalg).
+  - apply sem_Con.
+    exact (sem_baseTy Xalg).
+  - apply sem_Tm.
+    + exact (sem_baseTy_isCompatRel Xalg).
+    + exact (sem_baseTm Xalg).
+  - simpl.
+    apply TODO.
+  - simpl.
+    apply TODO.
+Defined.
+
+Theorem AFSAlgebra_to_WfInterpretation
+        {B F R : Type}
+        {X : AFS B F R}
+        (Xalg : AFSAlgebra X)
+  : isWf_interpretation (AFSAlgebra_to_Interpretation Xalg).
+Proof.
+  exact (sem_baseTyWf Xalg).
+Defined.
+
+Definition sem_Ty_el
+           {B F R : Type}
+           {X : AFS B F R}
+           (Xalg : AFSAlgebra X)
+           (A : Ty B)
+  : sem_Ty (sem_baseTy Xalg) A.
+Proof.
+  induction A as [ b | A1 IHA1 A2 IHA2 ].
+  - exact (sem_baseTy_el Xalg b).
+  - simpl.
+    apply const_WM.
+    + apply sem_Ty_CompatRel.
+      exact (sem_baseTy_isCompatRel Xalg).
+    + exact IHA2.
+Defined.
+
+Definition sem_Con_el
+           {B F R : Type}
+           {X : AFS B F R}
+           (Xalg : AFSAlgebra X)
+           (C : Con B)
+  : sem_Con (sem_baseTy Xalg) C.
+Proof.
+  induction C as [ | A C IHC ].
+  - exact tt.
+  - exact (sem_Ty_el Xalg A , IHC).
+Defined.
+
+Definition AFS_is_SN_from_Alg_map
+           {B F R : Type}
+           (b : B)
+           {X : AFS B F R}
+           (Xalg : AFSAlgebra X)
+           (C : Con B)
+           (x : AFSNotation.Tm X C (Base b))
+  : sem_baseTy Xalg b * AFSNotation.Tm X C (Base b).
+Proof.
+  refine (semTm (AFSAlgebra_to_Interpretation Xalg) x _ , x).
+  exact (sem_Con_el Xalg C).
+Defined.
+
+Import AFSNotation.
+
+Theorem AFS_is_SN_from_Alg
+        {B F R : Type}
+        (b : B)
+        {X : AFS B F R}
+        (Xalg : AFSAlgebra X)
+  : isSN X.
+Proof.
+  apply (SN_if_TySN X (Base b)).
+  intro C.
+  refine (fiber_is_Wf _ (AFS_is_SN_from_Alg_map b Xalg C) _).
+  - refine (lexico_Wf
+              (fun (x y : sem_baseTy Xalg b) => x > y)
+              (fun (x y : Tm X C (Base b)) => BetaRed X x y)
+              (sem_baseTyWf _ _)
+              _).
+    apply TODO.
+  - intros t1 t2 p.
+    unfold Rew in p.
+    (* dependent induction p. *)
+Admitted.
