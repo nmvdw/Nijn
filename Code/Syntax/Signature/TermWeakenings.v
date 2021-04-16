@@ -18,6 +18,27 @@ Fixpoint idWk
      | A ,, C => Keep A (idWk C)
      end.
 
+Definition compWk
+           {B : Type}
+           {C1 C2 C3 : Con B}
+           (w1 : Wk C2 C3)
+           (w2 : Wk C1 C2)
+  : Wk C1 C3.
+Proof.
+  revert w1.
+  revert C3.
+  induction w2 as [ | C1 C2 A w2 IHw2 | C1 C2 A w2 IHw2 ] ; intros C3 w1.
+  - exact w1.
+  - inversion w1.
+    + apply Keep.
+      apply IHw2.
+      exact X.
+    + apply Drop.
+      apply IHw2.
+      exact X.
+  - exact (Drop A (IHw2 _ w1)).
+Defined.
+
 Definition wkVar
            {B : Type}
            {C1 C2 : Con B}

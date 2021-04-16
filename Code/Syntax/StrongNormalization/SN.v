@@ -1,5 +1,6 @@
 Require Import Prelude.Wellfounded.
 Require Import Syntax.Signature.
+Require Import Syntax.Signature.SubstitutionLemmas.
 
 Import AFSNotation.
 
@@ -46,24 +47,14 @@ Proof.
   - simpl.
     rewrite !wkTm_is_subTm.
     rewrite subTm_comp.
-    assert (compSub
-              (wkToSub (Keep A1 w))
-              (idSub C1 (Arity X) & subTm x (wkToSub w))
-            =
-            compSub
-              (idSub C (Arity X) & x)
-              (wkToSub w)) as H.
-    {      
-      admit.
-    }
     unfold beta_sub.
-    rewrite <- H.
+    rewrite <- beta_sub_help.
     rewrite <- subTm_comp.
     apply Beta.
   - rewrite !wkTm_is_subTm.
     rewrite !subTm_comp.
     apply BaseRew.
-Admitted.
+Qed.
 
 Definition Rew_map_Tm
            {B F R : Type}

@@ -15,5 +15,6 @@ Syntax/Signature/TermWeakenings.v
 Syntax/Signature/TermSubstitutions.v
 Syntax/Signature/RewritingSystem.v
 Syntax/Signature.v
+Syntax/Signature/SubstitutionLemmas.v
 
 Syntax/StrongNormalization/SN.v
