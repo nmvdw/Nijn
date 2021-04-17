@@ -4,39 +4,6 @@ Inductive isWf {X : Type} (R : X -> X -> Prop) (x : X) : Prop :=
 Definition Wf {X : Type} (R : X -> X -> Prop)
   := forall (x : X), isWf R x.
 
-Definition lexico
-           {X Y : Type}
-           (RX : X -> X -> Prop)
-           (RY : Y -> Y -> Prop)
-  : X * Y -> X * Y -> Prop
-  := fun x y => (RX (fst x) (fst y)) \/ (fst x = fst y /\ RY (snd x) (snd y)).
-
-Proposition lexico_Wf
-            {X Y : Type}
-            (RX : X -> X -> Prop)
-            (RY : Y -> Y -> Prop)
-            (HX : Wf RX)
-            (HY : Wf RY)
-  : Wf (lexico RX RY).
-Proof.
-  intros [x y].
-  pose (HX x) as Hx.
-  revert y.
-  induction Hx as [x Hx IHx].
-  intros y.
-  pose (HY y) as Hy.
-  induction Hy as [y Hy IHy].
-  apply acc.
-  intros [z1 z2] [Hz | [Hz1 Hz2]].
-  - simpl in *.
-    apply IHx.
-    assumption.
-  - simpl in *.
-    subst.
-    apply IHy.
-    apply Hz2.
-Qed.
-
 Lemma fiber_is_Wf_help
       {X Y : Type}
       {RX : X -> X -> Prop}

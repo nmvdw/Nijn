@@ -365,7 +365,19 @@ Proof.
   - intros f g h p q x.
     exact (gt_ge (p x) (q x)).
 Qed.
-      
+
+Proposition fun_Wf
+            (X Y : CompatRel)
+            (x : X)
+            (HY : Wf (fun (x y : Y) => x > y))
+  : Wf (fun (f g : fun_CompatRel X Y) => f > g).
+Proof.
+  simple refine (fiber_is_Wf HY _ _).
+  - exact (fun f => f x).
+  - intros f g p ; simpl.
+    apply p.
+Qed.
+
 Global Instance const_weakMonotone
        (X Y : CompatRel)
        `{isCompatRel Y}

@@ -1,6 +1,7 @@
 Require Import Prelude.Funext.
 Require Import Prelude.Wellfounded.
 Require Import Prelude.CompatibleRelation.
+Require Import Prelude.Lexico.
 Require Import Syntax.Signature.
 Require Import Syntax.StrongNormalization.SN.
 Require Import Coq.Program.Equality.
@@ -449,6 +450,177 @@ Proof.
     reflexivity.
 Qed.
 
+Proposition sem_beta
+            {B : Type}
+            (semB : B -> CompatRel)
+            `{forall (b : B), isCompatRel (semB b)}
+            {F : Type}
+            {ar : F -> Ty B}
+            (semF : forall (f : F), sem_Ty semB (ar f))
+            (semApp : forall (A1 A2 : Ty B),
+                weakMonotoneMap
+                  ((sem_Ty semB A1 ⇒ sem_Ty semB A2) * sem_Ty semB A1)
+                  (sem_Ty semB A2))
+            (semApp_gt_id : forall (A1 A2 : Ty B)
+                                   (f : sem_Ty semB A1 ⇒ sem_Ty semB A2)
+                                   (x : sem_Ty semB A1),
+                semApp _ _ (f , x) >= f x)
+            {C : Con B}
+            {A1 A2 : Ty B}
+            (f : Tm ar (A1 ,, C) A2)
+            (t : Tm ar C A1)
+            (x : sem_Con semB C)
+  : sem_Tm
+      semB semF semApp
+      ((λ f) · t)
+      x
+    >=
+    sem_Tm
+      semB semF semApp
+      (subTm f (beta_sub t))
+      x.
+Proof.
+  unfold beta_sub.
+  rewrite sub_Lemma.
+  simpl ; cbn.
+  refine (ge_eq _ _).
+  - apply semApp_gt_id.
+  - simpl.
+    do 2 f_equal.
+    apply sem_idSub.
+Qed.
+
+Definition interpretation_to_lexico
+           {B : Type}
+           {semB : B -> CompatRel}
+           `{forall (b : B), isCompatRel (semB b)}
+           {F : Type}
+           {ar : F -> Ty B}
+           (semF : forall (f : F), sem_Ty semB (ar f))
+           (semApp : forall (A1 A2 : Ty B),
+               weakMonotoneMap
+                 ((sem_Ty semB A1 ⇒ sem_Ty semB A2) * sem_Ty semB A1)
+                 (sem_Ty semB A2))
+           {C : Con B}
+           {A : Ty B}
+           (x : Tm ar C A)
+  : (sem_Con semB C ⇒ sem_Ty semB A) * Tm ar C A
+  := (sem_Tm semB semF semApp x , x).
+
+Definition sem_Rewrite
+           {B : Type}
+           (semB : B -> CompatRel)
+           `{forall (b : B), isCompatRel (semB b)}
+           {F : Type}
+           {ar : F -> Ty B}
+           (semF : forall (f : F), sem_Ty semB (ar f))
+           (semApp : forall (A1 A2 : Ty B),
+               weakMonotoneMap
+              ((sem_Ty semB A1 ⇒ sem_Ty semB A2) * sem_Ty semB A1)
+              (sem_Ty semB A2))
+           (sem_App_l : forall (A1 A2 : Ty B)
+                               (f1 f2 : sem_Ty semB A1 ⇒ sem_Ty semB A2)
+                               (x : sem_Ty semB A1),
+               f1 > f2 -> semApp _ _ (f1 , x) > semApp _ _ (f2 , x))
+           (sem_App_r : forall (A1 A2 : Ty B)
+                               (f : sem_Ty semB A1 ⇒ sem_Ty semB A2)
+                               (x1 x2 : sem_Ty semB A1),
+               x1 > x2 -> semApp _ _ (f , x1) > semApp _ _ (f , x2))
+           (semApp_gt_id : forall (A1 A2 : Ty B)
+                                  (f : sem_Ty semB A1 ⇒ sem_Ty semB A2)
+                                  (x : sem_Ty semB A1),
+               semApp _ _ (f , x) >= f x)
+           {R : Type}
+           {Rcon : R -> Con B}
+           {Rtar : R -> B}
+           (lhs rhs : forall (r : R), Tm ar (Rcon r) (Base (Rtar r)))
+           (semR : forall (r : R)
+                          (C : Con B)
+                          (s : Sub ar C (Rcon r))
+                          (x : sem_Con semB C),
+               sem_Tm semB semF semApp (subTm (lhs r) s) x
+               >
+               sem_Tm semB semF semApp (subTm (rhs r) s) x)
+           {C : Con B}
+           {A : Ty B}
+           {t1 t2 : Tm ar C A}
+           (p : Rew lhs rhs t1 t2)
+  : lexico
+      (sem_Con semB C ⇒ sem_Ty semB A)
+      (fun s1 s2 => BetaRed s1 s2)
+      (interpretation_to_lexico semF semApp t1)
+      (interpretation_to_lexico semF semApp t2).
+Proof.
+  induction p.
+  - (* Trans *)
+    refine (lexico_trans _ _ _ _ _).
+    + intros ? ? ? q1 q2.
+      exact (BetaTrans q1 q2).
+    + apply IHp1.
+    + apply IHp2.
+  - (* Rew_App_l *)
+    destruct IHp as [IHp | [IHp1 IHp2]].
+    + left ; simpl.
+      intro y.
+      apply sem_App_l.
+      exact (IHp y).
+    + simpl in IHp1, IHp2.
+      right ; simpl.
+      split.
+      * intro.
+        apply (semApp _ _).
+        split.
+        ** simpl.
+           intro.
+           apply IHp1.
+        ** simpl.
+           apply ge_refl.
+      * apply BetaRew_App_l.
+        exact IHp2.
+  - (* Rew_App_r *)
+    destruct IHp as [IHp | [IHp1 IHp2]].
+    + left ; simpl.
+      intro y.
+      apply sem_App_r.
+      exact (IHp y).
+    + right ; simpl.
+      simpl in IHp1, IHp2.
+      split.
+      * intro.
+        apply (semApp _ _).
+        split ; simpl.
+        ** intro.
+           apply ge_refl.
+        ** apply IHp1.
+      * apply BetaRew_App_r.
+        exact IHp2.
+  - (* Rew_Lam *)
+    destruct IHp as [IHp | [IHp1 IHp2]].
+    + left ; simpl ; simpl in IHp.
+      intros x y.
+      apply IHp.
+    + right ; simpl.
+      simpl in IHp1, IHp2.
+      split.
+      * intros.
+        apply IHp1.
+      * apply BetaRew_Lam.
+        exact IHp2.
+  - (* Beta *)
+    right ; simpl.
+    split.
+    + intros.
+      apply sem_beta.
+      apply semApp_gt_id.
+    + apply BetaBeta.
+  - (* BaseRew *)
+    left ; simpl.
+    intro x.
+    apply semR.
+Qed.
+
+
+
 Record AFSAlgebra {B F R : Type} (X : AFS B F R) :=
   {
     sem_baseTy : B -> CompatRel ;
@@ -516,14 +688,9 @@ Proposition AFSAlgebra_beta
       (subTm f (beta_sub t))
       x.
 Proof.
-  unfold beta_sub.
-  rewrite sub_Lemma.
-  simpl ; cbn.
-  refine (ge_eq _ _).
-  - apply sem_App_gt_id.
-  - simpl.
-    do 2 f_equal.
-    apply sem_idSub.
+  apply sem_beta.
+  intros.
+  apply (sem_App_gt_id Xalg).
 Qed.
 
 Theorem AFSAlgebra_to_Interpretation
@@ -594,23 +761,30 @@ Proof.
   - exact (sem_Ty_el Xalg A , IHC).
 Defined.
 
-Definition AFS_is_SN_from_Alg_map
+Import AFSNotation.
+
+Definition sem_Rew_AFS_Alg
            {B F R : Type}
            (b : B)
            {X : AFS B F R}
            (Xalg : AFSAlgebra X)
-           (C : Con B)
-           (x : AFSNotation.Tm X C (Base b))
-  : sem_baseTy Xalg b * AFSNotation.Tm X C (Base b).
+           {C : Con B}
+           {A : Ty B}
+           (t1 t2 : Tm X C A)
+           (p : Rew X t1 t2)
+  : lexico
+      (sem_Con _ C ⇒ sem_Ty _ A)
+      (fun s1 s2 => BetaRed _ s1 s2)
+      (interpretation_to_lexico
+         (sem_baseTm Xalg) (sem_App Xalg)
+         t1)
+      (interpretation_to_lexico
+         (sem_baseTm Xalg) (sem_App Xalg)
+         t2).
 Proof.
-  refine (semTm (AFSAlgebra_to_Interpretation Xalg) x _ , x).
-  exact (sem_Con_el Xalg C).
+  refine (sem_Rewrite _ _ _ _ _ _ _ _ _ p)
+  ; apply Xalg.
 Defined.
-
-Import AFSNotation.
-
-Definition TODO {A : Type} : A.
-Admitted.
 
 Theorem AFS_is_SN_from_Alg
         {B F R : Type}
@@ -621,18 +795,11 @@ Theorem AFS_is_SN_from_Alg
 Proof.
   apply (SN_if_TySN X (Base b)).
   intro C.
-  refine (fiber_is_Wf _ (AFS_is_SN_from_Alg_map b Xalg C) _).
-  - refine (lexico_Wf
-              (fun (x y : sem_baseTy Xalg b) => x > y)
-              (fun (x y : Tm X C (Base b)) => BetaRed X x y)
-              (sem_baseTyWf _ _)
-              _).
-    apply TODO.
-  - intros t1 t2 p.
-    destruct Xalg.
-    destruct X.
-    simpl.
-    induction p.
-    unfold Rew in p.
-    (* dependent induction p. *)
+  refine (fiber_is_Wf _ _ (sem_Rew_AFS_Alg b Xalg)).
+  apply lexico_Wf.
+  - apply _.
+  - apply fun_Wf.
+    + apply sem_Con_el.
+    + apply Xalg.
+  - admit.
 Admitted.
