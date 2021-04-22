@@ -19,3 +19,6 @@ Syntax/Signature.v
 Syntax/Signature/SubstitutionLemmas.v
 
 Syntax/StrongNormalization/SN.v
+
+Interpretation/OrderInterpretation.v
+Interpretation/WeaklyMonotonicAlgebra.v

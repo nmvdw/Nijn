@@ -1,9 +1,13 @@
+(** * Well-founded types *)
+
+(** To formulate well-foundedness constructively, we make use of inductive subsets. *)
 Inductive isWf {X : Type} (R : X -> X -> Prop) (x : X) : Prop :=
 | acc : (forall (y : X), R x y -> isWf R y) -> isWf R x.
 
 Definition Wf {X : Type} (R : X -> X -> Prop)
   := forall (x : X), isWf R x.
 
+(** Well-founded types are closed under inverse images *)
 Lemma fiber_is_Wf_help
       {X Y : Type}
       {RX : X -> X -> Prop}
@@ -39,6 +43,8 @@ Proof.
   pose (Hfx := HY fx).
   exact (fiber_is_Wf_help Hf fx Hfx x eq_refl).
 Qed.
+
+(** If a type is well-founded, then there are no infinite decreasing chains in it *)
 
 Record infinite_chain {X : Type} (R : X -> X -> Prop) :=
   {

@@ -2,28 +2,35 @@ Require Import Syntax.Signature.Types.
 Require Import Syntax.Signature.Contexts.
 Require Import Syntax.Signature.Terms.
 
-Inductive Wk {B : Type} : Con B -> Con B -> Type :=
-| EmptyWk : Wk ∙ ∙
-| Keep : forall {C1 C2 : Con B} (A : Ty B),
-    Wk C1 C2 -> Wk (A ,, C1) (A ,, C2)
-| Drop : forall {C1 C2 : Con B} (A : Ty B),
-    Wk C1 C2 -> Wk (A ,, C1) C2.
+(** * Weakenings of contexts *)
 
+(** The type of weakenings *)
+Inductive wk {B : Type} : con B -> con B -> Type :=
+| EmptyWk : wk ∙ ∙
+| Keep : forall {C1 C2 : con B} (A : ty B),
+    wk C1 C2 -> wk (A ,, C1) (A ,, C2)
+| Drop : forall {C1 C2 : con B} (A : ty B),
+    wk C1 C2 -> wk (A ,, C1) C2.
+
+(** * Operations on weakenings *)
+
+(** Identity weakening *)
 Fixpoint idWk
          {B : Type}
-         (C : Con B)
-  : Wk C C
+         (C : con B)
+  : wk C C
   := match C with
      | ∙ => EmptyWk
      | A ,, C => Keep A (idWk C)
      end.
 
+(** Composition of weakenings *)
 Definition compWk
            {B : Type}
-           {C1 C2 C3 : Con B}
-           (w1 : Wk C2 C3)
-           (w2 : Wk C1 C2)
-  : Wk C1 C3.
+           {C1 C2 C3 : con B}
+           (w1 : wk C2 C3)
+           (w2 : wk C1 C2)
+  : wk C1 C3.
 Proof.
   revert w1.
   revert C3.
@@ -39,13 +46,14 @@ Proof.
   - exact (Drop A (IHw2 _ w1)).
 Defined.
 
+(** Substitution along weakenings *)
 Definition wkVar
            {B : Type}
-           {C1 C2 : Con B}
-           {A : Ty B}
-           (v : Var C2 A)
-           (w : Wk C1 C2)
-  : Var C1 A.
+           {C1 C2 : con B}
+           {A : ty B}
+           (v : var C2 A)
+           (w : wk C1 C2)
+  : var C1 A.
 Proof.
   induction w.
   - exact v.
@@ -57,12 +65,12 @@ Defined.
 
 Fixpoint wkTm
          {B : Type}
-         {C2 : Con B}
-         {A : Ty B}
+         {C2 : con B}
+         {A : ty B}
          {F : Type}
-         {ar : F -> Ty B}
-         (t : Tm ar C2 A)
-  : forall {C1 : Con B}, Wk C1 C2 -> Tm ar C1 A
+         {ar : F -> ty B}
+         (t : tm ar C2 A)
+  : forall {C1 : con B}, wk C1 C2 -> tm ar C1 A
   := match t with
      | BaseTm f => fun _ _ => BaseTm f
      | TmVar v => fun _ w => TmVar (wkVar v w)

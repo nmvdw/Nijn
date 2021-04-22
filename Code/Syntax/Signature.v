@@ -5,13 +5,14 @@ Require Export Syntax.Signature.TermWeakenings.
 Require Export Syntax.Signature.TermSubstitutions.
 Require Export Syntax.Signature.RewritingSystem.
 
-Record AFS (B : Type) (F : Type) (R : Type) :=
+(** * The notion of Algebraic Functional System *)
+Record afs (B : Type) (F : Type) (R : Type) :=
   {
-    Arity : F -> Ty B ;
-    Vars : R -> Con B ;
+    Arity : F -> ty B ;
+    Vars : R -> con B ;
     Tars : R -> B ;
-    Lhs : forall (r : R), Tm Arity (Vars r) (Base (Tars r)) ;
-    Rhs : forall (r : R), Tm Arity (Vars r) (Base (Tars r))
+    Lhs : forall (r : R), tm Arity (Vars r) (Base (Tars r)) ;
+    Rhs : forall (r : R), tm Arity (Vars r) (Base (Tars r))
   }.
 
 Arguments Arity {_ _ _}.
@@ -20,36 +21,37 @@ Arguments Tars {_ _ _}.
 Arguments Lhs {_ _ _}.
 Arguments Rhs {_ _ _}.
 
+(** Accessor functions for AFSs *)
 Module AFSNotation.
-  Definition Tm
+  Definition tm
              {B : Type}
              {F : Type}
              {R : Type}
-             (X : AFS B F R)
-             (C : Con B)
-             (A : Ty B)
+             (X : afs B F R)
+             (C : con B)
+             (A : ty B)
   : Type
-    := Terms.Tm (Arity X) C A.
+    := Terms.tm (Arity X) C A.
 
-  Definition BetaRed
+  Definition betaRed
              {B : Type}
              {F : Type}
              {R : Type}
-             (X : AFS B F R)
-             {C : Con B}
-             {A : Ty B}
-             (t1 t2 : Tm X C A)
+             (X : afs B F R)
+             {C : con B}
+             {A : ty B}
+             (t1 t2 : tm X C A)
     : Prop
-    := RewritingSystem.BetaRed t1 t2.
+    := RewritingSystem.betaRed t1 t2.
 
-  Definition Rew
+  Definition rew
              {B : Type}
              {F : Type}
              {R : Type}
-             (X : AFS B F R)
-             {C : Con B}
-             {A : Ty B}
-             (t1 t2 : Tm X C A)
+             (X : afs B F R)
+             {C : con B}
+             {A : ty B}
+             (t1 t2 : tm X C A)
     : Prop
-    := RewritingSystem.Rew (Lhs X) (Rhs X) t1 t2.
+    := RewritingSystem.rew (Lhs X) (Rhs X) t1 t2.
 End AFSNotation.

@@ -2,15 +2,20 @@ Require Import Prelude.Funext.
 Require Import Coq.Program.Equality.
 Require Import Lia.
 
+(** * Propositional types *)
+
+(** A type is called a proposition if all its elements are equal *)
 Class isaprop
       (A : Prop)
   := all_eq : forall (x y : A), x = y.
 
+(** False is a proposition *)
 Global Instance False_isaprop : isaprop False.
 Proof.
   intro ; contradiction.
 Qed.
 
+(** True is a proposition *)
 Global Instance True_isaprop : isaprop True.
 Proof.
   intros x y.
@@ -18,6 +23,7 @@ Proof.
   reflexivity.
 Qed.
 
+(** Propositions are closed under conjunction *)
 Global Instance and_isaprop
        {A B : Prop}
        `{isaprop A}
@@ -31,6 +37,7 @@ Proof.
   reflexivity.
 Qed.
 
+(** Assuming functional extensionality, propositions are closed under dependent products *)
 Global Instance forall_isaprop
        {X : Type}
        {B : X -> Prop}
@@ -43,6 +50,7 @@ Proof.
   apply all_eq.
 Qed.
 
+(** The order on natural numbers is a proposition *)
 Global Instance nat_le_isaprop
        (n m : nat)
   : isaprop (n <= m).

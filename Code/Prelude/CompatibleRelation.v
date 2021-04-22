@@ -8,6 +8,9 @@ Require Import Coq.Program.Equality.
 Declare Scope compat.
 Open Scope compat.
 
+(** * Compatible relations *)
+
+(** A compatible relation is a type equipped with two relations *)
 Record CompatRel :=
   {
     carrier :> Type ;
@@ -21,6 +24,7 @@ Arguments ge {_} _ _.
 Notation "x > y" := (gt x y) : compat.
 Notation "x >= y" := (ge x y) : compat.
 
+(** These are the axioms that should hold for compatible relations. Note that we do not require the relations to be well-founded, but that condition is formulated separately. *)
 Class isCompatRel (X : CompatRel) :=
   {
     gt_trans : forall {x y z : X},
@@ -55,6 +59,7 @@ Global Instance ge_isaprop
   : isaprop (x >= y)
   := ge_prop x y.
 
+(** * Lemmata for compatible relations *)
 Proposition eq_gt
             {X : CompatRel}
             {x y z : X}
@@ -110,11 +115,15 @@ Proof.
   apply ge_refl.
 Qed.
 
+(** * Exmaples of compatible relations *)
+
+(** The unit type *)
 Definition unit_CompatRel : CompatRel
   := {| carrier := unit ;
         gt _ _ := False ;
         ge _ _ := True |}.
 
+(** This relation is well-founded *)
 Proposition unit_Wf : Wf (fun (x y : unit_CompatRel) => x > y).
 Proof.
   intro z.
@@ -128,6 +137,7 @@ Proof.
   unshelve esplit ; cbn ; auto ; try (apply _).
 Qed.
 
+(** Compatible relations are well-founded *)
 Definition prod_CompatRel
            (X Y : CompatRel)
   : CompatRel
@@ -137,6 +147,7 @@ Definition prod_CompatRel
 
 Notation "X * Y" := (prod_CompatRel X Y) : compat.
 
+(** The product of well-founded orders is again well-founded *)
 Definition isWf_pair
            (X Y : CompatRel)
            {x : X} {y : Y}
@@ -211,6 +222,7 @@ Proof.
       * apply q.
 Qed.
 
+(** Dependent product of well-founded relations *)
 Definition depprod_CompatRel
            {X : Type}
            (Y : X -> CompatRel)
@@ -242,6 +254,7 @@ Proof.
     exact (gt_ge (p x) (q x)).
 Qed.
 
+(** The power of well-founded relations *)
 Fixpoint power_CompatRel
          (X : CompatRel)
          (n : nat)
@@ -264,12 +277,14 @@ Proof.
   - apply _.
 Qed.
 
+(** The natural numbers have the structure of well-founded relation *)
 Definition nat_CompatRel
   : CompatRel
   := {| carrier := nat ;
         gt n m := n > m ;
         ge n m := n >= m |}%nat.
 
+(** The strict order is well-founded *)
 Proposition nat_Wf : Wf (@gt nat_CompatRel).
 Proof.
   intro n.
@@ -294,6 +309,9 @@ Proof.
   unshelve esplit ; cbn ; intros ; try lia ; try (apply _).
 Qed.
 
+(** * Monotone maps *)
+
+(** We have two kinds of structure preserving maps between compatible relations. First of all, we can look at strictly monotone maps, which preserve the strict order. *)
 Class strictMonotone {X Y : CompatRel} (f : X -> Y) :=
   map_gt : forall (x y : X),
     x > y -> f x > f y.
@@ -308,6 +326,7 @@ Proof.
   apply _.
 Qed.
 
+(** Second of all, we can look at weak monotone maps, which preserve the other order *)
 Class weakMonotone {X Y : CompatRel} (f : X -> Y) :=
   map_ge : forall (x y : X),
     x >= y -> f x >= f y.
@@ -322,6 +341,7 @@ Proof.
   apply _.
 Qed.
 
+(** The weakly monotone maps between two compatible relations forms again a compatible relation *)
 Record weakMonotoneMap (X Y : CompatRel) :=
   make_monotone
     {
@@ -366,6 +386,7 @@ Proof.
     exact (gt_ge (p x) (q x)).
 Qed.
 
+(** The function space is well-founded is we can find an element of the domain *)
 Proposition fun_Wf
             (X Y : CompatRel)
             (x : X)
@@ -378,6 +399,9 @@ Proof.
     apply p.
 Qed.
 
+(** * Examples of weakly monotone maps *)
+
+(** The constant functions *)
 Global Instance const_weakMonotone
        (X Y : CompatRel)
        `{isCompatRel Y}
@@ -395,6 +419,7 @@ Definition const_WM
   : X ⇒ Y
   := make_monotone (fun (_ : X) => y) _.
 
+(** The identity function *)
 Global Instance id_strictMonotone (X : CompatRel)
   : strictMonotone (@id X).
 Proof.
@@ -414,6 +439,7 @@ Definition id_WM
   : X ⇒ X
   := make_monotone id _.
 
+(** THe composition *)
 Global Instance comp_strictMonotone
        {X Y Z : CompatRel}
        (f : X -> Y)
@@ -447,6 +473,7 @@ Definition comp_WM
   : X ⇒ Z
   := make_monotone (g o f) _.
 
+(** The first projection *)
 Global Instance fst_strictMonotone
        {X Y : CompatRel}
   : @strictMonotone (X * Y) X fst.
@@ -468,6 +495,7 @@ Definition fst_WM
   : (X * Y) ⇒ X
   := make_monotone _ _.
 
+(** The second projection *)
 Global Instance snd_strictMonotone
        {X Y : CompatRel}
   : @strictMonotone (X * Y) Y snd.
@@ -489,6 +517,7 @@ Definition snd_WM
   : (X * Y) ⇒ Y
   := make_monotone _ _.
 
+(** The pairing of weakly monotone maps *)
 Global Instance pair_weakMonotone
        {X Y Z : CompatRel}
        (f : X -> Y)
@@ -532,6 +561,7 @@ Definition pair_WM
   : X ⇒ (Y * Z)
   := @make_monotone X (Y * Z) (fun x => (f x , g x)) _.
 
+(** Lambda abstraction *)
 Global Instance lambda_abs_on_X_monotone
        {X Y Z : CompatRel}
        `{isCompatRel X}
@@ -576,6 +606,7 @@ Definition lambda_abs
   : X ⇒ (Y ⇒ Z)
   := make_monotone (fun x : X => lambda_abs_on_X f x) _.
 
+(** * Equality of weakly monotone maps *)
 Definition eq_weakMonotoneMap_help
            {X Y : CompatRel}
            `{isCompatRel Y}

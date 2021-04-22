@@ -6,38 +6,39 @@ Require Import Syntax.Signature.
 Require Import Syntax.StrongNormalization.SN.
 Require Import Coq.Program.Equality.
 
-Record Interpretation {B F R : Type} (X : AFS B F R) :=
+(** * Interpretations of AFS *)
+Record Interpretation {B F R : Type} (X : afs B F R) :=
   {
-    semTy : Ty B -> CompatRel ;
-    semCon : Con B -> CompatRel ;
-    semTm : forall {C : Con B} {A : Ty B},
-        Tm (Arity X) C A -> semCon C -> semTy A ;
+    semTy : ty B -> CompatRel ;
+    semCon : con B -> CompatRel ;
+    semTm : forall {C : con B} {A : ty B},
+        tm (Arity X) C A -> semCon C -> semTy A ;
     semRew : forall (r : R)
-                    (C : Con B)
-                    (s : Sub (Arity X) C (Vars X r))
+                    (C : con B)
+                    (s : sub (Arity X) C (Vars X r))
                     (x : semCon C),
         semTm (subTm (Lhs X r) s) x > semTm (subTm (Rhs X r) s) x ;
-    semBeta : forall {C : Con B}
-                     {A1 A2 : Ty B}
-                     (f : Tm (Arity X) (A1,, C) A2)
-                     (t : Tm (Arity X) C A1)
+    semBeta : forall {C : con B}
+                     {A1 A2 : ty B}
+                     (f : tm (Arity X) (A1,, C) A2)
+                     (t : tm (Arity X) C A1)
                      (x : semCon C),
         semTm ((λ f) · t) x >= semTm (subTm f (beta_sub t)) x ;
-    compatAppL : forall {C : Con B}
-                        {A1 A2 : Ty B}
-                        {f1 f2 : Tm (Arity X) C (A1 ⟶ A2)}
-                        (t : Tm (Arity X) C A1)
+    compatAppL : forall {C : con B}
+                        {A1 A2 : ty B}
+                        {f1 f2 : tm (Arity X) C (A1 ⟶ A2)}
+                        (t : tm (Arity X) C A1)
                         (x : semCon C),
         semTm f1 x > semTm f2 x -> semTm (f1 · t) x > semTm (f2 · t) x ;
-    compatAppR : forall {C : Con B}
-                        {A1 A2 : Ty B}
-                        (f : Tm (Arity X) C (A1 ⟶ A2))
-                        {t1 t2 : Tm (Arity X) C A1}
+    compatAppR : forall {C : con B}
+                        {A1 A2 : ty B}
+                        (f : tm (Arity X) C (A1 ⟶ A2))
+                        {t1 t2 : tm (Arity X) C A1}
                         (x : semCon C),
         semTm t1 x > semTm t2 x -> semTm (f · t1) x > semTm (f · t2) x ;
-    compatLam : forall {C : Con B}
-                       {A1 A2 : Ty B}
-                       (f1 f2 : Tm (Arity X) (A1 ,, C) A2),
+    compatLam : forall {C : con B}
+                       {A1 A2 : ty B}
+                       (f1 f2 : tm (Arity X) (A1 ,, C) A2),
         (forall (x : semCon (A1 ,, C)), semTm f1 x > semTm f2 x)
         ->
         forall (x : semCon C), semTm (λ f1) x > semTm (λ f2) x
@@ -51,18 +52,20 @@ Arguments semBeta {_ _ _ _} _ {_ _ _} _ _ _.
 
 Definition isWf_interpretation
            {B F R : Type}
-           {X : AFS B F R}
+           {X : afs B F R}
            (I : Interpretation X)
   : Prop
   := forall (b : B), Wf (fun (x y : semTy I (Base b)) => x > y).
 
+(** Below we discuss the lemmas which are needed to get an interpretation of an AFS *)
 Section OrderInterpretation.
   Context {B : Type}
           (semB : B -> CompatRel)
           `{forall (b : B), isCompatRel (semB b)}.
 
+  (** Interpretation of types *)
   Fixpoint sem_Ty
-           (A : Ty B)
+           (A : ty B)
     : CompatRel
     := match A with
        | Base b => semB b
@@ -70,14 +73,15 @@ Section OrderInterpretation.
        end.
 
   Global Instance sem_Ty_CompatRel
-         (A : Ty B)
+         (A : ty B)
     : isCompatRel (sem_Ty A).
   Proof.
     induction A ; apply _.
   Qed.
-    
+  
+  (** Interpretation of contexts *)  
   Fixpoint sem_Con
-           (C : Con B)
+           (C : con B)
     : CompatRel
     := match C with
        | ∙ => unit_CompatRel
@@ -85,16 +89,16 @@ Section OrderInterpretation.
        end.
 
   Global Instance sem_Con_isCompatRel
-         (C : Con B)
+         (C : con B)
     : isCompatRel (sem_Con C).
   Proof.
     induction C ; apply _.
   Qed.
 
   Fixpoint sem_Var_map
-           {C : Con B}
-           {A : Ty B}
-           (v : Var C A)
+           {C : con B}
+           {A : ty B}
+           (v : var C A)
     : sem_Con C -> sem_Ty A
     := match v with
        | Vz => fst
@@ -102,40 +106,42 @@ Section OrderInterpretation.
        end.
 
   Global Instance sem_Var_strictMonotone
-         {C : Con B}
-         {A : Ty B}
-         (v : Var C A)
+         {C : con B}
+         {A : ty B}
+         (v : var C A)
     : strictMonotone (sem_Var_map v).
   Proof.
     induction v ; apply _.
   Qed.
 
   Global Instance sem_Var_weakMonotone
-         {C : Con B}
-         {A : Ty B}
-         (v : Var C A)
+         {C : con B}
+         {A : ty B}
+         (v : var C A)
     : weakMonotone (sem_Var_map v).
   Proof.
     induction v ; apply _.
   Qed.
 
+  (** Interpretation of variables *)
   Definition sem_Var
-             {C : Con B}
-             {A : Ty B}
-             (v : Var C A)
+             {C : con B}
+             {A : ty B}
+             (v : var C A)
     : sem_Con C ⇒ sem_Ty A
     := make_monotone (sem_Var_map v) _.
 
   Context {F : Type}
-          {ar : F -> Ty B}
+          {ar : F -> ty B}
           (semF : forall (f : F), sem_Ty (ar f))
-          (semApp : forall (A1 A2 : Ty B),
+          (semApp : forall (A1 A2 : ty B),
               weakMonotoneMap ((sem_Ty A1 ⇒ sem_Ty A2) * sem_Ty A1) (sem_Ty A2)).
 
+  (** Interpretation of terms *)
   Definition sem_Tm
-             {C : Con B}
-             {A : Ty B}
-             (t : Tm ar C A)
+             {C : con B}
+             {A : ty B}
+             (t : tm ar C A)
     : weakMonotoneMap (sem_Con C) (sem_Ty A).
   Proof.
     induction t as [ ? f | ? ? v | ? ? ? ? IHf | ? ? ? f IHf t IHt ].
@@ -146,12 +152,13 @@ Section OrderInterpretation.
   Defined.
 End OrderInterpretation.
 
+(** Interpretation of weakenings *)
 Definition sem_Wk
            {B : Type}
            (semB : B -> CompatRel)
            `{forall (b : B), isCompatRel (semB b)}
-           {C1 C2 : Con B}
-           (w : Wk C1 C2)
+           {C1 C2 : con B}
+           (w : wk C1 C2)
   : sem_Con semB C1 -> sem_Con semB C2.
 Proof.
   induction w as [ | ? ? ? w IHw | ? ? ? w IHw ].
@@ -164,26 +171,27 @@ Global Instance sem_Wk_weakMonotone
        {B : Type}
        (semB : B -> CompatRel)
        `{forall (b : B), isCompatRel (semB b)}
-       {C1 C2 : Con B}
-       (w : Wk C1 C2)
+       {C1 C2 : con B}
+       (w : wk C1 C2)
   : weakMonotone (sem_Wk semB w).
 Proof.
   induction w ; apply _.
 Qed.
 
+(** Interpretation of substitutions *)
 Definition sem_Sub
            {B : Type}
            (semB : B -> CompatRel)
            `{forall (b : B), isCompatRel (semB b)}
            {F : Type}
-           {ar : F -> Ty B}
+           {ar : F -> ty B}
            (semF : forall (f : F), sem_Ty semB (ar f))
-           (semApp : forall (A1 A2 : Ty B),
+           (semApp : forall (A1 A2 : ty B),
                weakMonotoneMap
                  ((sem_Ty semB A1 ⇒ sem_Ty semB A2) * sem_Ty semB A1)
                  (sem_Ty semB A2))
-           {C1 C2 : Con B}
-           (s : Sub ar C1 C2)
+           {C1 C2 : con B}
+           (s : sub ar C1 C2)
   : sem_Con semB C1 -> sem_Con semB C2.
 Proof.
   induction s as [ | ? ? ? ? s IHs t ].
@@ -196,14 +204,14 @@ Global Instance sem_Sub_weakMonotone
        (semB : B -> CompatRel)
        `{forall (b : B), isCompatRel (semB b)}
        {F : Type}
-       {ar : F -> Ty B}
+       {ar : F -> ty B}
        (semF : forall (f : F), sem_Ty semB (ar f))
-       (semApp : forall (A1 A2 : Ty B),
+       (semApp : forall (A1 A2 : ty B),
            weakMonotoneMap
              ((sem_Ty semB A1 ⇒ sem_Ty semB A2) * sem_Ty semB A1)
              (sem_Ty semB A2))
-       {C1 C2 : Con B}
-       (s : Sub ar C1 C2)
+       {C1 C2 : con B}
+       (s : sub ar C1 C2)
   : weakMonotone (sem_Sub semB semF semApp s).
 Proof.
   induction s ; apply _.
@@ -213,8 +221,8 @@ Global Instance sem_Wk_strictMonotone
        {B : Type}
        (semB : B -> CompatRel)
        `{forall (b : B), isCompatRel (semB b)}
-       {C1 C2 : Con B}
-       (w : Wk C1 C2)
+       {C1 C2 : con B}
+       (w : wk C1 C2)
   : strictMonotone (sem_Wk semB w).
 Proof.
   induction w.
@@ -228,7 +236,7 @@ Proposition sem_idWk
             {B : Type}
             (semB : B -> CompatRel)
             `{forall (b : B), isCompatRel (semB b)}
-            {C : Con B}
+            {C : con B}
             (x : sem_Con semB C)
   : sem_Wk semB (idWk C) x = x.
 Proof.
@@ -245,16 +253,16 @@ Proposition sem_wkVar
             (semB : B -> CompatRel)
             `{forall (b : B), isCompatRel (semB b)}
             {F : Type}
-            {ar : F -> Ty B}
+            {ar : F -> ty B}
             (semF : forall (f : F), sem_Ty semB (ar f))
-            (semApp : forall (A1 A2 : Ty B),
+            (semApp : forall (A1 A2 : ty B),
                 weakMonotoneMap
                   ((sem_Ty semB A1 ⇒ sem_Ty semB A2) * sem_Ty semB A1)
                   (sem_Ty semB A2))
-            {C1 C2 : Con B}
-            (w : Wk C1 C2)
-            {A : Ty B}
-            (v : Var C2 A)
+            {C1 C2 : con B}
+            (w : wk C1 C2)
+            {A : ty B}
+            (v : var C2 A)
             (x : sem_Con semB C1)
   : sem_Tm semB semF semApp (TmVar (wkVar v w)) x
     =
@@ -278,16 +286,16 @@ Proposition sem_keepWk
             (semB : B -> CompatRel)
             `{forall (b : B), isCompatRel (semB b)}
             {F : Type}
-            {ar : F -> Ty B}
+            {ar : F -> ty B}
             (semF : forall (f : F), sem_Ty semB (ar f))
-            (semApp : forall (A1 A2 : Ty B),
+            (semApp : forall (A1 A2 : ty B),
                 weakMonotoneMap
                   ((sem_Ty semB A1 ⇒ sem_Ty semB A2) * sem_Ty semB A1)
                   (sem_Ty semB A2))
-            {C1 C2 : Con B}
-            (w : Wk C1 C2)
-            {A1 A2 : Ty B}
-            (t : Tm ar (A1 ,, C2) A2)
+            {C1 C2 : con B}
+            (w : wk C1 C2)
+            {A1 A2 : ty B}
+            (t : tm ar (A1 ,, C2) A2)
             (x : sem_Con semB C1)
             (y : sem_Ty semB A1)
   : sem_Tm semB semF semApp (wkTm t (Keep A1 w)) (y , x)
@@ -316,15 +324,15 @@ Proposition sem_dropIdWk
             (semB : B -> CompatRel)
             `{forall (b : B), isCompatRel (semB b)}
             {F : Type}
-            {ar : F -> Ty B}
+            {ar : F -> ty B}
             (semF : forall (f : F), sem_Ty semB (ar f))
-            (semApp : forall (A1 A2 : Ty B),
+            (semApp : forall (A1 A2 : ty B),
                 weakMonotoneMap
                   ((sem_Ty semB A1 ⇒ sem_Ty semB A2) * sem_Ty semB A1)
                   (sem_Ty semB A2))
-            {C : Con B}
-            {A1 A2 : Ty B}
-            (t : Tm ar C A1)
+            {C : con B}
+            {A1 A2 : ty B}
+            (t : tm ar C A1)
             (x : sem_Con semB C)
             (y : sem_Ty semB A2)
   : sem_Tm semB semF semApp (wkTm t (Drop A2 (idWk C))) (y , x)
@@ -355,15 +363,15 @@ Proposition sem_dropSub
             (semB : B -> CompatRel)
             `{forall (b : B), isCompatRel (semB b)}
             {F : Type}
-            {ar : F -> Ty B}
+            {ar : F -> ty B}
             (semF : forall (f : F), sem_Ty semB (ar f))
-            (semApp : forall (A1 A2 : Ty B),
+            (semApp : forall (A1 A2 : ty B),
                 weakMonotoneMap
                   ((sem_Ty semB A1 ⇒ sem_Ty semB A2) * sem_Ty semB A1)
                   (sem_Ty semB A2))
-            {C1 C2 : Con B}
-            (s : Sub ar C1 C2)
-            {A : Ty B}
+            {C1 C2 : con B}
+            (s : sub ar C1 C2)
+            {A : ty B}
             (y : sem_Ty semB A)
             (x : sem_Con semB C1)
   : sem_Sub semB semF semApp (dropSub _ s) (y , x)
@@ -383,13 +391,13 @@ Proposition sem_idSub
             (semB : B -> CompatRel)
             `{forall (b : B), isCompatRel (semB b)}
             {F : Type}
-            {ar : F -> Ty B}
+            {ar : F -> ty B}
             (semF : forall (f : F), sem_Ty semB (ar f))
-            (semApp : forall (A1 A2 : Ty B),
+            (semApp : forall (A1 A2 : ty B),
                 weakMonotoneMap
                   ((sem_Ty semB A1 ⇒ sem_Ty semB A2) * sem_Ty semB A1)
                   (sem_Ty semB A2))
-            {C : Con B}
+            {C : con B}
             (x : sem_Con semB C)
   : x = sem_Sub semB semF semApp (idSub C ar) x.
 Proof.
@@ -402,21 +410,22 @@ Proof.
     apply IHC.
 Qed.
 
+(** The substitution lemma *)
 Proposition sub_Lemma
             {B : Type}
             (semB : B -> CompatRel)
             `{forall (b : B), isCompatRel (semB b)}
             {F : Type}
-            {ar : F -> Ty B}
+            {ar : F -> ty B}
             (semF : forall (f : F), sem_Ty semB (ar f))
-            (semApp : forall (A1 A2 : Ty B),
+            (semApp : forall (A1 A2 : ty B),
                 weakMonotoneMap
                   ((sem_Ty semB A1 ⇒ sem_Ty semB A2) * sem_Ty semB A1)
                   (sem_Ty semB A2))
-            {C1 C2 : Con B}
-            (s : Sub ar C1 C2)
-            {A : Ty B}
-            (t : Tm ar C2 A)
+            {C1 C2 : con B}
+            (s : sub ar C1 C2)
+            {A : ty B}
+            (t : tm ar C2 A)
             (x : sem_Con semB C1)
   : sem_Tm semB semF semApp (subTm t s) x
     =
@@ -455,20 +464,20 @@ Proposition sem_beta
             (semB : B -> CompatRel)
             `{forall (b : B), isCompatRel (semB b)}
             {F : Type}
-            {ar : F -> Ty B}
+            {ar : F -> ty B}
             (semF : forall (f : F), sem_Ty semB (ar f))
-            (semApp : forall (A1 A2 : Ty B),
+            (semApp : forall (A1 A2 : ty B),
                 weakMonotoneMap
                   ((sem_Ty semB A1 ⇒ sem_Ty semB A2) * sem_Ty semB A1)
                   (sem_Ty semB A2))
-            (semApp_gt_id : forall (A1 A2 : Ty B)
+            (semApp_gt_id : forall (A1 A2 : ty B)
                                    (f : sem_Ty semB A1 ⇒ sem_Ty semB A2)
                                    (x : sem_Ty semB A1),
                 semApp _ _ (f , x) >= f x)
-            {C : Con B}
-            {A1 A2 : Ty B}
-            (f : Tm ar (A1 ,, C) A2)
-            (t : Tm ar C A1)
+            {C : con B}
+            {A1 A2 : ty B}
+            (f : tm ar (A1 ,, C) A2)
+            (t : tm ar C A1)
             (x : sem_Con semB C)
   : sem_Tm
       semB semF semApp
@@ -495,16 +504,16 @@ Definition interpretation_to_lexico
            {semB : B -> CompatRel}
            `{forall (b : B), isCompatRel (semB b)}
            {F : Type}
-           {ar : F -> Ty B}
+           {ar : F -> ty B}
            (semF : forall (f : F), sem_Ty semB (ar f))
-           (semApp : forall (A1 A2 : Ty B),
+           (semApp : forall (A1 A2 : ty B),
                weakMonotoneMap
                  ((sem_Ty semB A1 ⇒ sem_Ty semB A2) * sem_Ty semB A1)
                  (sem_Ty semB A2))
-           {C : Con B}
-           {A : Ty B}
-           (x : Tm ar C A)
-  : (sem_Con semB C ⇒ sem_Ty semB A) * Tm ar C A
+           {C : con B}
+           {A : ty B}
+           (x : tm ar C A)
+  : (sem_Con semB C ⇒ sem_Ty semB A) * tm ar C A
   := (sem_Tm semB semF semApp x , x).
 
 Definition sem_Rewrite
@@ -512,42 +521,42 @@ Definition sem_Rewrite
            (semB : B -> CompatRel)
            `{forall (b : B), isCompatRel (semB b)}
            {F : Type}
-           {ar : F -> Ty B}
+           {ar : F -> ty B}
            (semF : forall (f : F), sem_Ty semB (ar f))
-           (semApp : forall (A1 A2 : Ty B),
+           (semApp : forall (A1 A2 : ty B),
                weakMonotoneMap
               ((sem_Ty semB A1 ⇒ sem_Ty semB A2) * sem_Ty semB A1)
               (sem_Ty semB A2))
-           (sem_App_l : forall (A1 A2 : Ty B)
+           (sem_App_l : forall (A1 A2 : ty B)
                                (f1 f2 : sem_Ty semB A1 ⇒ sem_Ty semB A2)
                                (x : sem_Ty semB A1),
                f1 > f2 -> semApp _ _ (f1 , x) > semApp _ _ (f2 , x))
-           (sem_App_r : forall (A1 A2 : Ty B)
+           (sem_App_r : forall (A1 A2 : ty B)
                                (f : sem_Ty semB A1 ⇒ sem_Ty semB A2)
                                (x1 x2 : sem_Ty semB A1),
                x1 > x2 -> semApp _ _ (f , x1) > semApp _ _ (f , x2))
-           (semApp_gt_id : forall (A1 A2 : Ty B)
+           (semApp_gt_id : forall (A1 A2 : ty B)
                                   (f : sem_Ty semB A1 ⇒ sem_Ty semB A2)
                                   (x : sem_Ty semB A1),
                semApp _ _ (f , x) >= f x)
            {R : Type}
-           {Rcon : R -> Con B}
+           {Rcon : R -> con B}
            {Rtar : R -> B}
-           (lhs rhs : forall (r : R), Tm ar (Rcon r) (Base (Rtar r)))
+           (lhs rhs : forall (r : R), tm ar (Rcon r) (Base (Rtar r)))
            (semR : forall (r : R)
-                          (C : Con B)
-                          (s : Sub ar C (Rcon r))
+                          (C : con B)
+                          (s : sub ar C (Rcon r))
                           (x : sem_Con semB C),
                sem_Tm semB semF semApp (subTm (lhs r) s) x
                >
                sem_Tm semB semF semApp (subTm (rhs r) s) x)
-           {C : Con B}
-           {A : Ty B}
-           {t1 t2 : Tm ar C A}
-           (p : Rew lhs rhs t1 t2)
+           {C : con B}
+           {A : ty B}
+           {t1 t2 : tm ar C A}
+           (p : rew lhs rhs t1 t2)
   : lexico
       (sem_Con semB C ⇒ sem_Ty semB A)
-      (fun s1 s2 => BetaRed s1 s2)
+      (fun s1 s2 => betaRed s1 s2)
       (interpretation_to_lexico semF semApp t1)
       (interpretation_to_lexico semF semApp t2).
 Proof.
@@ -618,188 +627,3 @@ Proof.
     intro x.
     apply semR.
 Qed.
-
-
-
-Record AFSAlgebra {B F R : Type} (X : AFS B F R) :=
-  {
-    sem_baseTy : B -> CompatRel ;
-    sem_baseTy_el : forall (b : B), sem_baseTy b ;
-    sem_baseTyWf : forall (b : B), Wf (fun (x y : sem_baseTy b) => x > y) ;
-    sem_baseTy_isCompatRel : forall (b : B), isCompatRel (sem_baseTy b) ;
-    sem_baseTm : forall (f : F), sem_Ty sem_baseTy (Arity X f) ;
-    sem_App : forall (A1 A2 : Ty B),
-        weakMonotoneMap
-          ((sem_Ty sem_baseTy A1 ⇒ sem_Ty sem_baseTy A2) * sem_Ty sem_baseTy A1)
-          (sem_Ty sem_baseTy A2) ;
-    sem_App_gt_id : forall {A1 A2 : Ty B}
-                           (f : sem_Ty sem_baseTy A1 ⇒ sem_Ty sem_baseTy A2)
-                           (x : sem_Ty sem_baseTy A1),
-        sem_App _ _ (f , x) >= f x ;
-    sem_App_l : forall (A1 A2 : Ty B)
-                       (f1 f2 : sem_Ty sem_baseTy A1 ⇒ sem_Ty sem_baseTy A2)
-                       (x : sem_Ty sem_baseTy A1),
-        f1 > f2 -> sem_App _ _ (f1 , x) > sem_App _ _ (f2 , x) ;    
-    sem_App_r : forall (A1 A2 : Ty B)
-                       (f : sem_Ty sem_baseTy A1 ⇒ sem_Ty sem_baseTy A2)
-                       (x1 x2 : sem_Ty sem_baseTy A1),
-        x1 > x2 -> sem_App _ _ (f , x1) > sem_App _ _ (f , x2) ;    
-    sem_Rew : forall (r : R)
-                     (C : Con B)
-                     (s : Sub (Arity X) C (Vars X r))
-                     (x : sem_Con sem_baseTy C),
-        sem_Tm sem_baseTy sem_baseTm sem_App (subTm (Lhs X r) s) x
-        >
-        sem_Tm sem_baseTy sem_baseTm sem_App (subTm (Rhs X r) s) x
-  }.
-
-Arguments sem_baseTy {_ _ _ _}.
-Arguments sem_baseTy_el {_ _ _ _}.
-Arguments sem_baseTyWf {_ _ _ _} _ _ _.
-Arguments sem_baseTy_isCompatRel {_ _ _ _}.
-Arguments sem_baseTm {_ _ _ _}.
-Arguments sem_App {_ _ _ _}.
-Arguments sem_App_gt_id {_ _ _ _} _ {_ _} _ _.
-Arguments sem_Rew {_ _ _ _}.
-
-Global Instance AFSAlgebra_isCompatRel
-       {B F R : Type}
-       {X : AFS B F R}
-       (Xalg : AFSAlgebra X)
-  : forall (b : B), isCompatRel (sem_baseTy Xalg b)
-  := sem_baseTy_isCompatRel Xalg.
-
-Proposition AFSAlgebra_beta
-            {B F R : Type}
-            {X : AFS B F R}
-            (Xalg : AFSAlgebra X)
-            {C : Con B}
-            {A1 A2 : Ty B}
-            (f : Tm (Arity X) (A1 ,, C) A2)
-            (t : Tm (Arity X) C A1)
-            (x : sem_Con (sem_baseTy Xalg) C)
-  : sem_Tm
-      (sem_baseTy Xalg) (sem_baseTm Xalg) (sem_App Xalg)
-      ((λ f) · t)
-      x
-    >=
-    sem_Tm
-      (sem_baseTy Xalg) (sem_baseTm Xalg) (sem_App Xalg)
-      (subTm f (beta_sub t))
-      x.
-Proof.
-  apply sem_beta.
-  intros.
-  apply (sem_App_gt_id Xalg).
-Qed.
-
-Theorem AFSAlgebra_to_Interpretation
-        {B F R : Type}
-        {X : AFS B F R}
-        (Xalg : AFSAlgebra X)
-  : Interpretation X.
-Proof.
-  unshelve esplit.
-  - apply sem_Ty.
-    exact (sem_baseTy Xalg).
-  - apply sem_Con.
-    exact (sem_baseTy Xalg).
-  - apply sem_Tm.
-    + exact (sem_baseTy_isCompatRel Xalg).
-    + exact (sem_baseTm Xalg).
-    + exact (sem_App Xalg).
-  - exact (sem_Rew Xalg).
-  - simpl.
-    apply AFSAlgebra_beta.
-  - simpl.
-    intros.
-    apply sem_App_l.
-    assumption.
-  - simpl.
-    intros.
-    apply sem_App_r.
-    exact H.
-  - simpl.
-    intros.
-    apply H.
-Defined.
-
-Theorem AFSAlgebra_to_WfInterpretation
-        {B F R : Type}
-        {X : AFS B F R}
-        (Xalg : AFSAlgebra X)
-  : isWf_interpretation (AFSAlgebra_to_Interpretation Xalg).
-Proof.
-  exact (sem_baseTyWf Xalg).
-Defined.
-
-Definition sem_Ty_el
-           {B F R : Type}
-           {X : AFS B F R}
-           (Xalg : AFSAlgebra X)
-           (A : Ty B)
-  : sem_Ty (sem_baseTy Xalg) A.
-Proof.
-  induction A as [ b | A1 IHA1 A2 IHA2 ].
-  - exact (sem_baseTy_el Xalg b).
-  - simpl.
-    apply const_WM.
-    + apply sem_Ty_CompatRel.
-      exact (sem_baseTy_isCompatRel Xalg).
-    + exact IHA2.
-Defined.
-
-Definition sem_Con_el
-           {B F R : Type}
-           {X : AFS B F R}
-           (Xalg : AFSAlgebra X)
-           (C : Con B)
-  : sem_Con (sem_baseTy Xalg) C.
-Proof.
-  induction C as [ | A C IHC ].
-  - exact tt.
-  - exact (sem_Ty_el Xalg A , IHC).
-Defined.
-
-Import AFSNotation.
-
-Definition sem_Rew_AFS_Alg
-           {B F R : Type}
-           (b : B)
-           {X : AFS B F R}
-           (Xalg : AFSAlgebra X)
-           {C : Con B}
-           {A : Ty B}
-           (t1 t2 : Tm X C A)
-           (p : Rew X t1 t2)
-  : lexico
-      (sem_Con _ C ⇒ sem_Ty _ A)
-      (fun s1 s2 => BetaRed _ s1 s2)
-      (interpretation_to_lexico
-         (sem_baseTm Xalg) (sem_App Xalg)
-         t1)
-      (interpretation_to_lexico
-         (sem_baseTm Xalg) (sem_App Xalg)
-         t2).
-Proof.
-  refine (sem_Rewrite _ _ _ _ _ _ _ _ _ p)
-  ; apply Xalg.
-Defined.
-
-Theorem AFS_is_SN_from_Alg
-        {B F R : Type}
-        (b : B)
-        {X : AFS B F R}
-        (Xalg : AFSAlgebra X)
-  : isSN X.
-Proof.
-  apply (SN_if_TySN X (Base b)).
-  intro C.
-  refine (fiber_is_Wf _ _ (sem_Rew_AFS_Alg b Xalg)).
-  apply lexico_Wf.
-  - apply _.
-  - apply fun_Wf.
-    + apply sem_Con_el.
-    + apply Xalg.
-  - admit.
-Admitted.

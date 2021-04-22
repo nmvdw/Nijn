@@ -1,18 +1,22 @@
 Require Import Wellfounded.
 Require Import CompatibleRelation.
 
+(** * The lexicographic order *)
+
 Section Lexico.
   Context (X : CompatRel)
           {Y : Type}
           `{isCompatRel X}
           (RY : Y -> Y -> Prop).
-  
+
+  (** Given a compatible relation and a type with a relation on it, then we can define the lexicographic order on the product. *)
   Definition lexico
     : X * Y -> X * Y -> Prop
     := fun x y => fst x > fst y
                   \/
                   fst x >= fst y /\ RY (snd x) (snd y).
 
+  (** Transitivity for the lexicographic order *)
   Proposition lexico_trans
               (RYtrans : forall (y1 y2 y3 : Y),
                   RY y1 y2 -> RY y2 y3 -> RY y1 y3)
@@ -33,7 +37,8 @@ Section Lexico.
       + exact (ge_trans p1 q1).
       + exact (RYtrans _ _ _ p2 q2).
   Qed.
-  
+
+  (** Wellfoundedness of the lexicographic order *)
   Proposition lexico_Wf_help
               (x : X * Y)
               (z1 : X)

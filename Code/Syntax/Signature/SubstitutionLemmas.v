@@ -5,13 +5,13 @@ Require Import Syntax.Signature.TermWeakenings.
 Require Import Syntax.Signature.TermSubstitutions.
 Require Import Coq.Program.Equality.
 
-(** Laws for weakenings *)
+(** * Laws for weakenings *)
 
 (** Unitality *)
 Proposition wk_id_l
             {B : Type}
-            {C1 C2 : Con B}
-            (w : Wk C1 C2)
+            {C1 C2 : con B}
+            (w : wk C1 C2)
   : compWk (idWk C2) w = w.
 Proof.
   induction w as [ | ? ? ? w IHw | ? ? ? w IHw ]
@@ -25,8 +25,8 @@ Qed.
 
 Proposition wk_id_r
             {B : Type}
-            {C1 C2 : Con B}
-            (w : Wk C1 C2)
+            {C1 C2 : con B}
+            (w : wk C1 C2)
   : compWk w (idWk C1) = w.
 Proof.
   induction w as [ | ? ? ? w IHw | ? ? ? w IHw ]
@@ -41,10 +41,10 @@ Qed.
 (** Associativity *)
 Proposition wk_assoc
             {B : Type}
-            {C1 C2 C3 C4 : Con B}
-            (w3 : Wk C3 C4)
-            (w2 : Wk C2 C3)
-            (w1 : Wk C1 C2)
+            {C1 C2 C3 C4 : con B}
+            (w3 : wk C3 C4)
+            (w2 : wk C2 C3)
+            (w1 : wk C1 C2)
   : compWk (compWk w3 w2) w1
     =
     compWk w3 (compWk w2 w1).
@@ -65,9 +65,9 @@ Qed.
 (** Functoriality of weakening *)
 Proposition wkVar_id
             {B : Type}
-            {C : Con B}
-            {A : Ty B}
-            (v : Var C A)
+            {C : con B}
+            {A : ty B}
+            (v : var C A)
   : wkVar v (idWk _) = v.
 Proof.
   induction v ; simpl ; cbn.
@@ -79,10 +79,10 @@ Qed.
 Proposition wkTm_id
             {B : Type}
             {F : Type}
-            {ar : F -> Ty B}
-            {C : Con B}
-            {A : Ty B}
-            (t : Tm ar C A)
+            {ar : F -> ty B}
+            {C : con B}
+            {A : ty B}
+            (t : tm ar C A)
   : wkTm t (idWk _) = t.
 Proof.
   induction t ; simpl.
@@ -97,11 +97,11 @@ Qed.
 
 Proposition wkVar_comp
             {B : Type}
-            {C1 C2 C3 : Con B}
-            {A : Ty B}
-            (v : Var C3 A)
-            (w1 : Wk C1 C2)
-            (w2 : Wk C2 C3)
+            {C1 C2 C3 : con B}
+            {A : ty B}
+            (v : var C3 A)
+            (w1 : wk C1 C2)
+            (w2 : wk C2 C3)
   : wkVar (wkVar v w2) w1 = wkVar v (compWk w2 w1).
 Proof.
   revert w2 v.
@@ -125,12 +125,12 @@ Qed.
 Proposition wkTm_comp
             {B : Type}
             {F : Type}
-            {ar : F -> Ty B}
-            {C1 C2 C3 : Con B}
-            {A : Ty B}
-            (t : Tm ar C3 A)
-            (w1 : Wk C1 C2)
-            (w2 : Wk C2 C3)
+            {ar : F -> ty B}
+            {C1 C2 C3 : con B}
+            {A : ty B}
+            (t : tm ar C3 A)
+            (w1 : wk C1 C2)
+            (w2 : wk C2 C3)
   : wkTm (wkTm t w2) w1 = wkTm t (compWk w2 w1).
 Proof.
   revert w1 w2.
@@ -148,9 +148,9 @@ Qed.
 (** Weakening can be written as substitution *)
 Proposition wkToSub_id
             {B : Type}
-            {C : Con B}
+            {C : con B}
             {F : Type}
-            {ar : F -> Ty B}
+            {ar : F -> ty B}
   : wkToSub (idWk C) = idSub C ar.
 Proof.
   induction C as [ | A C IHC ].
@@ -162,13 +162,13 @@ Qed.
 
 Proposition subVar_drop
             {B : Type}
-            {C2 : Con B}
-            {A1 A2 : Ty B}
+            {C2 : con B}
+            {A1 A2 : ty B}
             {F : Type}
-            {ar : F -> Ty B}
-            (v : Var C2 A1)
-            {C1 : Con B}
-            (s : Sub ar C1 C2)
+            {ar : F -> ty B}
+            (v : var C2 A1)
+            {C1 : con B}
+            (s : sub ar C1 C2)
   : subVar v (dropSub A2 s)
     =
     subVar (Vs v) (keepSub A2 s).
@@ -183,13 +183,13 @@ Qed.
 
 Proposition subVar_keep
             {B : Type}
-            {C2 : Con B}
-            {A1 A2 : Ty B}
+            {C2 : con B}
+            {A1 A2 : ty B}
             {F : Type}
-            {ar : F -> Ty B}
-            (v : Var C2 A1)
-            {C1 : Con B}
-            (s : Sub ar C1 C2)
+            {ar : F -> ty B}
+            (v : var C2 A1)
+            {C1 : con B}
+            (s : sub ar C1 C2)
   : subVar (Vs v) (keepSub A2 s)
     =
     wkTm (subVar v s) (Drop A2 (idWk C1)).
@@ -204,13 +204,13 @@ Qed.
 
 Proposition wkVar_is_subVar
             {B : Type}
-            {C2 : Con B}
-            {A : Ty B}
+            {C2 : con B}
+            {A : ty B}
             {F : Type}
-            {ar : F -> Ty B}
-            (v : Var C2 A)
-            {C1 : Con B}
-            (w : Wk C1 C2)
+            {ar : F -> ty B}
+            (v : var C2 A)
+            {C1 : con B}
+            (w : wk C1 C2)
   : @TmVar B F ar _ _ (wkVar v w) = subVar v (wkToSub w).
 Proof.
   induction w.
@@ -236,13 +236,13 @@ Qed.
     
 Proposition wkTm_is_subTm
             {B : Type}
-            {C2 : Con B}
-            {A : Ty B}
+            {C2 : con B}
+            {A : ty B}
             {F : Type}
-            {ar : F -> Ty B}
-            (t : Tm ar C2 A)
-            {C1 : Con B}
-            (w : Wk C1 C2)
+            {ar : F -> ty B}
+            (t : tm ar C2 A)
+            {C1 : con B}
+            (w : wk C1 C2)
   : wkTm t w = subTm t (wkToSub w).
 Proof.
   revert w.
@@ -259,16 +259,16 @@ Proof.
     reflexivity.
 Qed.
 
-(** Laws for substitution *)
+(** * Laws for substitution *)
 
 (** Action of identity substitution *)
 Proposition subVar_id
             {B : Type}
-            {C : Con B}
-            {A : Ty B}
+            {C : con B}
+            {A : ty B}
             {F : Type}
-            {ar : F -> Ty B}
-            (v : Var C A)
+            {ar : F -> ty B}
+            (v : var C A)
   : subVar v (idSub C ar) = TmVar v.
 Proof.
   induction C as [ | A' C IHC ].
@@ -285,11 +285,11 @@ Qed.
 
 Proposition subTm_id
             {B : Type}
-            {C : Con B}
-            {A : Ty B}
+            {C : con B}
+            {A : ty B}
             {F : Type}
-            {ar : F -> Ty B}
-            (t : Tm ar C A)
+            {ar : F -> ty B}
+            (t : tm ar C A)
   : subTm t (idSub C ar) = t.
 Proof.
   induction t ; simpl.
@@ -305,10 +305,10 @@ Qed.
 (** Right unitality *)
 Proposition Sub_id_right
             {B : Type}
-            {C1 C2 : Con B}
+            {C1 C2 : con B}
             {F : Type}
-            {ar : F -> Ty B}
-            (s : Sub ar C1 C2)
+            {ar : F -> ty B}
+            (s : sub ar C1 C2)
   : compSub s (idSub _ _) = s.
 Proof.
   induction s.
@@ -324,16 +324,16 @@ Proof.
 Qed.
 
 (** We can already compute substitutions on compositions for variables *)
-Proposition subVar_comp
+Proposition subvar_comp
             {B : Type}
-            {C3 : Con B}
-            {A : Ty B}
+            {C3 : con B}
+            {A : ty B}
             {F : Type}
-            {ar : F -> Ty B}
-            (v : Var C3 A)
-            {C1 C2 : Con B}
-            (s1 : Sub ar C1 C2)
-            (s2 : Sub ar C2 C3)
+            {ar : F -> ty B}
+            (v : var C3 A)
+            {C1 C2 : con B}
+            (s1 : sub ar C1 C2)
+            (s2 : sub ar C2 C3)
   : subTm (subVar v s2) s1 = subVar v (compSub s2 s1).
 Proof.
   induction s2.
@@ -347,11 +347,11 @@ Qed.
 Definition compWkSub
            {B : Type}
            {F : Type}
-           {ar : F -> Ty B}
-           {C1 C2 C3 : Con B}
-           (w : Wk C2 C3)
-           (s : Sub ar C1 C2)
-  : Sub ar C1 C3.
+           {ar : F -> ty B}
+           {C1 C2 C3 : con B}
+           (w : wk C2 C3)
+           (s : sub ar C1 C2)
+  : sub ar C1 C3.
 Proof.
   induction w.
   - exact s.
@@ -365,14 +365,14 @@ Proof.
     exact X.
 Defined.
 
-Definition compSubWk
+Definition compSubwk
            {B : Type}
            {F : Type}
-           {ar : F -> Ty B}
-           {C1 C2 C3 : Con B}
-           (s : Sub ar C2 C3)
-           (w : Wk C1 C2)
-  : Sub ar C1 C3.
+           {ar : F -> ty B}
+           {C1 C2 C3 : con B}
+           (s : sub ar C2 C3)
+           (w : wk C1 C2)
+  : sub ar C1 C3.
 Proof.
   induction s.
   - apply ToEmpty.
@@ -381,20 +381,20 @@ Defined.
 
 Definition dropId
            {B : Type}
-           (C : Con B)
-           (A : Ty B)
-  : Wk (A ,, C) C
+           (C : con B)
+           (A : ty B)
+  : wk (A ,, C) C
   := Drop A (idWk C).
 
 (** Some lemmas on these definitions *)
-Proposition dropSub_is_compSubWk
+Proposition dropSub_is_compSubwk
             {B : Type}
             {F : Type}
-            {ar : F -> Ty B}
-            {C1 C2 : Con B}
-            (A : Ty B)
-            (s : Sub ar C1 C2)
-  : dropSub A s = compSubWk s (dropId _ _).
+            {ar : F -> ty B}
+            {C1 C2 : con B}
+            (A : ty B)
+            (s : sub ar C1 C2)
+  : dropSub A s = compSubwk s (dropId _ _).
 Proof.
   induction s.
   - simpl ; cbn.
@@ -404,17 +404,17 @@ Proof.
     reflexivity.
 Qed.
 
-Proposition assoc_compSubWk
+Proposition assoc_compSubwk
             {B : Type}
             {F : Type}
-            {ar : F -> Ty B}
-            {C1 C2 C3 C4 : Con B}
-            (w1 : Wk C1 C2)
-            (w2 : Wk C2 C3)
-            (s3 : Sub ar C3 C4)
-  : compSubWk (compSubWk s3 w2) w1
+            {ar : F -> ty B}
+            {C1 C2 C3 C4 : con B}
+            (w1 : wk C1 C2)
+            (w2 : wk C2 C3)
+            (s3 : sub ar C3 C4)
+  : compSubwk (compSubwk s3 w2) w1
     =
-    compSubWk s3 (compWk w2 w1).
+    compSubwk s3 (compWk w2 w1).
 Proof.
   induction s3.
   - reflexivity.
@@ -424,14 +424,14 @@ Proof.
     apply wkTm_comp.
 Qed.
 
-Proposition compSubWk_is_compSub
+Proposition compSubwk_is_compSub
             {B : Type}
             {F : Type}
-            {ar : F -> Ty B}
-            {C1 C2 C3 : Con B}
-            (w1 : Wk C1 C2)
-            (s2 : Sub ar C2 C3)
-  : compSubWk s2 w1 = compSub s2 (wkToSub w1).
+            {ar : F -> ty B}
+            {C1 C2 C3 : con B}
+            (w1 : wk C1 C2)
+            (s2 : sub ar C2 C3)
+  : compSubwk s2 w1 = compSub s2 (wkToSub w1).
 Proof.
   induction s2.
   - reflexivity.
@@ -445,13 +445,13 @@ Qed.
 Proposition wkTmSubTm
             {B : Type}
             {F : Type}
-            {ar : F -> Ty B}
-            {C1 C2 C3 : Con B}
-            (w1 : Wk C1 C2)
-            (s2 : Sub ar C2 C3)
-            {A : Ty B}
-            (t : Tm ar C3 A)
-  : subTm t (compSubWk s2 w1) = wkTm (subTm t s2) w1.
+            {ar : F -> ty B}
+            {C1 C2 C3 : con B}
+            (w1 : wk C1 C2)
+            (s2 : sub ar C2 C3)
+            {A : ty B}
+            (t : tm ar C3 A)
+  : subTm t (compSubwk s2 w1) = wkTm (subTm t s2) w1.
 Proof.
   revert w1 s2.
   revert C1 C2.
@@ -459,9 +459,9 @@ Proof.
   - reflexivity.
   - simpl ; cbn.
     rewrite wkTm_is_subTm.
-    rewrite subVar_comp.
+    rewrite subvar_comp.
     f_equal.
-    rewrite compSubWk_is_compSub.
+    rewrite compSubwk_is_compSub.
     reflexivity.
   - simpl ; cbn.
     specialize (IHt _ _ (Keep A1 w1) (keepSub A1 s2)).
@@ -469,8 +469,8 @@ Proof.
     rewrite <- IHt ; clear IHt.
     unfold keepSub.
     do 3 f_equal.
-    rewrite !dropSub_is_compSubWk.
-    rewrite !assoc_compSubWk.
+    rewrite !dropSub_is_compSubwk.
+    rewrite !assoc_compSubwk.
     f_equal.
     simpl ; cbn.
     f_equal.
@@ -481,17 +481,17 @@ Proof.
     reflexivity.
 Qed.
 
-Proposition compSubWk_assoc
+Proposition compSubwk_assoc
             {B : Type}
             {F : Type}
-            {ar : F -> Ty B}
-            {C1 C2 C3 C4 : Con B}
-            (w1 : Wk C1 C2)
-            (s2 : Sub ar C2 C3)
-            (s3 : Sub ar C3 C4)
-  : compSubWk (compSub s3 s2) w1
+            {ar : F -> ty B}
+            {C1 C2 C3 C4 : con B}
+            (w1 : wk C1 C2)
+            (s2 : sub ar C2 C3)
+            (s3 : sub ar C3 C4)
+  : compSubwk (compSub s3 s2) w1
     =
-    compSub s3 (compSubWk s2 w1).
+    compSub s3 (compSubwk s2 w1).
 Proof.
   induction s3.
   - reflexivity.
@@ -502,12 +502,12 @@ Proof.
     reflexivity.
 Qed.
 
-Proposition comWkSub_id
+Proposition comwkSub_id
             {B : Type}
             {F : Type}
-            {ar : F -> Ty B}
-            {C1 C2 : Con B}
-            (s : Sub ar C1 C2)
+            {ar : F -> ty B}
+            {C1 C2 : con B}
+            (s : sub ar C1 C2)
   : compWkSub (idWk _) s = s.
 Proof.
   induction s.
@@ -517,17 +517,17 @@ Proof.
     reflexivity.
 Qed.
 
-Proposition compWkSubWk
+Proposition compWkSubwk
             {B : Type}
             {F : Type}
-            {ar : F -> Ty B}
-            {C1 C2 C3 C4 : Con B}
-            (w1 : Wk C1 C2)
-            (s2 : Sub ar C2 C3)
-            (w3 : Wk C3 C4)
-  : compSubWk (compWkSub w3 s2) w1
+            {ar : F -> ty B}
+            {C1 C2 C3 C4 : con B}
+            (w1 : wk C1 C2)
+            (s2 : sub ar C2 C3)
+            (w3 : wk C3 C4)
+  : compSubwk (compWkSub w3 s2) w1
     =
-    compWkSub w3 (compSubWk s2 w1).
+    compWkSub w3 (compSubwk s2 w1).
 Proof.
   revert w1 s2.
   revert C1 C2.
@@ -545,12 +545,12 @@ Qed.
 Proposition subTm_wkTm
             {B : Type}
             {F : Type}
-            {ar : F -> Ty B}
-            {C1 C2 C3 : Con B}
-            (s1 : Sub ar C1 C2)
-            (w2 : Wk C2 C3)
-            {A : Ty B}
-            (t : Tm ar C3 A)
+            {ar : F -> ty B}
+            {C1 C2 C3 : con B}
+            (s1 : sub ar C1 C2)
+            (w2 : wk C2 C3)
+            {A : ty B}
+            (t : tm ar C3 A)
   : subTm t (compWkSub w2 s1) = subTm (wkTm t w2) s1.
 Proof.
   revert s1 w2.
@@ -570,8 +570,8 @@ Proof.
     rewrite <- IHt ; clear IHt.
     unfold keepSub ; simpl ; cbn.
     do 3 f_equal.
-    rewrite !dropSub_is_compSubWk.
-    rewrite !compWkSubWk.
+    rewrite !dropSub_is_compSubwk.
+    rewrite !compWkSubwk.
     reflexivity.
   - simpl ; cbn.
     rewrite IHt1, IHt2.
@@ -581,14 +581,14 @@ Qed.
 Proposition compSub_compWkSub
             {B : Type}
             {F : Type}
-            {ar : F -> Ty B}
-            {C1 C2 C3 C4 : Con B}
-            (s1 : Sub ar C1 C2)
-            (w2 : Wk C2 C3)
-            (s3 : Sub ar C3 C4)
+            {ar : F -> ty B}
+            {C1 C2 C3 C4 : con B}
+            (s1 : sub ar C1 C2)
+            (w2 : wk C2 C3)
+            (s3 : sub ar C3 C4)
   : compSub s3 (compWkSub w2 s1)
     =
-    compSub (compSubWk s3 w2) s1.
+    compSub (compSubwk s3 w2) s1.
 Proof.
   induction s3.
   - simpl ; cbn.
@@ -605,56 +605,56 @@ Qed.
 (** Left unitality *)
 Proposition Sub_id_left
             {B : Type}
-            {C1 C2 : Con B}
+            {C1 C2 : con B}
             {F : Type}
-            {ar : F -> Ty B}
-            (s : Sub ar C1 C2)
+            {ar : F -> ty B}
+            (s : sub ar C1 C2)
   : compSub (idSub _ _) s = s.
 Proof.
   induction s.
   - reflexivity.
   - simpl ; cbn.
     f_equal.
-    rewrite !dropSub_is_compSubWk.
+    rewrite !dropSub_is_compSubwk.
     rewrite <- compSub_compWkSub.
     simpl ; cbn.
-    rewrite comWkSub_id.
+    rewrite comwkSub_id.
     exact IHs.
 Qed.
 
 (** Composition of substitutions *)
 Proposition subTm_comp
             {B : Type}
-            {A : Ty B}
+            {A : ty B}
             {F : Type}
-            {ar : F -> Ty B}
-            {C1 C2 C3 : Con B}
-            (t : Tm ar C3 A)
-            (s1 : Sub ar C1 C2)
-            (s2 : Sub ar C2 C3)
+            {ar : F -> ty B}
+            {C1 C2 C3 : con B}
+            (t : tm ar C3 A)
+            (s1 : sub ar C1 C2)
+            (s2 : sub ar C2 C3)
   : subTm (subTm t s2) s1 = subTm t (compSub s2 s1).
 Proof.
   revert s2 s1.
   revert C1 C2.
   induction t ; simpl ; intros C1 C2 s1 s2.
   - reflexivity.
-  - apply subVar_comp.
+  - apply subvar_comp.
   - rewrite (IHt _ _ (keepSub A1 s1) (keepSub A1 s2)) ; clear IHt.
     simpl ; cbn ; unfold keepSub.
     do 3 f_equal.
-    rewrite !dropSub_is_compSubWk.
-    rewrite compSubWk_assoc.
+    rewrite !dropSub_is_compSubwk.
+    rewrite compSubwk_assoc.
     symmetry.
     etransitivity.
     {
       apply f_equal.
       symmetry.
-      apply comWkSub_id.
+      apply comwkSub_id.
     }
     pose (compSub_compWkSub (keepSub A1 s2) (dropId _ _) s1) as e.
     unfold keepSub in e.
     simpl in e ; cbn in e.
-    rewrite dropSub_is_compSubWk in e.
+    rewrite dropSub_is_compSubwk in e.
     exact e.
   - rewrite IHt1, IHt2.
     reflexivity.
@@ -663,12 +663,12 @@ Qed.
 (** Needed when we apply beta reduction *)
 Proposition beta_sub_help
             {B : Type}
-            {A : Ty B}
+            {A : ty B}
             {F : Type}
-            {ar : F -> Ty B}
-            {C1 C2 : Con B}
-            (t : Tm ar C2 A)
-            (w : Wk C1 C2)
+            {ar : F -> ty B}
+            {C1 C2 : con B}
+            (t : tm ar C2 A)
+            (w : wk C1 C2)
   : compSub
       (wkToSub (Keep _ w))
       (idSub _ _ & subTm t (wkToSub w))
@@ -679,10 +679,10 @@ Proof.
   rewrite Sub_id_left.
   f_equal.
   simpl ; cbn.
-  rewrite !dropSub_is_compSubWk.
+  rewrite !dropSub_is_compSubwk.
   rewrite <- compSub_compWkSub.
   simpl ; cbn.
-  rewrite comWkSub_id.
+  rewrite comwkSub_id.
   rewrite Sub_id_right.
   reflexivity.
 Qed.
@@ -690,13 +690,13 @@ Qed.
 (** Associativity of substitution *)
 Proposition subTm_assoc
             {B : Type}
-            {A : Ty B}
+            {A : ty B}
             {F : Type}
-            {ar : F -> Ty B}
-            {C1 C2 C3 C4 : Con B}
-            (s1 : Sub ar C1 C2)
-            (s2 : Sub ar C2 C3)
-            (s3 : Sub ar C3 C4)
+            {ar : F -> ty B}
+            {C1 C2 C3 C4 : con B}
+            (s1 : sub ar C1 C2)
+            (s2 : sub ar C2 C3)
+            (s3 : sub ar C3 C4)
   : compSub s3 (compSub s2 s1)
     =
     compSub (compSub s3 s2) s1.

@@ -4,38 +4,43 @@ Require Import Syntax.Signature.SubstitutionLemmas.
 
 Import AFSNotation.
 
+(** * Strong normalization *)
+
+(** An AFS is strongly normalizing if the rewriting relation is well-founded *)
 Definition isSN
            {B F R : Type}
-           (X : AFS B F R)
+           (X : afs B F R)
   : Prop
-  := forall (C : Con B) (A : Ty B), Wf (@Rew _ _ _ X C A).
+  := forall (C : con B) (A : ty B), Wf (@rew _ _ _ X C A).
 
+(** A type is said to be strongly normalizing if the rewrite relations of terms on that type is strongly normalizing *)
 Definition Ty_isSN
            {B F R : Type}
-           (X : AFS B F R)
-           (A : Ty B)
+           (X : afs B F R)
+           (A : ty B)
   : Prop
-  := forall (C : Con B), Wf (@Rew _ _ _ X C A).
+  := forall (C : con B), Wf (@rew _ _ _ X C A).
 
+(** We show that if one type is strongly normalizing, then all types are. Hence, it is sufficient to check for strong normalization in just one type. *)
 Definition map_Tm
            {B F R : Type}
-           {X : AFS B F R}
-           {C : Con B}
-           (A : Ty B)
-           {A' : Ty B}
-           (t : Tm X C A')
-  : Tm X ((A' ⟶ A),, C) A
+           {X : afs B F R}
+           {C : con B}
+           (A : ty B)
+           {A' : ty B}
+           (t : tm X C A')
+  : tm X ((A' ⟶ A),, C) A
   := TmVar Vz · wkTm t (Drop _ (idWk C)).
 
 Definition Rew_Wk
            {B F R : Type}
-           {X : AFS B F R}
-           {C1 C2 : Con B}
-           {A : Ty B}
-           {t1 t2 : Tm X C2 A}
-           (w : Wk C1 C2)
-           (p : Rew X t1 t2)
-  : Rew X (wkTm t1 w) (wkTm t2 w).
+           {X : afs B F R}
+           {C1 C2 : con B}
+           {A : ty B}
+           {t1 t2 : tm X C2 A}
+           (w : wk C1 C2)
+           (p : rew X t1 t2)
+  : rew X (wkTm t1 w) (wkTm t2 w).
 Proof.
   revert w.
   revert C1.
@@ -58,12 +63,12 @@ Qed.
 
 Definition Rew_map_Tm
            {B F R : Type}
-           {X : AFS B F R}
-           {C : Con B}
-           {A A' : Ty B}
-           {t1 t2 : Tm X C A'}
-           (p : Rew X t1 t2)
-  : Rew X (map_Tm A t1) (map_Tm A t2).
+           {X : afs B F R}
+           {C : con B}
+           {A A' : ty B}
+           {t1 t2 : tm X C A'}
+           (p : rew X t1 t2)
+  : rew X (map_Tm A t1) (map_Tm A t2).
 Proof.
   unfold map_Tm.
   apply Rew_App_r.
@@ -73,8 +78,8 @@ Qed.
 
 Theorem SN_if_TySN
         {B F R : Type}
-        (X : AFS B F R)
-        (A : Ty B)
+        (X : afs B F R)
+        (A : ty B)
         (H : Ty_isSN X A)
   : isSN X.
 Proof.

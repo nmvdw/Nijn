@@ -1,6 +1,9 @@
 Require Import Coq.Logic.FunctionalExtensionality.
 
-(** Abbreviation for functional extensionality *)
+(** * Functional extensionality *)
+
+(** In most of this formalization, we assume functional extensionality. For that, we use the following abbreviation.
+ *)
 Definition funext
            {A : Type}
            {B : A -> Type}
