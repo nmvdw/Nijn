@@ -7,14 +7,14 @@ Section Lexico.
   Context (X : CompatRel)
           {Y : Type}
           `{isCompatRel X}
-          (RY : Y -> Y -> Prop).
+          (RY : Y -> Y -> Type).
 
   (** Given a compatible relation and a type with a relation on it, then we can define the lexicographic order on the product. *)
   Definition lexico
-    : X * Y -> X * Y -> Prop
-    := fun x y => fst x > fst y
-                  \/
-                  fst x >= fst y /\ RY (snd x) (snd y).
+    : X * Y -> X * Y -> Type
+    := fun x y => ((gt (fst x) (fst y))
+                   +
+                   ((fst x >= fst y) * RY (snd x) (snd y)))%type.
 
   (** Transitivity for the lexicographic order *)
   Proposition lexico_trans

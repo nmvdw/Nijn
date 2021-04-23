@@ -59,6 +59,100 @@ Proof.
 Qed.
 (* end hide *)
 
+(** If a type has decidable equality, then all proofs of equality are equal *)
+Definition hedberg_map
+           {A : Type}
+           `{decEq A}
+           {a1 a2 : A}
+           (p : a1 = a2)
+  : a1 = a2
+  := match dec_eq a1 a2 with
+     | Yes q => q
+     | No _ => p
+     end.
+
+Lemma hedberg_const
+      {A : Type}
+      `{decEq A}
+      {a1 a2 : A}
+      (p1 p2 : a1 = a2)
+  : hedberg_map p1 = hedberg_map p2.
+Proof.
+  unfold hedberg_map.
+  destruct (dec_eq a1 a2) as [r | r].
+  - reflexivity.
+  - contradiction.
+Qed.
+
+Lemma hedberg_formula
+      {A : Type}
+      `{decEq A}
+      {a1 a2 : A}
+      (p : a1 = a2)
+  : p = eq_trans (! (hedberg_map eq_refl)) (hedberg_map p).
+Proof.
+  unfold hedberg_map.
+  subst.
+  destruct (dec_eq a2 a2).
+  - rewrite eq_trans_sym_inv_l.
+    reflexivity.
+  - reflexivity.
+Qed.
+
+Theorem hedberg
+        {A : Type}
+        `{decEq A}
+        {a1 a2 : A}
+        (p q : a1 = a2)
+  : p = q.
+Proof.
+  etransitivity.
+  {
+    apply hedberg_formula.
+  }
+  rewrite (hedberg_const p q).
+  symmetry.
+  apply hedberg_formula.
+Qed.
+
+Proposition path_in_sigma_fst
+            {A : Type}
+            `{decEq A}
+            {B : A -> Type}
+            {x y : {x : A & B x}}
+            (p : x = y)
+  : projT1 x = projT1 y.
+Proof.
+  induction p.
+  reflexivity.
+Defined.
+
+Proposition path_in_sigma_snd
+            {A : Type}
+            `{decEq A}
+            {B : A -> Type}
+            {x y : {x : A & B x}}
+            (p : x = y)
+  : transport B (path_in_sigma_fst p) (projT2 x) = projT2 y.
+Proof.
+  subst.
+  reflexivity.
+Defined.
+
+Proposition path_in_sigma_uip
+            {A : Type}
+            `{decEq A}
+            (B : A -> Type)
+            {a : A}
+            {b1 b2 : B a}
+            (p : existT _ a b1 = existT _ a b2)
+  : b1 = b2.
+Proof.
+  pose (path_in_sigma_snd p) as q.
+  rewrite (hedberg (path_in_sigma_fst p) eq_refl) in q.
+  exact q.
+Defined.
+
 (** The unit type has decidable equality *)
 Definition dec_eq_unit
            (x y : unit)

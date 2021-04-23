@@ -41,7 +41,7 @@ Module AFSNotation.
              {C : con B}
              {A : ty B}
              (t1 t2 : tm X C A)
-    : Prop
+    : Type
     := RewritingSystem.betaRed t1 t2.
 
   Definition rew
@@ -52,6 +52,6 @@ Module AFSNotation.
              {C : con B}
              {A : ty B}
              (t1 t2 : tm X C A)
-    : Prop
+    : Type
     := RewritingSystem.rew (Lhs X) (Rhs X) t1 t2.
 End AFSNotation.

@@ -23,7 +23,7 @@ Inductive betaRed
           {F : Type}
           {ar : F -> ty B}
           {C : con B}
-  : forall {A : ty B}, tm ar C A -> tm ar C A -> Prop
+  : forall {A : ty B}, tm ar C A -> tm ar C A -> Type
   :=
 | BetaTrans : forall {A : ty B}
                      {t1 t2 t3 : tm ar C A},
@@ -60,7 +60,7 @@ Inductive rew
           {Rtar : R -> B}
           (lhs rhs : forall (r : R), tm ar (Rcon r) (Base (Rtar r)))
           {C : con B}
-  : forall {A : ty B}, tm ar C A -> tm ar C A -> Prop
+  : forall {A : ty B}, tm ar C A -> tm ar C A -> Type
   :=
 | Trans : forall {A : ty B}
                  {t1 t2 t3 : tm ar C A},

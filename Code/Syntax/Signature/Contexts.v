@@ -1,7 +1,7 @@
 Require Import Prelude.Basics.
 Require Import Types.
 Require Import Coq.Program.Equality.
-Require Import Eqdep.
+Require Import List.
 
 (** * Contexts *)
 
@@ -81,3 +81,46 @@ Global Instance decEq_Var
        {A : ty B}
   : decEq (var C A)
   := {| dec_eq := dec_eq_Var |}.
+
+(** * The type of variables is finite *)
+Definition all_Vars
+           {B : Type}
+           `{decEq B}
+           (C : con B)
+  : forall (A : ty B), list (var C A).
+Proof.
+  induction C as [ | A1 C IHC ].
+  - exact (fun _ => nil).
+  - intro A2.
+    destruct (dec_eq A1 A2) as [ p | p ].
+    + induction p.
+      exact (Vz :: map Vs (IHC A1)).
+    + exact (map Vs (IHC A2)).
+Defined.
+
+Global Instance isFinite_var
+       {B : Type}
+       `{decEq B}
+       (C : con B)
+       (A : ty B)
+  : isFinite (var C A).
+Proof.
+  simple refine {| els := all_Vars C A ; allIsMember := _ |}.
+  intro v.
+  dependent induction v.
+  - simpl.
+    destruct (dec_eq_Ty A A) ; try contradiction.
+    rewrite (hedberg e eq_refl).
+    simpl.
+    left.
+    reflexivity.
+  - simpl ; destruct (dec_eq_Ty A1 A2).
+    + simpl.
+      subst.
+      right.
+      apply in_map.
+      apply IHv.
+    + simpl.
+      apply in_map.
+      apply IHv.
+Defined.

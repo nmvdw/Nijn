@@ -324,7 +324,7 @@ Proof.
 Qed.
 
 (** We can already compute substitutions on compositions for variables *)
-Proposition subvar_comp
+Proposition subVar_comp
             {B : Type}
             {C3 : con B}
             {A : ty B}
@@ -365,7 +365,7 @@ Proof.
     exact X.
 Defined.
 
-Definition compSubwk
+Definition compSubWk
            {B : Type}
            {F : Type}
            {ar : F -> ty B}
@@ -387,14 +387,14 @@ Definition dropId
   := Drop A (idWk C).
 
 (** Some lemmas on these definitions *)
-Proposition dropSub_is_compSubwk
+Proposition dropSub_is_compSubWk
             {B : Type}
             {F : Type}
             {ar : F -> ty B}
             {C1 C2 : con B}
             (A : ty B)
             (s : sub ar C1 C2)
-  : dropSub A s = compSubwk s (dropId _ _).
+  : dropSub A s = compSubWk s (dropId _ _).
 Proof.
   induction s.
   - simpl ; cbn.
@@ -412,9 +412,9 @@ Proposition assoc_compSubwk
             (w1 : wk C1 C2)
             (w2 : wk C2 C3)
             (s3 : sub ar C3 C4)
-  : compSubwk (compSubwk s3 w2) w1
+  : compSubWk (compSubWk s3 w2) w1
     =
-    compSubwk s3 (compWk w2 w1).
+    compSubWk s3 (compWk w2 w1).
 Proof.
   induction s3.
   - reflexivity.
@@ -431,7 +431,7 @@ Proposition compSubwk_is_compSub
             {C1 C2 C3 : con B}
             (w1 : wk C1 C2)
             (s2 : sub ar C2 C3)
-  : compSubwk s2 w1 = compSub s2 (wkToSub w1).
+  : compSubWk s2 w1 = compSub s2 (wkToSub w1).
 Proof.
   induction s2.
   - reflexivity.
@@ -451,7 +451,7 @@ Proposition wkTmSubTm
             (s2 : sub ar C2 C3)
             {A : ty B}
             (t : tm ar C3 A)
-  : subTm t (compSubwk s2 w1) = wkTm (subTm t s2) w1.
+  : subTm t (compSubWk s2 w1) = wkTm (subTm t s2) w1.
 Proof.
   revert w1 s2.
   revert C1 C2.
@@ -459,7 +459,7 @@ Proof.
   - reflexivity.
   - simpl ; cbn.
     rewrite wkTm_is_subTm.
-    rewrite subvar_comp.
+    rewrite subVar_comp.
     f_equal.
     rewrite compSubwk_is_compSub.
     reflexivity.
@@ -469,7 +469,7 @@ Proof.
     rewrite <- IHt ; clear IHt.
     unfold keepSub.
     do 3 f_equal.
-    rewrite !dropSub_is_compSubwk.
+    rewrite !dropSub_is_compSubWk.
     rewrite !assoc_compSubwk.
     f_equal.
     simpl ; cbn.
@@ -489,9 +489,9 @@ Proposition compSubwk_assoc
             (w1 : wk C1 C2)
             (s2 : sub ar C2 C3)
             (s3 : sub ar C3 C4)
-  : compSubwk (compSub s3 s2) w1
+  : compSubWk (compSub s3 s2) w1
     =
-    compSub s3 (compSubwk s2 w1).
+    compSub s3 (compSubWk s2 w1).
 Proof.
   induction s3.
   - reflexivity.
@@ -502,7 +502,7 @@ Proof.
     reflexivity.
 Qed.
 
-Proposition comwkSub_id
+Proposition compWkSub_id
             {B : Type}
             {F : Type}
             {ar : F -> ty B}
@@ -517,7 +517,7 @@ Proof.
     reflexivity.
 Qed.
 
-Proposition compWkSubwk
+Proposition compWkSubWk
             {B : Type}
             {F : Type}
             {ar : F -> ty B}
@@ -525,9 +525,9 @@ Proposition compWkSubwk
             (w1 : wk C1 C2)
             (s2 : sub ar C2 C3)
             (w3 : wk C3 C4)
-  : compSubwk (compWkSub w3 s2) w1
+  : compSubWk (compWkSub w3 s2) w1
     =
-    compWkSub w3 (compSubwk s2 w1).
+    compWkSub w3 (compSubWk s2 w1).
 Proof.
   revert w1 s2.
   revert C1 C2.
@@ -570,8 +570,8 @@ Proof.
     rewrite <- IHt ; clear IHt.
     unfold keepSub ; simpl ; cbn.
     do 3 f_equal.
-    rewrite !dropSub_is_compSubwk.
-    rewrite !compWkSubwk.
+    rewrite !dropSub_is_compSubWk.
+    rewrite !compWkSubWk.
     reflexivity.
   - simpl ; cbn.
     rewrite IHt1, IHt2.
@@ -588,7 +588,7 @@ Proposition compSub_compWkSub
             (s3 : sub ar C3 C4)
   : compSub s3 (compWkSub w2 s1)
     =
-    compSub (compSubwk s3 w2) s1.
+    compSub (compSubWk s3 w2) s1.
 Proof.
   induction s3.
   - simpl ; cbn.
@@ -615,10 +615,10 @@ Proof.
   - reflexivity.
   - simpl ; cbn.
     f_equal.
-    rewrite !dropSub_is_compSubwk.
+    rewrite !dropSub_is_compSubWk.
     rewrite <- compSub_compWkSub.
     simpl ; cbn.
-    rewrite comwkSub_id.
+    rewrite compWkSub_id.
     exact IHs.
 Qed.
 
@@ -638,23 +638,23 @@ Proof.
   revert C1 C2.
   induction t ; simpl ; intros C1 C2 s1 s2.
   - reflexivity.
-  - apply subvar_comp.
+  - apply subVar_comp.
   - rewrite (IHt _ _ (keepSub A1 s1) (keepSub A1 s2)) ; clear IHt.
     simpl ; cbn ; unfold keepSub.
     do 3 f_equal.
-    rewrite !dropSub_is_compSubwk.
+    rewrite !dropSub_is_compSubWk.
     rewrite compSubwk_assoc.
     symmetry.
     etransitivity.
     {
       apply f_equal.
       symmetry.
-      apply comwkSub_id.
+      apply compWkSub_id.
     }
     pose (compSub_compWkSub (keepSub A1 s2) (dropId _ _) s1) as e.
     unfold keepSub in e.
     simpl in e ; cbn in e.
-    rewrite dropSub_is_compSubwk in e.
+    rewrite dropSub_is_compSubWk in e.
     exact e.
   - rewrite IHt1, IHt2.
     reflexivity.
@@ -679,10 +679,10 @@ Proof.
   rewrite Sub_id_left.
   f_equal.
   simpl ; cbn.
-  rewrite !dropSub_is_compSubwk.
+  rewrite !dropSub_is_compSubWk.
   rewrite <- compSub_compWkSub.
   simpl ; cbn.
-  rewrite comwkSub_id.
+  rewrite compWkSub_id.
   rewrite Sub_id_right.
   reflexivity.
 Qed.
