@@ -4,7 +4,7 @@ Require Import Prelude.CompatibleRelation.
 Require Import Prelude.Lexico.
 Require Import Syntax.Signature.
 Require Import Syntax.StrongNormalization.SN.
-(* Require Import Syntax.StrongNormalization.BetaReductionSN. *)
+Require Import Syntax.StrongNormalization.BetaReductionSN.
 Require Import Interpretation.OrderInterpretation.
 Require Import Coq.Program.Equality.
 
@@ -196,5 +196,5 @@ Proof.
         apply fun_Wf.
         ** apply sem_Ty_el.
         ** apply IHA2.
-  - admit. (* strong normaliation of the simply typed lambda calculus *)
-Admitted.
+  - apply BetaRed_SN.
+Qed.
