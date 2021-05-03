@@ -1,3 +1,5 @@
+Require Import Prelude.Basics.
+Require Import Prelude.TransitiveClosure.
 Require Import Syntax.Signature.Types.
 Require Import Syntax.Signature.Contexts.
 Require Import Syntax.Signature.Terms.
@@ -5,6 +7,38 @@ Require Import Syntax.Signature.TermWeakenings.
 Require Import Syntax.Signature.TermSubstitutions.
 
 (** * Rewriting systems *)
+
+(** First, we look at certain closure properties and how to create relations closed under these *)
+Inductive compatibilityClosure
+          {B : Type}
+          {F : Type}
+          {ar : F -> ty B}
+          (R : forall (C : con B) (A : ty B), tm ar C A -> tm ar C A -> Type)
+          (C : con B)
+  : forall (A : ty B), tm ar C A -> tm ar C A -> Type
+  :=
+| App_l : forall {A1 A2 : ty B}
+                 {f1 f2 : tm ar C (A1 ⟶ A2)}
+                 (x : tm ar C A1),
+    compatibilityClosure R _ _ f1 f2
+    -> compatibilityClosure R _ _ (f1 · x) (f2 · x)
+| App_r : forall {A1 A2 : ty B}
+                 (f : tm ar C (A1 ⟶ A2))
+                 {x1 x2 : tm ar C A1},
+    compatibilityClosure R _ _ x1 x2
+    -> compatibilityClosure R _ _ (f · x1) (f · x2)
+| CLam : forall {A1 A2 : ty B}
+               {f1 f2 : tm ar (A1 ,, C) A2},
+    compatibilityClosure R _ _ f1 f2
+    -> compatibilityClosure R _ _ (λ f1) (λ f2)
+| CStep : forall {A : ty B}
+                 {t1 t2 : tm ar C A},
+    R _ _ t1 t2 -> compatibilityClosure R _ _ t1 t2.
+
+Arguments App_l {_ _ _ _ _ _ _ _ _} _ _.
+Arguments App_r {_ _ _ _ _ _ _} _ {_ _} _.
+Arguments CLam {_ _ _ _ _ _ _ _ _} _.
+Arguments CStep {_ _ _ _ _ _ _ _} _.
 
 (** To formulate the beta rule, we need a particular substitution *)
 Definition beta_sub
@@ -17,41 +51,154 @@ Definition beta_sub
   : sub ar C (A ,, C)
   := ExtendSub (idSub C ar) t.
 
-(** ** Beta reduction in an AFS *)
-Inductive betaRed
+(** Reducing a beta redex *)
+Inductive baseBetaStep
           {B : Type}
           {F : Type}
           {ar : F -> ty B}
-          {C : con B}
-  : forall {A : ty B}, tm ar C A -> tm ar C A -> Type
+          (C : con B)
+  : forall (A : ty B), tm ar C A -> tm ar C A -> Type
   :=
-| BetaTrans : forall {A : ty B}
-                     {t1 t2 t3 : tm ar C A},
-    betaRed t1 t2 -> betaRed t2 t3 -> betaRed t1 t3
-| BetaRew_App_l : forall {A1 A2 : ty B}
-                         {f1 f2 : tm ar C (A1 ⟶ A2)}
-                         (x : tm ar C A1),
-    betaRed f1 f2 -> betaRed (f1 · x) (f2 · x)
-| BetaRew_App_r : forall {A1 A2 : ty B}
-                         (f : tm ar C (A1 ⟶ A2))
-                         {x1 x2 : tm ar C A1},
-    betaRed x1 x2 -> betaRed (f · x1) (f · x2)
-| BetaRew_Lam : forall {A1 A2 : ty B}
-                       {f1 f2 : tm ar (A1 ,, C) A2},
-    betaRed f1 f2 -> betaRed (λ f1) (λ f2)
-| BetaBeta : forall {A1 A2 : ty B}
-                    (f : tm ar (A1 ,, C) A2)
-                    (x : tm ar C A1),
-    betaRed ((λ f) · x) (subTm f (beta_sub x)).
+| Beta : forall {A1 A2 : ty B}
+                (f : tm ar (A1 ,, C) A2)
+                (x : tm ar C A1),
+    baseBetaStep _ _ ((λ f) · x) (subTm f (beta_sub x)).
 
-Arguments BetaTrans {_ _ _ _} {_ _ _ _} _ _.
-Arguments BetaRew_App_l {_ _ _ _} {_ _ _ _} _ _.
-Arguments BetaRew_App_r {_ _ _ _} {_ _} _ {_ _} _.
-Arguments BetaRew_Lam {_ _ _ _} {_ _ _ _} _.
-Arguments BetaBeta {_ _ _ _} {_ _} _ _.
+Arguments Beta {_ _ _ _ _ _} _ _.
 
-(** ** The rewriting relation in an AFS *)
-Inductive rew
+(** A single beta step *)
+Definition betaStep
+           {B : Type}
+           {F : Type}
+           {ar : F -> ty B}
+           {C : con B}
+           {A : ty B}
+  : tm ar C A -> tm ar C A -> Type
+  := compatibilityClosure baseBetaStep C A.
+
+Notation "t1 '~>β' t2" := (betaStep t1 t2) (at level 70).
+
+Definition betaRed
+           {B : Type}
+           {F : Type}
+           {ar : F -> ty B}
+           {C : con B}
+           {A : ty B}
+  : tm ar C A -> tm ar C A -> Type
+  := transitiveClosure (fun t1 t2 => t1 ~>β t2).
+
+Notation "t1 '~>β*' t2" := (betaRed t1 t2) (at level 70).
+
+(** Formers for beta reduction *)
+Definition betaRed_step
+           {B : Type}
+           {F : Type}
+           {ar : F -> ty B}
+           {C : con B}
+           {A : ty B}
+           {t1 t2 : tm ar C A}
+           (p : t1 ~>β t2)
+  : t1 ~>β* t2
+  := TStep p.
+
+Definition beta_Trans
+           {B : Type}
+           {F : Type}
+           {ar : F -> ty B}
+           {C : con B}
+           {A : ty B}
+           {t1 t2 t3 : tm ar C A}
+           (p : t1 ~>β* t2)
+           (q : t2 ~>β* t3)
+  : t1 ~>β* t3
+  := Trans p q.
+
+Definition beta_App_l_help
+           {B : Type}
+           {F : Type}
+           {ar : F -> ty B}
+           {C : con B}
+           {A1 A2 A3 : ty B}
+           {f1 f2 : tm ar C A3}
+           (x : tm ar C A1)
+           (p : f1 ~>β* f2)
+           (q : A3 = (A1 ⟶ A2))
+  : ((transport (tm ar C) q f1) · x) ~>β* ((transport (tm ar C) q f2) · x).
+Proof.
+  induction p.
+  - subst ; simpl.
+    apply TStep.
+    apply App_l.
+    exact r.
+  - exact (Trans IHp1 IHp2).
+Defined.
+
+Definition beta_App_l
+           {B : Type}
+           {F : Type}
+           {ar : F -> ty B}
+           {C : con B}
+           {A1 A2 : ty B}
+           {f1 f2 : tm ar C (A1 ⟶ A2)}
+           (x : tm ar C A1)
+           (p : f1 ~>β* f2)
+  : (f1 · x) ~>β* (f2 · x)
+  := beta_App_l_help x p eq_refl.
+
+Definition beta_App_r
+           {B : Type}
+           {F : Type}
+           {ar : F -> ty B}
+           {C : con B}
+           {A1 A2 : ty B}
+           (f : tm ar C (A1 ⟶ A2))
+           {x1 x2 : tm ar C A1}
+           (p : x1 ~>β* x2)
+  : (f · x1) ~>β* (f · x2).
+Proof.
+  induction p.
+  - apply TStep.
+    apply App_r.
+    exact r.
+  - exact (Trans IHp1 IHp2).
+Defined.
+
+Definition beta_Lam
+           {B : Type}
+           {F : Type}
+           {ar : F -> ty B}
+           {C : con B}
+           {A1 A2 : ty B}
+           {f1 f2 : tm ar (A1 ,, C) A2}
+           (p : f1 ~>β* f2)
+  : (λ f1) ~>β* (λ f2).
+Proof.
+  induction p.
+  - apply TStep.
+    apply CLam.
+    exact r.
+  - exact (Trans IHp1 IHp2).
+Defined.
+
+Definition beta_betaRed
+           {B : Type}
+           {F : Type}
+           {ar : F -> ty B}
+           {C : con B}
+           {A1 A2 : ty B}
+           (f : tm ar (A1 ,, C) A2)
+           (x : tm ar C A1)
+  : ((λ f) · x) ~>β* (subTm f (beta_sub x)).
+Proof.
+  apply TStep.
+  apply CStep.
+  apply Beta.
+Defined.
+
+(** * Rewriting system in an AFS *)
+
+(** First we look at the base steps in an AFS *)
+Inductive baseRewStep
           {B : Type}
           {F : Type}
           {ar : F -> ty B}
@@ -59,34 +206,196 @@ Inductive rew
           {Rcon : R -> con B}
           {Rtar : R -> B}
           (lhs rhs : forall (r : R), tm ar (Rcon r) (Base (Rtar r)))
-          {C : con B}
-  : forall {A : ty B}, tm ar C A -> tm ar C A -> Type
+          (C : con B)
+  : forall (A : ty B), tm ar C A -> tm ar C A -> Type
   :=
-| Trans : forall {A : ty B}
-                 {t1 t2 t3 : tm ar C A},
-    rew lhs rhs t1 t2 -> rew lhs rhs t2 t3 -> rew lhs rhs t1 t3
-| Rew_App_l : forall {A1 A2 : ty B}
-                     {f1 f2 : tm ar C (A1 ⟶ A2)}
-                     (x : tm ar C A1),
-    rew lhs rhs f1 f2 -> rew lhs rhs (f1 · x) (f2 · x)
-| Rew_App_r : forall {A1 A2 : ty B}
-                     (f : tm ar C (A1 ⟶ A2))
-                     {x1 x2 : tm ar C A1},
-    rew lhs rhs x1 x2 -> rew lhs rhs (f · x1) (f · x2)
-| Rew_Lam : forall {A1 A2 : ty B}
-                   {f1 f2 : tm ar (A1 ,, C) A2},
-    rew lhs rhs f1 f2 -> rew lhs rhs (λ f1) (λ f2)
-| Beta : forall {A1 A2 : ty B}
-                (f : tm ar (A1 ,, C) A2)
-                (x : tm ar C A1),
-    rew lhs rhs ((λ f) · x) (subTm f (beta_sub x))
-| BaseRew : forall (r : R)
-                   (s : sub ar C (Rcon r)),
-    rew lhs rhs (subTm (lhs r) s) (subTm (rhs r) s).
+| AFSBeta : forall {A : ty B}
+                   (t1 t2 : tm ar C A),
+    baseBetaStep _ _ t1 t2 -> baseRewStep lhs rhs _ _ t1 t2
+| AFSRew : forall (r : R)
+                  (s : sub ar C (Rcon r)),
+    baseRewStep lhs rhs _ _ (subTm (lhs r) s) (subTm (rhs r) s).
 
-Arguments Trans {_ _ _ _ _ _ _ _ _} {_ _ _ _} _ _.
-Arguments Rew_App_l {_ _ _ _ _ _ _ _ _} {_ _ _ _} _ _.
-Arguments Rew_App_r {_ _ _ _ _ _ _ _ _} {_ _} _ {_ _} _.
-Arguments Rew_Lam {_ _ _ _ _ _ _ _ _} {_ _ _ _} _.
-Arguments Beta {_ _ _ _ _ _ _ _ _} {_ _} _ _.
-Arguments BaseRew {_ _ _ _ _ _ _ _ _} _ _.
+Arguments AFSBeta {_ _ _ _ _ _} _ _ {_ _ _ _} _.
+Arguments AFSRew {_ _ _ _ _ _} _ _ {_} _ _.
+
+(** Now we introduce the single step relation *)
+Definition rewStep
+           {B : Type}
+           {F : Type}
+           {ar : F -> ty B}
+           {R : Type}
+           {Rcon : R -> con B}
+           {Rtar : R -> B}
+           (lhs rhs : forall (r : R), tm ar (Rcon r) (Base (Rtar r)))
+           {C : con B}
+           {A : ty B}
+  : tm ar C A -> tm ar C A -> Type
+  := compatibilityClosure (baseRewStep lhs rhs) C A.
+
+(** The rewriting relation in an AFS *)
+Definition rew
+           {B : Type}
+           {F : Type}
+           {ar : F -> ty B}
+           {R : Type}
+           {Rcon : R -> con B}
+           {Rtar : R -> B}
+           (lhs rhs : forall (r : R), tm ar (Rcon r) (Base (Rtar r)))
+           {C : con B}
+           {A : ty B}
+  : tm ar C A -> tm ar C A -> Type
+  := transitiveClosure (fun t1 t2 => rewStep lhs rhs t1 t2).
+
+(** Formers for reduction in an AFS *)
+Definition rew_step
+           {B : Type}
+           {F : Type}
+           {ar : F -> ty B}
+           {R : Type}
+           {Rcon : R -> con B}
+           {Rtar : R -> B}
+           (lhs rhs : forall (r : R), tm ar (Rcon r) (Base (Rtar r)))
+           {C : con B}
+           {A : ty B}
+           {t1 t2 : tm ar C A}
+           (p : rewStep lhs rhs t1 t2)
+  : rew lhs rhs t1 t2
+  := TStep p.
+
+Definition rew_Trans
+           {B : Type}
+           {F : Type}
+           {ar : F -> ty B}
+           {R : Type}
+           {Rcon : R -> con B}
+           {Rtar : R -> B}
+           {lhs rhs : forall (r : R), tm ar (Rcon r) (Base (Rtar r))}
+           {C : con B}
+           {A : ty B}
+           {t1 t2 t3 : tm ar C A}
+           (p : rew lhs rhs t1 t2)
+           (q : rew lhs rhs t2 t3)
+  : rew lhs rhs t1 t3
+  := Trans p q.
+
+Definition rew_App_l_help
+           {B : Type}
+           {F : Type}
+           {ar : F -> ty B}
+           {R : Type}
+           {Rcon : R -> con B}
+           {Rtar : R -> B}
+           {lhs rhs : forall (r : R), tm ar (Rcon r) (Base (Rtar r))}
+           {C : con B}
+           {A1 A2 A3 : ty B}
+           {f1 f2 : tm ar C A3}
+           (x : tm ar C A1)
+           (p : rew lhs rhs f1 f2)
+           (q : A3 = (A1 ⟶ A2))
+  : rew lhs rhs ((transport (tm ar C) q f1) · x) ((transport (tm ar C) q f2) · x).
+Proof.
+  induction p.
+  - subst ; simpl.
+    apply TStep.
+    apply App_l.
+    exact r.
+  - exact (Trans IHp1 IHp2).
+Defined.
+
+Definition rew_App_l
+           {B : Type}
+           {F : Type}
+           {ar : F -> ty B}
+           {R : Type}
+           {Rcon : R -> con B}
+           {Rtar : R -> B}
+           {lhs rhs : forall (r : R), tm ar (Rcon r) (Base (Rtar r))}
+           {C : con B}
+           {A1 A2 : ty B}
+           {f1 f2 : tm ar C (A1 ⟶ A2)}
+           (x : tm ar C A1)
+           (p : rew lhs rhs f1 f2)
+  : rew lhs rhs (f1 · x) (f2 · x)
+  := rew_App_l_help x p eq_refl. 
+
+Definition rew_App_r
+           {B : Type}
+           {F : Type}
+           {ar : F -> ty B}
+           {R : Type}
+           {Rcon : R -> con B}
+           {Rtar : R -> B}
+           {lhs rhs : forall (r : R), tm ar (Rcon r) (Base (Rtar r))}
+           {C : con B}
+           {A1 A2 : ty B}
+           {f : tm ar C (A1 ⟶ A2)}
+           (x1 x2 : tm ar C A1)
+           (p : rew lhs rhs x1 x2)
+  : rew lhs rhs (f · x1) (f · x2).
+Proof.
+  induction p.
+  - apply TStep.
+    apply App_r.
+    exact r.
+  - exact (Trans IHp1 IHp2).
+Defined.
+
+Definition rew_Lam
+           {B : Type}
+           {F : Type}
+           {ar : F -> ty B}
+           {R : Type}
+           {Rcon : R -> con B}
+           {Rtar : R -> B}
+           (lhs rhs : forall (r : R), tm ar (Rcon r) (Base (Rtar r)))
+           {C : con B}
+           {A1 A2 : ty B}
+           {f1 f2 : tm ar (A1 ,, C) A2}
+           (p : rew lhs rhs f1 f2)
+  : rew lhs rhs (λ f1) (λ f2).
+Proof.
+  induction p.
+  - apply TStep.
+    apply CLam.
+    exact r.
+  - exact (Trans IHp1 IHp2).
+Defined.
+
+Definition rew_betaRed
+           {B : Type}
+           {F : Type}
+           {ar : F -> ty B}
+           {R : Type}
+           {Rcon : R -> con B}
+           {Rtar : R -> B}
+           (lhs rhs : forall (r : R), tm ar (Rcon r) (Base (Rtar r)))
+           {C : con B}
+           {A1 A2 : ty B}
+           (f : tm ar (A1 ,, C) A2)
+           (x : tm ar C A1)
+  : rew lhs rhs ((λ f) · x) (subTm f (beta_sub x)).
+Proof.
+  apply TStep.
+  apply CStep.
+  apply AFSBeta.
+  apply Beta.
+Defined.
+
+Definition rew_baseStep
+           {B : Type}
+           {F : Type}
+           {ar : F -> ty B}
+           {R : Type}
+           {Rcon : R -> con B}
+           {Rtar : R -> B}
+           (lhs rhs : forall (r : R), tm ar (Rcon r) (Base (Rtar r)))
+           {C : con B}
+           (r : R)
+           (s : sub ar C (Rcon r))
+  : rew lhs rhs (subTm (lhs r) s) (subTm (rhs r) s).
+Proof.
+  apply TStep.
+  apply CStep.
+  apply AFSRew.
+Defined.

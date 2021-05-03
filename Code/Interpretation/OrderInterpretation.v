@@ -1,5 +1,5 @@
 Require Import Prelude.Funext.
-Require Import Prelude.Wellfounded.
+Require Import Prelude.WellfoundedRelation.
 Require Import Prelude.CompatibleRelation.
 Require Import Prelude.Lexico.
 Require Import Syntax.Signature.
@@ -561,69 +561,70 @@ Definition sem_Rewrite
       (interpretation_to_lexico semF semApp t2).
 Proof.
   induction p.
+  - induction r.
+    + (* App_l *)
+      destruct IHr as [IHr | [IHr1 IHr2]].
+      * left ; simpl.
+        intro y.
+        apply sem_App_l.
+        exact (IHr y).
+      * simpl in IHr1, IHr2.
+        right ; simpl.
+        split.
+        ** intro.
+           apply (semApp _ _).
+           split.
+           *** simpl.
+               intro.
+               apply IHr1.
+           *** simpl.
+               apply ge_refl.
+        ** apply beta_App_l.
+           exact IHr2.
+    + (* Rew_App_r *)
+      destruct IHr as [IHr | [IHr1 IHr2]].
+      * left ; simpl.
+        intro y.
+        apply sem_App_r.
+        exact (IHr y).
+      * right ; simpl.
+        simpl in IHr1, IHr2.
+        split.
+        ** intro.
+           apply (semApp _ _).
+           split ; simpl.
+           *** intro.
+               apply ge_refl.
+           *** apply IHr1.
+        ** apply beta_App_r.
+           exact IHr2.
+    + (* Rew_Lam *)
+      destruct IHr as [IHr | [IHr1 IHr2]].
+      * left ; simpl ; simpl in IHr.
+        intros x y.
+        apply IHr.
+      * right ; simpl.
+        simpl in IHr1, IHr2.
+        split.
+        ** intros.
+           apply IHr1.
+        ** apply beta_Lam.
+           exact IHr2.
+    + induction r.
+      * induction b.
+        right ; simpl.
+        split.
+        ** intros.
+           apply sem_beta.
+           apply semApp_gt_id.
+        ** apply beta_betaRed.
+      * left ; simpl.
+        intro.
+        apply semR.
   - (* Trans *)
     refine (lexico_trans _ _ _ _ _).
     + intros ? ? ? q1 q2.
-      exact (BetaTrans q1 q2).
+      exact (beta_Trans q1 q2).
     + apply IHp1.
     + apply IHp2.
-  - (* Rew_App_l *)
-    destruct IHp as [IHp | [IHp1 IHp2]].
-    + left ; simpl.
-      intro y.
-      apply sem_App_l.
-      exact (IHp y).
-    + simpl in IHp1, IHp2.
-      right ; simpl.
-      split.
-      * intro.
-        apply (semApp _ _).
-        split.
-        ** simpl.
-           intro.
-           apply IHp1.
-        ** simpl.
-           apply ge_refl.
-      * apply BetaRew_App_l.
-        exact IHp2.
-  - (* Rew_App_r *)
-    destruct IHp as [IHp | [IHp1 IHp2]].
-    + left ; simpl.
-      intro y.
-      apply sem_App_r.
-      exact (IHp y).
-    + right ; simpl.
-      simpl in IHp1, IHp2.
-      split.
-      * intro.
-        apply (semApp _ _).
-        split ; simpl.
-        ** intro.
-           apply ge_refl.
-        ** apply IHp1.
-      * apply BetaRew_App_r.
-        exact IHp2.
-  - (* Rew_Lam *)
-    destruct IHp as [IHp | [IHp1 IHp2]].
-    + left ; simpl ; simpl in IHp.
-      intros x y.
-      apply IHp.
-    + right ; simpl.
-      simpl in IHp1, IHp2.
-      split.
-      * intros.
-        apply IHp1.
-      * apply BetaRew_Lam.
-        exact IHp2.
-  - (* Beta *)
-    right ; simpl.
-    split.
-    + intros.
-      apply sem_beta.
-      apply semApp_gt_id.
-    + apply BetaBeta.
-  - (* BaseRew *)
-    left ; simpl.
-    intro x.
-    apply semR.
 Qed.

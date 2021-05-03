@@ -10,7 +10,7 @@ Inductive sub {B : Type} {F : Type} : (F -> ty B) -> con B -> con B -> Type :=
 | ExtendSub : forall {ar : F -> ty B} {C1 C2 : con B} {A : ty B},
     sub ar C1 C2 -> tm ar C1 A -> sub ar C1 (A ,, C2).
 
-Notation "s & t" := (ExtendSub s t) (at level 30).
+Notation "s && t" := (ExtendSub s t).
 
 (** * Operations on substitutions *)
 
@@ -25,7 +25,7 @@ Fixpoint dropSub
   : sub ar (A ,, C1) C2
   := match s with
      | ToEmpty _ => ToEmpty _
-     | s & t => dropSub A s & wkTm t (Drop A (idWk _))
+     | s && t => dropSub A s && wkTm t (Drop A (idWk _))
      end.
 
 (** Keeping a variable *)
@@ -37,7 +37,7 @@ Definition keepSub
            (A : ty B)
            (s : sub ar C1 C2)
   : sub ar (A ,, C1) (A ,, C2)
-  := dropSub A s & TmVar Vz.
+  := dropSub A s && TmVar Vz.
 
 (** Identity *)
 Fixpoint idSub
@@ -48,7 +48,7 @@ Fixpoint idSub
   : sub ar C C
   := match C with
      | ∙ => ToEmpty _
-     | A ,, C => dropSub A (idSub C ar) & TmVar Vz
+     | A ,, C => dropSub A (idSub C ar) && TmVar Vz
      end.
 
 (** Each weakening is a substitution *)
@@ -113,5 +113,5 @@ Definition compSub
 Proof.
   induction s2 as [ | ? ? ? ? s2 IHs2 t ].
   - apply ToEmpty.
-  - exact (IHs2 s1 & subTm t s1).
+  - exact (IHs2 s1 && subTm t s1).
 Defined.

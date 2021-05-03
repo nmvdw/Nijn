@@ -1,5 +1,5 @@
 Require Import Prelude.Funext.
-Require Import Prelude.Wellfounded.
+Require Import Prelude.WellfoundedRelation.
 Require Import Prelude.CompatibleRelation.
 Require Import Prelude.Lexico.
 Require Import Syntax.Signature.
@@ -184,7 +184,7 @@ Theorem afs_is_SN_from_Alg
   : isSN X.
 Proof.
   intros C A.
-  refine (fiber_is_Wf _ _ (sem_Rew_afs_Alg Xalg)).
+  refine (fiber_Wf _ _ (sem_Rew_afs_Alg Xalg)).
   apply lexico_Wf.
   - apply _.
   - apply fun_Wf.

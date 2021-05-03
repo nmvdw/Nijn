@@ -8,7 +8,7 @@ Definition Wf {X : Type} (R : X -> X -> Type)
   := forall (x : X), isWf R x.
 
 (** Well-founded types are closed under inverse images *)
-Lemma fiber_is_Wf_help
+Lemma fiber_isWf
       {X Y : Type}
       {RX : X -> X -> Type}
       {RY : Y -> Y -> Type}
@@ -29,7 +29,7 @@ Proof.
   - reflexivity.
 Qed.
 
-Proposition fiber_is_Wf
+Proposition fiber_Wf
             {X Y : Type}
             {RX : X -> X -> Type}
             {RY : Y -> Y -> Type}
@@ -41,8 +41,16 @@ Proof.
   intro x.
   pose (fx := f x).
   pose (Hfx := HY fx).
-  exact (fiber_is_Wf_help Hf fx Hfx x eq_refl).
+  exact (fiber_isWf Hf fx Hfx x eq_refl).
 Qed.
+
+(** Normal forms of a relation *)
+Definition nf
+           {A : Type}
+           (R : A -> A -> Type)
+           (a : A)
+  : Prop
+  := forall (b : A), R a b -> False.
 
 (** If a type is well-founded, then there are no infinite decreasing chains in it *)
 

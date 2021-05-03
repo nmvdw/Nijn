@@ -5,9 +5,10 @@ COQDEP = coqdep
 Prelude/Funext.v
 Prelude/Basics.v
 Prelude/Props.v
-Prelude/Wellfounded.v
+Prelude/WellfoundedRelation.v
 Prelude/CompatibleRelation.v
 Prelude/Lexico.v
+Prelude/TransitiveClosure.v
 
 Syntax/Signature/Types.v
 Syntax/Signature/Contexts.v
@@ -17,8 +18,10 @@ Syntax/Signature/TermSubstitutions.v
 Syntax/Signature/RewritingSystem.v
 Syntax/Signature.v
 Syntax/Signature/SubstitutionLemmas.v
+Syntax/Signature/RewriteLemmas.v
 
 Syntax/StrongNormalization/SN.v
+Syntax/StrongNormalization/BetaNormalForm.v
 Syntax/StrongNormalization/BetaReductionSN.v
 
 Interpretation/OrderInterpretation.v

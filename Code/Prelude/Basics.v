@@ -117,7 +117,6 @@ Qed.
 
 Proposition path_in_sigma_fst
             {A : Type}
-            `{decEq A}
             {B : A -> Type}
             {x y : {x : A & B x}}
             (p : x = y)
@@ -129,7 +128,6 @@ Defined.
 
 Proposition path_in_sigma_snd
             {A : Type}
-            `{decEq A}
             {B : A -> Type}
             {x y : {x : A & B x}}
             (p : x = y)

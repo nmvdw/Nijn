@@ -356,7 +356,7 @@ Proof.
   induction w.
   - exact s.
   - inversion s ; subst.
-    refine (_ & _).
+    refine (_ && _).
     + apply IHw.
       exact X.
     + exact X0.
@@ -376,7 +376,7 @@ Definition compSubWk
 Proof.
   induction s.
   - apply ToEmpty.
-  - exact (IHs w & wkTm t w).
+  - exact (IHs w && wkTm t w).
 Defined.    
 
 Definition dropId
@@ -671,9 +671,9 @@ Proposition beta_sub_help
             (w : wk C1 C2)
   : compSub
       (wkToSub (Keep _ w))
-      (idSub _ _ & subTm t (wkToSub w))
+      (idSub _ _ && subTm t (wkToSub w))
     =
-    compSub (idSub _ ar & t) (wkToSub w).
+    compSub (idSub _ ar && t) (wkToSub w).
 Proof.
   simpl ; cbn.
   rewrite Sub_id_left.

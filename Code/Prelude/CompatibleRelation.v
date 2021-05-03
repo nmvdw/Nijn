@@ -1,7 +1,7 @@
 Require Import Prelude.Funext.
 Require Import Prelude.Basics.
 Require Import Prelude.Props.
-Require Import Prelude.Wellfounded.
+Require Import Prelude.WellfoundedRelation.
 Require Import Lia.
 Require Import Coq.Program.Equality.
 
@@ -393,7 +393,7 @@ Proposition fun_Wf
             (HY : Wf (fun (x y : Y) => x > y))
   : Wf (fun (f g : fun_CompatRel X Y) => f > g).
 Proof.
-  simple refine (fiber_is_Wf HY _ _).
+  simple refine (fiber_Wf HY _ _).
   - exact (fun f => f x).
   - intros f g p ; simpl.
     apply p.

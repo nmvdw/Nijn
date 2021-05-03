@@ -14,3 +14,8 @@ Proof.
   apply functional_extensionality_dep.
   exact p.
 Qed.
+
+(** * UIP *)
+
+(* We also assume UIP *)
+Axiom UIP : forall {A : Type} {a1 a2 : A} (p q : a1 = a2), p = q.

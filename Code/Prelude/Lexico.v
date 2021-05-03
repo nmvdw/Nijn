@@ -1,4 +1,4 @@
-Require Import Wellfounded.
+Require Import WellfoundedRelation.
 Require Import CompatibleRelation.
 
 (** * The lexicographic order *)

@@ -1,6 +1,7 @@
 Require Import Prelude.Basics.
 Require Import Syntax.Signature.Types.
 Require Import Syntax.Signature.Contexts.
+Require Import Coq.Program.Equality.
 
 Open Scope signature.
 
@@ -51,6 +52,20 @@ Proof.
   subst.
   simpl.
   exact Ht.
+Qed.
+
+Lemma is_BaseTm_transport
+      {B : Type}
+      {F : Type}
+      {ar : F -> ty B}
+      {C : con B}
+      {A1 A2 : ty B}
+      (p : A1 = A2)
+      (t : tm ar C A1)
+  : is_BaseTm (transport _ p t) -> is_BaseTm t.
+Proof.
+  subst.
+  exact (fun x => x).
 Qed.
 
 Definition is_BaseTm_at
@@ -112,6 +127,87 @@ Proof.
   simpl.
   exact Ht.
 Qed.
+
+(** ** Equality principles for terms *)
+Proposition App_eq_Ty
+            {B : Type}
+            {F : Type}
+            {ar : F -> ty B}
+            {C : con B}
+            {A1 A1' A2 : ty B}
+            {f : tm ar C (A1 ⟶ A2)}
+            {f' : tm ar C (A1' ⟶ A2)}
+            {t : tm ar C A1}
+            {t' : tm ar C A1'}
+            (p : f · t = f' · t')
+  : A1 = A1'.
+Proof.
+  inversion p.
+  reflexivity.
+Defined.
+
+Proposition App_eq_fst
+            {B : Type}
+            {F : Type}
+            {ar : F -> ty B}
+            {C : con B}
+            {A1 A1' A2 : ty B}
+            {f : tm ar C (A1 ⟶ A2)}
+            {f' : tm ar C (A1' ⟶ A2)}
+            {t : tm ar C A1}
+            {t' : tm ar C A1'}
+            (p : f · t = f' · t')
+  : transport (fun A => tm ar C (A ⟶ A2)) (App_eq_Ty p) f = f'.
+Proof.
+  dependent destruction p.
+  reflexivity.
+Defined.
+
+Proposition App_eq_snd
+            {B : Type}
+            {F : Type}
+            {ar : F -> ty B}
+            {C : con B}
+            {A1 A1' A2 : ty B}
+            {f : tm ar C (A1 ⟶ A2)}
+            {f' : tm ar C (A1' ⟶ A2)}
+            {t : tm ar C A1}
+            {t' : tm ar C A1'}
+            (p : f · t = f' · t')
+  : transport (tm ar C) (App_eq_Ty p) t = t'.
+Proof.
+  dependent destruction p.
+  reflexivity.
+Defined.
+
+Proposition Lam_eq'
+            {B : Type}
+            {F : Type}
+            {ar : F -> ty B}
+            {C : con B}
+            {A1 A1' A2 : ty B}
+            {f : tm ar (A1 ,, C) A2}
+            {f' : tm ar (A1' ,, C) A2}
+            (p : A1 = A1')
+            (q : λ (transport (fun Z => tm ar (Z ,, C) A2) p f) = λ f')
+  : transport (fun Z => tm ar (Z ,, C) A2) p f = f'.
+Proof.
+  dependent destruction q.
+  reflexivity.
+Defined.
+
+Proposition Lam_eq
+            {B : Type}
+            {F : Type}
+            {ar : F -> ty B}
+            {C : con B}
+            {A1 A2 : ty B}
+            {f f' : tm ar (A1 ,, C) A2}
+            (p : λ f = λ f')
+  : f = f'.
+Proof.
+  exact (Lam_eq' eq_refl p).
+Defined.
 
 Definition tm_dec_eq_help
            {B : Type}

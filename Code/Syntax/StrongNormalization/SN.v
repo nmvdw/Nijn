@@ -1,6 +1,6 @@
-Require Import Prelude.Wellfounded.
+Require Import Prelude.WellfoundedRelation.
 Require Import Syntax.Signature.
-Require Import Syntax.Signature.SubstitutionLemmas.
+Require Import Syntax.Signature.RewriteLemmas.
 
 Import AFSNotation.
 
@@ -32,35 +32,6 @@ Definition map_Tm
   : tm X ((A' ⟶ A),, C) A
   := TmVar Vz · wkTm t (Drop _ (idWk C)).
 
-Definition Rew_Wk
-           {B F R : Type}
-           {X : afs B F R}
-           {C1 C2 : con B}
-           {A : ty B}
-           {t1 t2 : tm X C2 A}
-           (w : wk C1 C2)
-           (p : rew X t1 t2)
-  : rew X (wkTm t1 w) (wkTm t2 w).
-Proof.
-  revert w.
-  revert C1.
-  induction p ; intros C1 w ; simpl.
-  - exact (Trans (IHp1 C1 w) (IHp2 C1 w)).
-  - exact (Rew_App_l _ (IHp C1 w)).
-  - exact (Rew_App_r _ (IHp C1 w)).
-  - exact (Rew_Lam (IHp _ (Keep A1 w))).
-  - simpl.
-    rewrite !wkTm_is_subTm.
-    rewrite subTm_comp.
-    unfold beta_sub.
-    rewrite <- beta_sub_help.
-    rewrite <- subTm_comp.
-    apply Beta.
-  - rewrite !wkTm_is_subTm.
-    rewrite !subTm_comp.
-    apply BaseRew.
-Qed.
-
 Definition Rew_map_Tm
            {B F R : Type}
            {X : afs B F R}
@@ -71,7 +42,7 @@ Definition Rew_map_Tm
   : rew X (map_Tm A t1) (map_Tm A t2).
 Proof.
   unfold map_Tm.
-  apply Rew_App_r.
+  apply rew_App_r.
   apply Rew_Wk.
   exact p.
 Qed.
@@ -84,7 +55,7 @@ Theorem SN_if_TySN
   : isSN X.
 Proof.
   intros C A'.
-  simple refine (fiber_is_Wf (H ((A' ⟶ A) ,, C)) _ _).
+  simple refine (fiber_Wf (H ((A' ⟶ A) ,, C)) _ _).
   - exact (map_Tm _).
   - intros t1 t2.
     exact Rew_map_Tm.
