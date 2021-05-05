@@ -9,7 +9,70 @@ Require Import Syntax.StrongNormalization.SN.
 Require Import Syntax.StrongNormalization.BetaNormalForm.
 Require Import Coq.Program.Equality.
 
-(** On terms *)
+Open Scope type.
+
+Lemma baseBeta_not_red
+      {B : Type}
+      {F : Type}
+      {ar : F -> ty B}
+      {C : con B}
+      {A1 A2 : ty B}
+      {f : tm ar C (A1 ⟶ A2)}
+      {t : tm ar C A1}
+      {t' : tm ar C A2}
+      (H : ~(is_Lambda f))
+      (r : baseBetaStep _ _ (f · t) t')
+  : False.
+Proof.
+  dependent destruction r.
+  simpl in H.
+  contradiction.
+Qed.
+
+Lemma app_fst_SN
+      {B : Type}
+      {F : Type}
+      {ar : F -> ty B}
+      {C : con B}
+      {A1 A2 : ty B}
+      {f : tm ar C (A1 ⟶ A2)}
+      {t : tm ar C A1}
+      (H : term_is_beta_SN (f · t))
+  : term_is_beta_SN f.
+Proof.
+  dependent induction H.
+  apply single_step_SN.
+  intros t' r.
+  simple refine (H0 (t' · t) _ _ t' t _) ; auto.
+  apply beta_App_l.
+  apply betaRed_step.
+  exact r.
+Qed.
+
+Proposition red_to_beta_SN
+            {B : Type}
+            {F : Type}
+            {ar : F -> ty B}
+            {C : con B}
+            {A : ty B}
+            {t1 t2 : tm ar C A}
+            (Ht : term_is_beta_SN t1)
+            (r : t1 ~>β* t2)
+  : term_is_beta_SN t2.
+Proof.
+  revert t2 r.
+  induction Ht as [t Ht IHt].
+  intros t2 r.
+  apply acc.
+  intros ? r'.
+  apply (IHt t2 r).
+  exact r'.
+Qed.
+
+
+(** * Proving strong normalization of the STLC using logical relations *)
+
+(** ** The logical relation on terms *)
 Fixpoint logical_SN
          {B : Type}
          {F : Type}
@@ -48,7 +111,33 @@ Proof.
     exact (Ht _ (compWk w w') t' Ht').
 Qed.
 
-(** On substitutions *)
+(** Preservation under beta reduction steps *)
+Proposition beta_red_logical_SN
+            {B : Type}
+            {F : Type}
+            {ar : F -> ty B}
+            {C : con B}
+            {A : ty B}
+            {t1 t2 : tm ar C A}
+            (Ht1 : logical_SN t1)
+            (r : t1 ~>β t2)
+  : logical_SN t2.
+Proof.
+  revert C t1 t2 Ht1 r.
+  induction A as [ b | A1 IHA1 A2 IHA2 ].
+  - simpl ; intros.
+    refine (red_to_beta_SN Ht1 _).
+    apply betaRed_step.
+    exact r.
+  - intros C f1 f2 Hf1 r C' w t Ht.
+    refine (IHA2 _ (wkTm f1 w · t) (wkTm f2 w · t) _ _).
+    + exact (Hf1 _ _ _ Ht).
+    + apply App_l.
+      apply betaRed_step_Wk.
+      exact r.
+Qed.
+
+(** ** The logical relation on substitutions *)
 Definition logical_SN_sub
            {B : Type}
            {F : Type}
@@ -140,7 +229,7 @@ Proof.
   exact (p A Vz).
 Qed.
 
-(** * Neutral terms *)
+(** ** Neutral terms *)
 
 (** Our goal is to show that all neutral terms satisfy the logical relation *)
 Inductive is_neutral
@@ -274,7 +363,7 @@ Lemma Rew_map_tm_logical_SN
 Proof.
   unfold map_tm_logical_SN.
   apply beta_App_l.
-  apply BetaRed_Wk.
+  apply betaRed_Wk.
   exact p.
 Qed.
 
@@ -392,6 +481,7 @@ Qed.
 (** * Closure under beta *)
 
 (** We first define repeat applications. This is basically just a list of terms where they types agree. Note that [repeat_app ar C A1 A2] is a repeated application of a term of type [A1] and it gives a term of type [A2]. *)
+
 Inductive repeat_app
           {B : Type}
           {F : Type}
@@ -423,6 +513,27 @@ Fixpoint sem
      | add_term t _ qs => fun f => sem qs f · t
      end.
 
+Notation "f ·· ps" := (sem ps f) (at level 20).
+
+(** Rewriting on the left of a repeated application *)
+Definition repeat_app_left
+           {B : Type}
+           {F : Type}
+           {ar : F -> ty B}
+           {C : con B}
+           {A1 A2 : ty B}
+           (ps : repeat_app ar C A1 A2)
+           {t1 t2 : tm ar C A1}
+           (r : t1 ~>β* t2)
+  : t1 ·· ps ~>β* t2 ·· ps.
+Proof.
+  induction ps as [ | ? ? ? ? ? ps IHps ] ; simpl.
+  - exact r.
+  - apply beta_App_l.
+    apply IHps.
+    exact r.
+Qed.
+
 (** Closure under weakening *)
 Fixpoint wk_repeat_app
          {B : Type}
@@ -447,13 +558,428 @@ Proposition sem_wk_repeat_app
             (ps : repeat_app ar C2 A1 A2)
             (w : wk C1 C2)
             (t : tm ar C2 A1)
-  : sem (wk_repeat_app ps w) (wkTm t w) = wkTm (sem ps t) w.
+  : wkTm t w ·· wk_repeat_app ps w = wkTm (t ·· ps) w.
 Proof.
   induction ps as [ | ? ? ? t' ? qs IHqs ].
   - reflexivity.
   - simpl.
     rewrite IHqs.
     reflexivity.
+Qed.
+
+(** Repeated applications preserve the logical relation *)
+Lemma sem_logical_SN
+      {B : Type}
+      {F : Type}
+      {ar : F -> ty B}
+      {C : con B}
+      {A1 A2 : ty B}
+      (ps : repeat_app ar C A1 A2)
+      (t : tm ar C A1)
+      (H : logical_SN t)
+  : logical_SN (t ·· ps).
+Proof.
+  induction ps as [ | ? ? ? t' H' ps IHps ].
+  - exact H.
+  - intros.
+    simpl.
+    specialize (IHps t H _ (idWk _) t' H').
+    rewrite wkTm_id in IHps.
+    exact IHps.
+Qed.
+
+Lemma app_is_not_lam
+      {B : Type}
+      {F : Type}
+      {ar : F -> ty B}
+      {C : con B}
+      {A1 A2 : ty B}
+      {t : tm ar C A1}
+      (ps : repeat_app ar C A1 A2)
+      (Ht : ~(is_Lambda t))
+  : ~(is_Lambda (t ·· ps)).
+Proof.
+  destruct ps.
+  - exact Ht.
+  - simpl.
+    auto.
+Qed.
+
+Inductive sub_red
+          {B : Type}
+          {F : Type}
+          {ar : F -> ty B}
+  : forall {C1 C2 : con B}, sub ar C1 C2 -> sub ar C1 C2 -> Type
+  :=
+| ExtendSub_left : forall {C1 C2 : con B}
+                          (s : sub ar C1 C2)
+                          {A : ty B}
+                          {t1 t2 : tm ar C1 A}
+                          (r : t1 ~>β t2),
+    sub_red (s && t1) (s && t2)
+| ExtendSub_right : forall {C1 C2 : con B}
+                           (s1 s2 : sub ar C1 C2)
+                           {A : ty B}
+                           {t : tm ar C1 A},
+    sub_red s1 s2 -> sub_red (s1 && t) (s2 && t).
+
+Notation "s1 ~>βs s2" := (sub_red s1 s2) (at level 70).
+
+Definition dropSub_red
+           {B : Type}
+           {F : Type}
+           {ar : F -> ty B}
+           (A : ty B)
+           {C1 C2 : con B}
+           {s1 s2 : sub ar C1 C2}
+           (r : s1 ~>βs s2)
+  : dropSub A s1 ~>βs dropSub A s2.
+Proof.
+  induction r ; simpl.
+  - constructor.
+    apply betaRed_step_Wk.
+    exact r.
+  - constructor.
+    exact IHr.
+Qed.
+
+Definition keepSub_red
+           {B : Type}
+           {F : Type}
+           {ar : F -> ty B}
+           (A : ty B)
+           {C1 C2 : con B}
+           {s1 s2 : sub ar C1 C2}
+           (r : s1 ~>βs s2)
+  : keepSub A s1 ~>βs keepSub A s2.
+Proof.
+  unfold keepSub.
+  constructor.
+  apply dropSub_red.
+  exact r.
+Qed.
+
+Definition beta_sub_red
+           {B : Type}
+           {F : Type}
+           {ar : F -> ty B}
+           {C : con B}
+           {A : ty B}
+           {t1 t2 : tm ar C A}
+           (r : t1 ~>β t2)
+  : beta_sub t1 ~>βs beta_sub t2.
+Proof.
+  unfold beta_sub.
+  constructor.
+  exact r.
+Qed.
+
+Proposition subVar_red_or_eq
+            {B : Type}
+            {F : Type}
+            {ar : F -> ty B}
+            {C1 C2 : con B}
+            {s1 s2 : sub ar C1 C2}
+            (r : s1 ~>βs s2)
+            {A : ty B}
+            (v : var C2 A)
+  : (subVar v s1 = subVar v s2)
+    +
+    (subVar v s1 ~>β* subVar v s2).
+Proof.
+  induction v.
+  - dependent destruction r ; simpl ; cbn.
+    + right.
+      apply betaRed_step.
+      assumption.
+    + left.
+      reflexivity.
+  - dependent destruction r ; simpl ; cbn.
+    + left.
+      reflexivity.
+    + exact (IHv _ _ r).
+Qed.
+
+Proposition subTm_red_or_eq
+            {B : Type}
+            {F : Type}
+            {ar : F -> ty B}
+            {C1 C2 : con B}
+            {s1 s2 : sub ar C1 C2}
+            (r : s1 ~>βs s2)
+            {A : ty B}
+            (t : tm ar C2 A)
+  : (subTm t s1 = subTm t s2)
+    +
+    (subTm t s1 ~>β* subTm t s2).
+Proof.
+  revert C1 s1 s2 r.
+  induction t as [ b | ? ? v | ? ? ? f IHf | ? ? ? f IHf t IHt ]
+  ; simpl ; intros C1 s1 s2 r.
+  - left ; reflexivity.
+  - apply subVar_red_or_eq.
+    exact r.
+  - specialize (IHf _ (keepSub _ s1) (keepSub _ s2) (keepSub_red _ r)).
+    destruct IHf as [p | p].
+    + left.
+      rewrite p.
+      reflexivity.
+    + right.
+      apply beta_Lam.
+      exact p.
+  - specialize (IHf _ _ _ r).
+    specialize (IHt _ _ _ r).
+    destruct IHf as [p | p], IHt as [q | q].
+    + left.
+      rewrite p, q.
+      reflexivity.
+    + right.
+      rewrite p.
+      apply beta_App_r.
+      exact q.
+    + right.
+      rewrite q.
+      apply beta_App_l.
+      exact p.
+    + right.
+      exact (beta_Trans (beta_App_l _ p) (beta_App_r _ q)).
+Qed.
+
+Proposition sub_beta_red_or_eq
+            {B : Type}
+            {F : Type}
+            {ar : F -> ty B}
+            {C : con B}
+            {A1 A2 : ty B}
+            (f : tm ar (A1 ,, C) A2)
+            {t1 t2 : tm ar C A1}
+            (r : t1 ~>β t2)
+  : (subTm f (beta_sub t1) = subTm f (beta_sub t2))
+    +
+    (subTm f (beta_sub t1) ~>β* subTm f (beta_sub t2)).
+Proof.
+  exact (subTm_red_or_eq (beta_sub_red r) f).
+Qed.
+
+Inductive repeat_app_red
+          {B : Type}
+          {F : Type}
+          {ar : F -> ty B}
+          {C : con B}
+  : forall {A1 A2 : ty B}, repeat_app ar C A1 A2 -> repeat_app ar C A1 A2 -> Type
+  :=
+| add_term_top : forall {A1 A2 A3 : ty B}
+                        {t1 t2 : tm ar C A2}
+                        (Ht1 : logical_SN t1)
+                        (Ht2 : logical_SN t2)
+                        (ps : repeat_app ar C A1 (A2 ⟶ A3)),
+    t1 ~>β t2
+    ->
+    repeat_app_red (add_term t1 Ht1 ps) (add_term t2 Ht2 ps)
+| add_term_rest : forall {A1 A2 A3 : ty B}
+                         {t : tm ar C A2}
+                         (Ht : logical_SN t)
+                         (ps qs : repeat_app ar C A1 (A2 ⟶ A3)),
+    repeat_app_red ps qs
+    ->
+    repeat_app_red (add_term t Ht ps) (add_term t Ht qs).
+
+Notation "ps ~>βr qs" := (repeat_app_red ps qs) (at level 70).
+
+Definition repeat_app_right
+           {B : Type}
+           {F : Type}
+           {ar : F -> ty B}
+           {C : con B}
+           {A1 A2 : ty B}
+           (ps qs : repeat_app ar C A1 A2)
+           {t : tm ar C A1}
+           (r : ps ~>βr qs)
+  : t ·· ps ~>β t ·· qs.
+Proof.
+  induction r as [ ? ? ? ? ? ? ? ? b | ? ? ? ? ? ? ? r IHr ] ; simpl.
+  - apply App_r.
+    exact b.
+  - apply App_l.
+    apply IHr.
+Qed.
+
+Proposition repeat_app_not_lambda
+            {B : Type}
+            {F : Type}
+            {ar : F -> ty B}
+            {C : con B}
+            {A1 A2 : ty B}
+            (t : tm ar C A1)
+            (ps : repeat_app ar C A1 A2)
+            (Ht : ~(is_Lambda t))
+  : ~(is_Lambda (t ·· ps)).
+Proof.
+  destruct ps ; simpl.
+  - exact Ht.
+  - auto.
+Qed.
+
+Definition repeat_app_red_Wf
+           {B : Type}
+           {F : Type}
+           (ar : F -> ty B)
+           (C : con B)
+           (A1 A2 : ty B)
+  : Wf (fun (ps1 ps2 : repeat_app ar C A1 A2) => ps1 ~>βr ps2).
+Proof.
+  intro ps.
+  induction ps as [ | ? ? ? t Ht ps IHps ].
+  - apply acc.
+    intros.
+    inversion X.
+  - revert t Ht.
+    induction IHps as [ ps Hps IHps ].
+    intros t Ht.
+    pose (logical_SN_to_SN Ht) as Ht'.
+    induction Ht' as [t ? IHt].
+    apply acc.
+    intros qs r.
+    dependent destruction r.
+    + apply IHt.
+      apply betaRed_step.
+      exact b.
+    + apply IHps.
+      exact r.
+Qed.
+
+Definition red_repeat_app
+           {B : Type}
+           {F : Type}
+           {ar : F -> ty B}
+           {C : con B}
+           {A1 A2 : ty B}
+           {t : tm ar C A1}
+           {ps : repeat_app ar C A1 A2}
+           {u : tm ar C A2}
+           (Ht : ~(is_Lambda t))
+           (r : t ·· ps ~>β u)
+  : { t' : tm ar C A1 & (t ~>β t') * (u = t' ·· ps)}
+    + { ps' : repeat_app ar C A1 A2 & (ps ~>βr ps') * (u = t ·· ps')}.
+Proof.
+  induction ps.
+  - simpl in *.
+    left.
+    exists u.
+    split ; try reflexivity.
+    exact r.
+  - simpl in *.
+    dependent destruction r.
+    + destruct (IHps t f2 Ht r).
+      * left.
+        destruct s as [x H].
+        exists x.
+        split.
+        ** apply H.
+        ** f_equal.
+           apply H.
+      * right.
+        destruct s as [x H].
+        exists (add_term t0 l x).
+        simpl.
+        split.
+        ** apply add_term_rest.
+           apply H.
+        ** f_equal.
+           apply H.
+    + right.
+      exists (add_term _ (beta_red_logical_SN l r) ps).
+      split ; simpl.
+      * apply add_term_top.
+        exact r.
+      * reflexivity.
+    + pose (repeat_app_not_lambda t ps Ht) as n.
+      simpl in n.
+      dependent destruction b.
+      rewrite <- x in n.
+      simpl in n.
+      contradiction.
+Qed.
+
+Definition red_beta_redex
+           {B : Type}
+           {F : Type}
+           {ar : F -> ty B}
+           {C : con B}
+           {A1 A2 : ty B}
+           {f : tm ar (A1 ,, C) A2}
+           {t : tm ar C A1}
+           {u : tm ar C A2}
+           (r : (λ f · t) ~>β u)
+  : (u = subTm f (beta_sub t))
+    + { t' : tm ar C A1 & (t ~>β t') * (u = λ f · t') }
+    + { f' : tm ar (A1 ,, C) A2 & (f ~>β f') * (u = λ f' · t)}.
+Proof.
+  dependent destruction r.
+  - dependent destruction r.
+    + right.
+      exists f0.
+      split ; try reflexivity.
+      exact r.
+    + dependent destruction r.
+  - left ; right.
+    exists x2.
+    split ; try reflexivity.
+    exact r.
+  - dependent destruction b.
+    left ; left.
+    reflexivity.
+Qed.
+
+Lemma lem
+      {B : Type}
+      {F : Type}
+      {ar : F -> ty B}
+      {C : con B}
+      {A1 A2 A3 : ty B}
+      (f : tm ar (A1 ,, C) A2)
+      (t : tm ar C A1)
+      (ps : repeat_app ar C A2 A3)
+      (Hsub : term_is_beta_SN (subTm f (beta_sub t) ·· ps))
+      (Hf : term_is_beta_SN f)
+      (Ht : term_is_beta_SN t)
+  : term_is_beta_SN ((λ f · t) ·· ps).
+Proof.
+  revert t Ht ps Hsub.
+  induction Hf as [f Hf IHf].
+  intros t Ht.
+  induction Ht as [t Ht IHt].
+  intros ps Hsub.
+  induction (repeat_app_red_Wf ar C A2 A3 ps) as [ps Hps IHps].
+  apply single_step_SN ; intros t' r.
+  assert (W : ~(is_Lambda (λ f · t))) by auto.
+  destruct (red_repeat_app W r) as [ [u  [r' H]] | [ps' [ r' p ]] ].
+  - destruct (red_beta_redex r') as [ [ p | [ u' [ p H' ]]] | [ f' [ p H' ]]].
+    + subst.
+      exact Hsub.
+    + subst.
+      apply (IHt u' (TStep p)).
+      destruct (sub_beta_red_or_eq f p) as [q | q].
+      * rewrite <- q.
+        exact Hsub.
+      * refine (red_to_beta_SN Hsub _).
+        apply repeat_app_left.
+        exact q.
+    + subst.
+      apply (IHf f' (TStep p) t).
+      * apply acc ; assumption.
+      * apply (red_to_beta_SN Hsub).
+        apply repeat_app_left.
+        apply betaRed_sub.
+        apply TStep.
+        exact p.
+  - subst.
+    apply IHps.
+    + exact r'.
+    + refine (red_to_beta_SN Hsub _).
+      apply betaRed_step.
+      apply repeat_app_right.
+      exact r'.
 Qed.
 
 (** This lemma expresses that the logical relation is closed under beta reduction *)
@@ -469,7 +995,7 @@ Lemma logical_SN_beta_help
       (Hf : logical_SN f)
       (Ht : logical_SN t)
       (ps : repeat_app ar C A2 A3)
-  : logical_SN (sem ps (λ f · t)).
+  : logical_SN ((λ f · t) ·· ps).
 Proof.
   revert ps Ht Hf Hsub.
   revert t f.
@@ -477,20 +1003,8 @@ Proof.
   revert C.
   induction A3 as [ b | A31 IHA31 A32 IHA32 ] ; intros C A1 A2 t f ps Ht Hf Hsub.
   - simpl.
-    assert (term_is_beta_SN (sem ps (subTm f (beta_sub t)))).
-    {
-      apply logical_SN_to_SN.
-      (* make a separate lemma *)
-      induction ps.
-      - exact Hsub.
-      - simpl.
-        pose (IHps f Hf Hsub _ (idWk _) t0 l : logical_SN _).
-        simpl in l0.
-        rewrite wkTm_id in l0.
-        exact l0.
-    }
-
-    admit.
+    pose (H := sem_logical_SN ps _ Hsub).
+    apply lem ; apply logical_SN_to_SN ; assumption.
   - intros ? w t' Ht'.
     specialize (IHA32
                   _ _ _
@@ -519,7 +1033,7 @@ Proof.
       rewrite Sub_id_left in l.
       rewrite <- wkTm_is_subTm in l.
       exact l.
-Admitted.
+Qed.
 
 Lemma logical_SN_beta
       {B : Type}

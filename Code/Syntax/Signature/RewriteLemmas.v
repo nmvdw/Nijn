@@ -238,7 +238,33 @@ Qed.
 
 
 (** ** Beta reduction *)
-Definition BetaRed_Wk
+Definition betaRed_step_Wk
+           {B F : Type}
+           {ar : F -> ty B}
+           {C1 C2 : con B}
+           {A : ty B}
+           {t1 t2 : tm ar C2 A}
+           (w : wk C1 C2)
+           (p : t1 ~>β t2)
+  : wkTm t1 w ~>β wkTm t2 w.
+Proof.
+  revert w.
+  revert C1.
+  induction p ; intros C1 w ; simpl.
+  - exact (App_l _ (IHp _ w)).
+  - exact (App_r _ (IHp _ w)).
+  - exact (CLam (IHp _ (Keep A1 w))).
+  - apply CStep.
+    induction r.
+    rewrite !wkTm_is_subTm.
+    rewrite subTm_comp.
+    unfold beta_sub.
+    rewrite <- beta_sub_help.
+    rewrite <- subTm_comp.
+    apply Beta.
+Qed.
+
+Definition betaRed_Wk
            {B F : Type}
            {ar : F -> ty B}
            {C1 C2 : con B}
@@ -252,24 +278,56 @@ Proof.
   revert C1.
   induction p ; intros C1 w ; simpl.
   - apply betaRed_step.
-    revert C1 w.    
-    induction r ; intros C1 w.
-    + exact (App_l _ (IHr _ w)).
-    + exact (App_r _ (IHr _ w)).
-    + exact (CLam (IHr _ (Keep A1 w))).
-    + apply CStep.
-      induction r.
-      rewrite !wkTm_is_subTm.
-      rewrite subTm_comp.
-      unfold beta_sub.
-      rewrite <- beta_sub_help.
-      rewrite <- subTm_comp.
-      apply Beta.
+    apply betaRed_step_Wk.
+    exact r.
   - exact (beta_Trans (IHp1 C1 w) (IHp2 C1 w)).
 Qed.
 
 (** Rewriting is closed under substitution *)
-Definition BetaRed_sub
+Definition betaRed_step_sub
+           {B F : Type}
+           {ar : F -> ty B}
+           {C1 C2 : con B}
+           {A : ty B}
+           {t1 t2 : tm ar C2 A}
+           (s : sub ar C1 C2)
+           (p : t1 ~>β t2)
+  : subTm t1 s ~>β subTm t2 s.
+Proof.
+  revert s.
+  revert C1.
+  induction p ; intros C1 s ; simpl.
+  - exact (App_l _ (IHp _ s)).
+  - exact (App_r _ (IHp _ s)).
+  - exact (CLam (IHp _ (keepSub A1 s))).
+  - apply CStep.
+    induction r.
+    simpl.
+    pose (Beta (subTm f (keepSub A1 s)) (subTm x s)) as p.
+    unfold beta_sub in *.
+    assert (subTm (subTm f (keepSub A1 s)) (idSub C1 _ && subTm x s)
+            =
+            subTm (subTm f (idSub C _ && x)) s)
+      as H.
+    {
+      rewrite subTm_comp.
+      unfold keepSub.
+      rewrite dropSub_is_compSubWk.
+      simpl ; cbn.
+      rewrite <- compSub_compWkSub.
+      simpl ; cbn.
+      rewrite compWkSub_id.
+      rewrite Sub_id_right.
+      rewrite subTm_comp.
+      simpl ; cbn.
+      rewrite Sub_id_left.
+      reflexivity.
+    }
+    rewrite H in p.
+    exact p.
+Qed.
+
+Definition betaRed_sub
            {B F : Type}
            {ar : F -> ty B}
            {C1 C2 : con B}
@@ -283,36 +341,8 @@ Proof.
   revert C1.
   induction p ; intros C1 s ; simpl.
   - apply betaRed_step.
-    revert C1 s.    
-    induction r ; intros C1 s.
-    + exact (App_l _ (IHr _ s)).
-    + exact (App_r _ (IHr _ s)).
-    + exact (CLam (IHr _ (keepSub A1 s))).
-    + apply CStep.
-      induction r.
-      simpl.
-      pose (Beta (subTm f (keepSub A1 s)) (subTm x s)) as p.
-      unfold beta_sub in *.
-      assert (subTm (subTm f (keepSub A1 s)) (idSub C1 _ && subTm x s)
-              =
-              subTm (subTm f (idSub C _ && x)) s)
-        as H.
-      {
-        rewrite subTm_comp.
-        unfold keepSub.
-        rewrite dropSub_is_compSubWk.
-        simpl ; cbn.
-        rewrite <- compSub_compWkSub.
-        simpl ; cbn.
-        rewrite compWkSub_id.
-        rewrite Sub_id_right.
-        rewrite subTm_comp.
-        simpl ; cbn.
-        rewrite Sub_id_left.
-        reflexivity.
-      }
-      rewrite H in p.
-      exact p.
+    apply betaRed_step_sub.
+    exact r.
   - exact (beta_Trans (IHp1 C1 s) (IHp2 C1 s)).
 Qed.
 
