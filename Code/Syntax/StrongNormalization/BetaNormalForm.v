@@ -16,6 +16,7 @@ Definition beta_nf
   : Prop
   := nf (fun (t1 t2 : tm ar C A) => t1 ~>β t2) t.
 
+
 (** Relation between the two notions *)
 Proposition beta_nf_step
             {B : Type}
@@ -197,6 +198,7 @@ Proof.
     apply App_r.
     exact r.
 Qed.
+
 
 (** * Normal forms as a mutual inductive type *)
 Inductive nf {B : Type} {F : Type} (ar : F -> ty B) (C : con B) : ty B -> Type :=
@@ -427,7 +429,6 @@ Proof.
 Qed.
 
 (** ** Base terms and variables are strongly normalizing *)
-
 Proposition baseTm_is_SN
             {B : Type}
             {F : Type}
@@ -472,6 +473,27 @@ Proof.
   subst.
   apply IHt.
   exact p.
+Qed.
+
+(** ** Strongly normalizing terms reduce to strongly normalizing terms *)
+Proposition red_to_beta_SN
+            {B : Type}
+            {F : Type}
+            {ar : F -> ty B}
+            {C : con B}
+            {A : ty B}
+            {t1 t2 : tm ar C A}
+            (Ht : term_is_beta_SN t1)
+            (r : t1 ~>β* t2)
+  : term_is_beta_SN t2.
+Proof.
+  revert t2 r.
+  induction Ht as [t Ht IHt].
+  intros t2 r.
+  apply acc.
+  intros ? r'.
+  apply (IHt t2 r).
+  exact r'.
 Qed.
 
 (** ** If each single step reduction from a certain term leads to a strongly, then that term was also strongly normalizing *)

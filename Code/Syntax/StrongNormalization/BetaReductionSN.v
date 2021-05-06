@@ -9,66 +9,7 @@ Require Import Syntax.StrongNormalization.SN.
 Require Import Syntax.StrongNormalization.BetaNormalForm.
 Require Import Coq.Program.Equality.
 
-Open Scope type.
-
-Lemma baseBeta_not_red
-      {B : Type}
-      {F : Type}
-      {ar : F -> ty B}
-      {C : con B}
-      {A1 A2 : ty B}
-      {f : tm ar C (A1 ⟶ A2)}
-      {t : tm ar C A1}
-      {t' : tm ar C A2}
-      (H : ~(is_Lambda f))
-      (r : baseBetaStep _ _ (f · t) t')
-  : False.
-Proof.
-  dependent destruction r.
-  simpl in H.
-  contradiction.
-Qed.
-
-Lemma app_fst_SN
-      {B : Type}
-      {F : Type}
-      {ar : F -> ty B}
-      {C : con B}
-      {A1 A2 : ty B}
-      {f : tm ar C (A1 ⟶ A2)}
-      {t : tm ar C A1}
-      (H : term_is_beta_SN (f · t))
-  : term_is_beta_SN f.
-Proof.
-  dependent induction H.
-  apply single_step_SN.
-  intros t' r.
-  simple refine (H0 (t' · t) _ _ t' t _) ; auto.
-  apply beta_App_l.
-  apply betaRed_step.
-  exact r.
-Qed.
-
-Proposition red_to_beta_SN
-            {B : Type}
-            {F : Type}
-            {ar : F -> ty B}
-            {C : con B}
-            {A : ty B}
-            {t1 t2 : tm ar C A}
-            (Ht : term_is_beta_SN t1)
-            (r : t1 ~>β* t2)
-  : term_is_beta_SN t2.
-Proof.
-  revert t2 r.
-  induction Ht as [t Ht IHt].
-  intros t2 r.
-  apply acc.
-  intros ? r'.
-  apply (IHt t2 r).
-  exact r'.
-Qed.
-
+Local Open Scope type.
 
 (** * Proving strong normalization of the STLC using logical relations *)
 
@@ -174,7 +115,7 @@ Proposition Extend_logical_SN
   : logical_SN_sub (s && t).
 Proof.
   intros A' v.
-  dependent induction v ; simpl ; cbn.
+  dependent destruction v ; simpl ; cbn.
   - exact q.
   - apply p.
 Qed.
@@ -193,7 +134,8 @@ Proof.
   intros A' v.
   assert (subVar v s
           =
-          subTm (TmVar (wkVar v (dropId C2 _))) (s && t)).
+          subTm (TmVar (wkVar v (dropId C2 _))) (s && t))
+    as H.
   {
     rewrite wkVar_is_subVar.
     symmetry.
@@ -256,7 +198,7 @@ Lemma wk_neutral
       (p : is_neutral t)
   : is_neutral (wkTm t w).
 Proof.
-  induction t.
+  induction t as [ | | | ? ? ? t1 IHt1 t2 IHt2  ].
   - constructor.
   - constructor.
   - inversion p.
@@ -266,9 +208,8 @@ Proof.
     + apply IHt1.
       assumption.
     + apply wkTm_is_beta_SN.
-      exact t0.
+      assumption.
 Qed.
-
 
 (** * Properties of the logical relation *)
 
@@ -295,14 +236,8 @@ Proof.
   - dependent destruction Ht.
     apply App_is_neutral.
     + exact Ht.
-    + clear IHr.
-      revert r.
-      revert x2.
-      induction t0 as [x1 Hx1 IHx1].
-      intros x2 r.
-      apply single_step_SN.
-      intros t' Ht'.
-      exact (IHx1 x2 (TStep r) t' Ht').
+    + refine (red_to_beta_SN _ (betaRed_step r)).
+      assumption.
   - inversion Ht.
   - induction r.
     dependent destruction Ht.
@@ -323,16 +258,14 @@ Lemma neutral_beta_SN
       (Ht : term_is_beta_SN t)
   : term_is_beta_SN (f · t).
 Proof.
-  revert Ht.
-  revert t.
+  revert t Ht.
   induction Hf2 as [f2 Hf2 IHf2].
   intros t Ht.
   induction Ht as [t Ht IHt].
   apply single_step_SN.
   intros t' r.
   dependent destruction r.
-  - pose (X := neutral_beta Hf1 r).
-    specialize (IHf2 f0 (TStep r) X).
+  - specialize (IHf2 f0 (betaRed_step r) (neutral_beta Hf1 r)).
     apply IHf2.
     apply acc ; assumption.
   - exact (IHt x2 (TStep r)).
@@ -378,28 +311,24 @@ Lemma neutral_is_logical_SN_and_logical_SN_to_SN
     /\
     (logical_SN t -> term_is_beta_SN t).
 Proof.      
-  induction A as [ b | A1 IHA1 A2 IHA2 ].
-  - simpl.
-    intros C t.
+  induction A as [ b | A1 IHA1 A2 IHA2 ] ; simpl.
+  - intros C t.
     split ; intro p.
     + induction p.
       * apply baseTm_is_SN.
       * apply var_is_SN.
       * apply neutral_beta_SN ; assumption.
     + assumption.
-  - simpl.
-    intros C t.
+  - intros C t.
     split ; intro p.
-    + simpl.
-      intros C' w t' q.
+    + intros C' w t' q.
       apply IHA2.
       constructor.
       * apply wk_neutral.
         exact p.
       * apply IHA1.
         exact q.
-    + simpl in p.
-      pose (x := wkTm t (Drop A1 (idWk C)) · TmVar Vz).
+    + pose (x := wkTm t (Drop A1 (idWk C)) · TmVar Vz).
       specialize (IHA2 _ x).
       unfold map_tm_logical_SN in IHA2.
       assert (logical_SN (wkTm t (Drop A1 (idWk C)) · TmVar Vz)) as w.
@@ -411,8 +340,7 @@ Proof.
       destruct IHA2 as [q IHA2].
       clear IHA1 q.
       specialize (IHA2 w).
-      clear p.
-      clear w.
+      clear p w.
       dependent induction IHA2.
       apply acc.
       intros y Hy.
@@ -481,7 +409,6 @@ Qed.
 (** * Closure under beta *)
 
 (** We first define repeat applications. This is basically just a list of terms where they types agree. Note that [repeat_app ar C A1 A2] is a repeated application of a term of type [A1] and it gives a term of type [A2]. *)
-
 Inductive repeat_app
           {B : Type}
           {F : Type}
@@ -515,25 +442,6 @@ Fixpoint sem
 
 Notation "f ·· ps" := (sem ps f) (at level 20).
 
-(** Rewriting on the left of a repeated application *)
-Definition repeat_app_left
-           {B : Type}
-           {F : Type}
-           {ar : F -> ty B}
-           {C : con B}
-           {A1 A2 : ty B}
-           (ps : repeat_app ar C A1 A2)
-           {t1 t2 : tm ar C A1}
-           (r : t1 ~>β* t2)
-  : t1 ·· ps ~>β* t2 ·· ps.
-Proof.
-  induction ps as [ | ? ? ? ? ? ps IHps ] ; simpl.
-  - exact r.
-  - apply beta_App_l.
-    apply IHps.
-    exact r.
-Qed.
-
 (** Closure under weakening *)
 Fixpoint wk_repeat_app
          {B : Type}
@@ -560,7 +468,7 @@ Proposition sem_wk_repeat_app
             (t : tm ar C2 A1)
   : wkTm t w ·· wk_repeat_app ps w = wkTm (t ·· ps) w.
 Proof.
-  induction ps as [ | ? ? ? t' ? qs IHqs ].
+  induction ps as [ | ? ? ? ? ? qs IHqs ].
   - reflexivity.
   - simpl.
     rewrite IHqs.
@@ -581,8 +489,7 @@ Lemma sem_logical_SN
 Proof.
   induction ps as [ | ? ? ? t' H' ps IHps ].
   - exact H.
-  - intros.
-    simpl.
+  - intros ; simpl.
     specialize (IHps t H _ (idWk _) t' H').
     rewrite wkTm_id in IHps.
     exact IHps.
@@ -599,12 +506,11 @@ Lemma app_is_not_lam
       (Ht : ~(is_Lambda t))
   : ~(is_Lambda (t ·· ps)).
 Proof.
-  destruct ps.
-  - exact Ht.
-  - simpl.
-    auto.
+  destruct ps ; auto.
 Qed.
 
+(** ** Reduction of substitutions *)
+(** Since substitutions are just a list of terms, we can also define reduction on them. Beta reduction of a substitution is a beta step on one of the terms. We will use this to study how terms rewrite after a beta step. *)
 Inductive sub_red
           {B : Type}
           {F : Type}
@@ -625,6 +531,7 @@ Inductive sub_red
 
 Notation "s1 ~>βs s2" := (sub_red s1 s2) (at level 70).
 
+(** The reduction relation on some standard constructions *)
 Definition dropSub_red
            {B : Type}
            {F : Type}
@@ -674,6 +581,7 @@ Proof.
   exact r.
 Qed.
 
+(** The next propositions say the possibilities if we substitute a variable for a term that can be rewritten *)
 Proposition subVar_red_or_eq
             {B : Type}
             {F : Type}
@@ -761,6 +669,7 @@ Proof.
   exact (subTm_red_or_eq (beta_sub_red r) f).
 Qed.
 
+(** ** Reduction of repeated applications *)
 Inductive repeat_app_red
           {B : Type}
           {F : Type}
@@ -786,6 +695,25 @@ Inductive repeat_app_red
 
 Notation "ps ~>βr qs" := (repeat_app_red ps qs) (at level 70).
 
+(** Rewriting in a repeated application *)
+Definition repeat_app_left
+           {B : Type}
+           {F : Type}
+           {ar : F -> ty B}
+           {C : con B}
+           {A1 A2 : ty B}
+           (ps : repeat_app ar C A1 A2)
+           {t1 t2 : tm ar C A1}
+           (r : t1 ~>β* t2)
+  : t1 ·· ps ~>β* t2 ·· ps.
+Proof.
+  induction ps as [ | ? ? ? ? ? ps IHps ] ; simpl.
+  - exact r.
+  - apply beta_App_l.
+    apply IHps.
+    exact r.
+Qed.
+
 Definition repeat_app_right
            {B : Type}
            {F : Type}
@@ -804,22 +732,7 @@ Proof.
     apply IHr.
 Qed.
 
-Proposition repeat_app_not_lambda
-            {B : Type}
-            {F : Type}
-            {ar : F -> ty B}
-            {C : con B}
-            {A1 A2 : ty B}
-            (t : tm ar C A1)
-            (ps : repeat_app ar C A1 A2)
-            (Ht : ~(is_Lambda t))
-  : ~(is_Lambda (t ·· ps)).
-Proof.
-  destruct ps ; simpl.
-  - exact Ht.
-  - auto.
-Qed.
-
+(** Beta reduction of repeated applications is well-founded *)
 Definition repeat_app_red_Wf
            {B : Type}
            {F : Type}
@@ -848,6 +761,7 @@ Proof.
       exact r.
 Qed.
 
+(** Now we look at the shape of reductions in a repeated application and in a beta redex. *)
 Definition red_repeat_app
            {B : Type}
            {F : Type}
@@ -893,7 +807,7 @@ Proof.
       * apply add_term_top.
         exact r.
       * reflexivity.
-    + pose (repeat_app_not_lambda t ps Ht) as n.
+    + pose (app_is_not_lam ps Ht) as n.
       simpl in n.
       dependent destruction b.
       rewrite <- x in n.
@@ -931,7 +845,8 @@ Proof.
     reflexivity.
 Qed.
 
-Lemma lem
+(** The next two lemmata express that the logical relation is closed under beta reduction *)
+Lemma logical_SN_beta_help_base
       {B : Type}
       {F : Type}
       {ar : F -> ty B}
@@ -982,7 +897,6 @@ Proof.
       exact r'.
 Qed.
 
-(** This lemma expresses that the logical relation is closed under beta reduction *)
 Lemma logical_SN_beta_help
       {B : Type}
       {F : Type}
@@ -1004,7 +918,7 @@ Proof.
   induction A3 as [ b | A31 IHA31 A32 IHA32 ] ; intros C A1 A2 t f ps Ht Hf Hsub.
   - simpl.
     pose (H := sem_logical_SN ps _ Hsub).
-    apply lem ; apply logical_SN_to_SN ; assumption.
+    apply logical_SN_beta_help_base ; apply logical_SN_to_SN ; assumption.
   - intros ? w t' Ht'.
     specialize (IHA32
                   _ _ _
@@ -1051,7 +965,7 @@ Proof.
   exact (logical_SN_beta_help f t Hsub Hf Ht empty).
 Qed.
 
-(** The fundamental theorem of logical relations *)
+(** ** The fundamental theorem of logical relations *)
 Theorem fundamental_thm_relations
         {B : Type}
         {F : Type}
@@ -1066,19 +980,15 @@ Proof.
   revert p.
   revert s.
   revert C1.
-  induction t ; intros C1 s p.
-  - simpl.
-    apply base_is_logical_SN.
-  - simpl.
-    induction s.
+  induction t ; intros C1 s p ; simpl.
+  - apply base_is_logical_SN.
+  - induction s.
     + inversion v.
     + dependent induction v ; simpl ; cbn.
-      * simpl in p.
-        exact (Extend_logical_SN_pr2 _ p).
+      * exact (Extend_logical_SN_pr2 _ p).
       * apply IHs.
         exact (Extend_logical_SN_pr1 _ p).
-  - simpl.
-    intros x w t' Ht'.
+  - intros x w t' Ht'.
     apply logical_SN_beta.
     + rewrite wkTm_is_subTm.
       rewrite !subTm_comp.
@@ -1164,6 +1074,7 @@ Proof.
   apply idSub_is_logical_SN_sub.
 Qed.
 
+(** ** The STLC is SN *)
 Theorem BetaRed_SN
         {B : Type}
         {F : Type}
