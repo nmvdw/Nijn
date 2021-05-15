@@ -113,6 +113,20 @@ Definition beta_Trans
   : t1 ~>β* t3
   := Trans p q.
 
+Definition beta_rewrite_transport
+           {B : Type}
+           {F : Type}
+           {ar : F -> ty B}
+           {C : con B}
+           {A1 A2 : ty B}
+           (p : A1 = A2)
+           {x1 x2 : tm ar C A1}
+           (r : x1 ~>β x2)
+  : transport (tm ar C) p x1 ~>β transport (tm ar C) p x2
+  := match p with
+     | eq_refl => r
+     end.
+
 Definition beta_App_l_help
            {B : Type}
            {F : Type}
@@ -126,9 +140,9 @@ Definition beta_App_l_help
   : ((transport (tm ar C) q f1) · x) ~>β* ((transport (tm ar C) q f2) · x).
 Proof.
   induction p.
-  - subst ; simpl.
-    apply TStep.
+  - apply TStep.
     apply App_l.
+    apply beta_rewrite_transport.
     exact r.
   - exact (Trans IHp1 IHp2).
 Defined.
@@ -279,6 +293,25 @@ Definition rew_Trans
   : rew lhs rhs t1 t3
   := Trans p q.
 
+
+Definition rewrite_transport
+           {B : Type}
+           {F : Type}
+           {ar : F -> ty B}
+           {R : Type}
+           {Rcon : R -> con B}
+           {Rtar : R -> ty B}
+           {lhs rhs : forall (r : R), tm ar (Rcon r) (Rtar r)}
+           {C : con B}
+           {A1 A2 : ty B}
+           (p : A1 = A2)
+           {x1 x2 : tm ar C A1}
+           (r : rewStep lhs rhs x1 x2)
+  : rewStep lhs rhs (transport (tm ar C) p x1) (transport (tm ar C) p x2)
+  := match p with
+     | eq_refl => r
+     end.
+
 Definition rew_App_l_help
            {B : Type}
            {F : Type}
@@ -296,9 +329,9 @@ Definition rew_App_l_help
   : rew lhs rhs ((transport (tm ar C) q f1) · x) ((transport (tm ar C) q f2) · x).
 Proof.
   induction p.
-  - subst ; simpl.
-    apply TStep.
+  - apply TStep.
     apply App_l.
+    apply rewrite_transport.
     exact r.
   - exact (Trans IHp1 IHp2).
 Defined.
