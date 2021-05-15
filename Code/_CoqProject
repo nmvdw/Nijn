@@ -25,6 +25,7 @@ Syntax/StrongNormalization/BetaNormalForm.v
 Syntax/StrongNormalization/BetaReductionSN.v
 
 Preprocessing/TypeChecker.v
+Preprocessing/PreprocessTerm.v
 
 Interpretation/OrderInterpretation.v
 Interpretation/WeaklyMonotonicAlgebra.v

@@ -7,17 +7,17 @@ Require Import Syntax.StrongNormalization.SN.
 Require Import Coq.Program.Equality.
 
 (** * Interpretations of AFS *)
-Record Interpretation {B F R : Type} (X : afs B F R) :=
+Record Interpretation {B F : Type} (X : afs B F) :=
   {
     semTy : ty B -> CompatRel ;
     semCon : con B -> CompatRel ;
     semTm : forall {C : con B} {A : ty B},
         tm (Arity X) C A -> semCon C -> semTy A ;
-    semRew : forall (r : R)
+    semRew : forall (r : rewriteRules X)
                     (C : con B)
-                    (s : sub (Arity X) C (Vars X r))
+                    (s : sub (Arity X) C (vars r))
                     (x : semCon C),
-        semTm (subTm (Lhs X r) s) x > semTm (subTm (Rhs X r) s) x ;
+        semTm (subTm (lhs r) s) x > semTm (subTm (rhs r) s) x ;
     semBeta : forall {C : con B}
                      {A1 A2 : ty B}
                      (f : tm (Arity X) (A1,, C) A2)
@@ -44,15 +44,15 @@ Record Interpretation {B F R : Type} (X : afs B F R) :=
         forall (x : semCon C), semTm (λ f1) x > semTm (λ f2) x
   }.
 
-Arguments semTy {_ _ _ _} _ _.
-Arguments semCon {_ _ _ _} _ _.
-Arguments semTm {_ _ _ _} _ {_ _} _ _.
-Arguments semRew {_ _ _ _} _ {_} _ _.
-Arguments semBeta {_ _ _ _} _ {_ _ _} _ _ _.
+Arguments semTy {_ _ _} _ _.
+Arguments semCon {_ _ _} _ _.
+Arguments semTm {_ _ _} _ {_ _} _ _.
+Arguments semRew {_ _ _} _ {_} _ _.
+Arguments semBeta {_ _ _} _ {_ _ _} _ _ _.
 
 Definition isWf_interpretation
-           {B F R : Type}
-           {X : afs B F R}
+           {B F : Type}
+           {X : afs B F}
            (I : Interpretation X)
   : Prop
   := forall (b : B), Wf (fun (x y : semTy I (Base b)) => x > y).
@@ -541,8 +541,8 @@ Definition sem_Rewrite
                semApp _ _ (f , x) >= f x)
            {R : Type}
            {Rcon : R -> con B}
-           {Rtar : R -> B}
-           (lhs rhs : forall (r : R), tm ar (Rcon r) (Base (Rtar r)))
+           {Rtar : R -> ty B}
+           (lhs rhs : forall (r : R), tm ar (Rcon r) (Rtar r))
            (semR : forall (r : R)
                           (C : con B)
                           (s : sub ar C (Rcon r))

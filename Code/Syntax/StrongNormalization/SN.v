@@ -8,23 +8,23 @@ Import AFSNotation.
 
 (** An AFS is strongly normalizing if the rewriting relation is well-founded *)
 Definition isSN
-           {B F R : Type}
-           (X : afs B F R)
+           {B F : Type}
+           (X : afs B F)
   : Prop
-  := forall (C : con B) (A : ty B), Wf (@rew _ _ _ X C A).
+  := forall (C : con B) (A : ty B), Wf (@rew _ _ X C A).
 
 (** A type is said to be strongly normalizing if the rewrite relations of terms on that type is strongly normalizing *)
 Definition Ty_isSN
-           {B F R : Type}
-           (X : afs B F R)
+           {B F : Type}
+           (X : afs B F)
            (A : ty B)
   : Prop
-  := forall (C : con B), Wf (@rew _ _ _ X C A).
+  := forall (C : con B), Wf (@rew _ _ X C A).
 
 (** We show that if one type is strongly normalizing, then all types are. Hence, it is sufficient to check for strong normalization in just one type. *)
 Definition map_Tm
-           {B F R : Type}
-           {X : afs B F R}
+           {B F : Type}
+           {X : afs B F}
            {C : con B}
            (A : ty B)
            {A' : ty B}
@@ -33,8 +33,8 @@ Definition map_Tm
   := TmVar Vz · wkTm t (Drop _ (idWk C)).
 
 Definition Rew_map_Tm
-           {B F R : Type}
-           {X : afs B F R}
+           {B F : Type}
+           {X : afs B F}
            {C : con B}
            {A A' : ty B}
            {t1 t2 : tm X C A'}
@@ -48,8 +48,8 @@ Proof.
 Qed.
 
 Theorem SN_if_TySN
-        {B F R : Type}
-        (X : afs B F R)
+        {B F : Type}
+        (X : afs B F)
         (A : ty B)
         (H : Ty_isSN X A)
   : isSN X.

@@ -1,3 +1,4 @@
+Require Export ProofIrrelevance.
 Require Import Coq.Logic.FunctionalExtensionality.
 
 (** * Functional extensionality *)
@@ -17,5 +18,9 @@ Qed.
 
 (** * UIP *)
 
-(* We also assume UIP *)
-Axiom UIP : forall {A : Type} {a1 a2 : A} (p q : a1 = a2), p = q.
+(* UIP follows from proof irrelevance *)
+Definition UIP : forall {A : Type} {a1 a2 : A} (p q : a1 = a2), p = q.
+Proof.
+  intros.
+  apply proof_irrelevance.
+Qed.

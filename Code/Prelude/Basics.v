@@ -1,6 +1,7 @@
 Require Import List.
 Require Import Bool.
 Require Import String.
+Require Import Coq.Program.Equality.
 
 (** * Basics functions *)
 
@@ -20,7 +21,7 @@ Arguments comp {_ _ _} _ _ _/.
 (** * Decidable propositions *)
 Inductive dec (A : Prop) : Type :=
 | Yes : A -> dec A
-| No : ~A -> dec A.
+| No : (A -> False) -> dec A.
 
 Arguments Yes {_} _.
 Arguments No {_} _.
@@ -336,6 +337,111 @@ Global Instance decEq_string : decEq string
   := {| dec_eq := dec_eq_string |}.
 
 (** * Finite types *)
+Inductive isMember {A : Type} : A -> list A -> Type :=
+| Here : forall (a : A) (xs : list A), isMember a (a :: xs)
+| There : forall {a : A} (x : A) {xs : list A},
+    isMember a xs -> isMember a (x :: xs).
+
+Notation "a ∈ l" := (isMember a l) (at level 60).
+
+Definition here_eq
+           {A : Type}
+           {a1 a2 : A}
+           (p : a2 = a1)
+           (l : list A)
+  : a1 ∈ (a2 :: l).
+Proof.
+  induction p.
+  apply Here.
+Defined.
+
+Definition in_tail
+           {A : Type}
+           {a x : A}
+           {xs : list A}
+           (p : In a (x :: xs))
+           (q : a <> x)
+  : In a xs.
+Proof.
+  simpl in p.
+  destruct p as [p | p].
+  - contradiction (q (! p)).
+  - exact p.
+Qed.
+
+Fixpoint in_to_isMember
+         {A : Type}
+         `{decEq A}
+         {a : A}
+         {l : list A}
+  : In a l -> isMember a l
+  := match l with
+     | nil => fun p => False_rect _ p
+     | x :: xs =>
+       fun p =>
+         match dec_eq a x with
+         | Yes e => here_eq (eq_sym e) _
+         | No e => There _ (in_to_isMember (in_tail p e))
+         end
+     end.
+
+Definition isMember_to_in
+           {A : Type}
+           {a : A}
+           {l : list A}
+           (p : isMember a l)
+  : In a l.
+Proof.
+  induction p.
+  - apply in_eq.
+  - apply in_cons.
+    apply IHp.
+Qed.
+
+Definition isMember_append_left
+           {A : Type}
+           {a : A}
+           {l1 : list A}
+           (p : a ∈ l1)
+           (l2 : list A)
+  : a ∈ (l1 ++ l2).
+Proof.
+  induction p as [ x xs | x x' xs p IHp ] ; simpl.
+  - apply Here.
+  - apply There.
+    apply IHp.
+Defined.
+
+Definition isMember_append_right
+           {A : Type}
+           {a : A}
+           (l1 : list A)
+           {l2 : list A}
+           (p : a ∈ l2)
+  : a ∈ (l1 ++ l2).
+Proof.
+  revert l2 p.
+  induction l1 as [ | ? l IHl ] ; intros l2 p ; simpl.
+  - exact p.
+  - apply There.
+    apply IHl.
+    exact p.
+Defined.
+
+Definition isMember_map
+           {A B : Type}
+           {a : A}
+           {l : list A}
+           (f : A -> B)
+           (p : a ∈ l)
+  : f a ∈ map f l.
+Proof.
+  induction p as [ x xs | x x' xs p IHp ] ; simpl.
+  - apply Here.
+  - apply There.
+    exact IHp.
+Defined.
+
 Class isFinite (A : Type) :=
   {
     els : list A ;
@@ -383,18 +489,18 @@ Proposition in_pairs
             (Hb : In b l2)
   : In (a , b) (pairs l1 l2).
 Proof.
-  induction l1 as [ | x xs IHl ] ; simpl in *.
-  - contradiction.
-  - apply in_or_app.
-    destruct Ha as [Ha | Ha].
-    + left.
-      subst.
+  induction l1 as [ | x xs IHl ] ; simpl.
+  - inversion Ha.
+  - destruct Ha.
+    + apply in_or_app.
+      left ; subst.
       apply in_map.
       exact Hb.
-    + right.
+    + apply in_or_app.
+      right.
       apply IHl.
-      assumption.
-Qed.      
+      exact H.
+Qed.
 
 Global Instance isFinite_prod
        {A B : Type}
@@ -418,11 +524,13 @@ Global Instance isFinite_sum
 Proof.
   simple refine {| els := map inl els ++ map inr els ;
                    allIsMember := _ |}.
-  intros [a | b] ; apply in_or_app.
-  - left.
+  intros [a | b].
+  - apply in_or_app.
+    left.
     apply in_map.
     apply allIsMember.
-  - right.
+  - apply in_or_app.
+    right.
     apply in_map.
     apply allIsMember.
 Defined.
@@ -433,36 +541,45 @@ Inductive members {A : Type} (l : list A) : Type :=
 
 Arguments MakeMem {_ _} _ _.
 
-Program Fixpoint els_members
-        {A : Type}
-        (el_A : list A)
-        (l : list A)
-        (p : forall (a : A), In a l -> In a el_A)
-  : list (members el_A) 
-  := match l with
-     | nil => nil
-     | x :: xs => MakeMem x _ :: els_members el_A xs _
+Definition member_el
+           {A : Type}
+           {l : list A}
+           (x : members l)
+  : A
+  := match x with
+     | MakeMem a _ => a
      end.
-Next Obligation.
-  apply p.
-  left.
-  reflexivity.
-Defined.
-Next Obligation.
-  apply p.
-  right.
-  assumption.
-Defined.
 
-Program Definition A_to_member
-        {A : Type}
-        (el_A : list A)
-        (l : list A)
-        (p : forall (a : A), In a l -> In a el_A)
-        (a : A)
-        (Ha : In a l)
+Definition member_isEl
+           {A : Type}
+           {l : list A}
+           (x : members l)
+  : In (member_el x) l
+  := match x with
+     | MakeMem a p => p
+     end.
+
+Program Fixpoint els_members
+         {A : Type}
+         (el_A : list A)
+         (l : list A)
+  : (forall (a : A), In a l -> In a el_A) -> list (members el_A) 
+  := match l with
+     | nil => fun p => nil
+     | x :: xs =>
+       fun p =>
+         MakeMem x (p _ _) :: els_members el_A xs (fun a z => (p a _))
+     end.
+
+Definition A_to_member
+           {A : Type}
+           (el_A : list A)
+           (l : list A)
+           (p : forall (a : A), In a l -> In a el_A)
+           (a : A)
+           (Ha : In a l)
   : members el_A
-  := MakeMem a _.
+  := MakeMem a (p _ Ha).
 
 Proposition in_els_members
             {A : Type}
@@ -481,7 +598,7 @@ Proof.
       subst ; reflexivity.
     + right.
       apply (IHl (fun a0 H => p a0 (or_intror H))).
-Qed.      
+Qed.
   
 Global Instance isFinite_members
        {A : Type}
@@ -490,9 +607,10 @@ Global Instance isFinite_members
 Proof.
   simple refine {| els := els_members l l (fun _ H => H) ;
                    allIsMember := _ |}.
-  intro x.
-  destruct x.
-  apply (in_els_members l l (fun _ H => H)).
+  abstract
+    (intro x ;
+     destruct x ;
+     apply (in_els_members l l (fun _ H => H))).
 Defined.
 
 (** * If we have a finite type and a decidable proposition on it, then we can decide whether that proposition holds for every element of that type. *)

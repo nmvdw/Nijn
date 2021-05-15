@@ -11,7 +11,7 @@ Require Import Coq.Program.Equality.
 (** * Weakly monotonic algebras *)
 
 (** We use weakly monotonic algebras to obtain interpretations. They consist of the following data. *)
-Record WMalgebra {B F R : Type} (X : afs B F R) :=
+Record WMalgebra {B F : Type} (X : afs B F) :=
   {
     sem_baseTy : B -> CompatRel ;
     sem_baseTy_el : forall (b : B), sem_baseTy b ;
@@ -34,34 +34,34 @@ Record WMalgebra {B F R : Type} (X : afs B F R) :=
                        (f : sem_Ty sem_baseTy A1 ⇒ sem_Ty sem_baseTy A2)
                        (x1 x2 : sem_Ty sem_baseTy A1),
         x1 > x2 -> sem_App _ _ (f , x1) > sem_App _ _ (f , x2) ;    
-    sem_Rew : forall (r : R)
+    sem_Rew : forall (r : rewriteRules X)
                      (C : con B)
-                     (s : sub (Arity X) C (Vars X r))
+                     (s : sub (Arity X) C (vars r))
                      (x : sem_Con sem_baseTy C),
-        sem_Tm sem_baseTy sem_baseTm sem_App (subTm (Lhs X r) s) x
+        sem_Tm sem_baseTy sem_baseTm sem_App (subTm (lhs r) s) x
         >
-        sem_Tm sem_baseTy sem_baseTm sem_App (subTm (Rhs X r) s) x
+        sem_Tm sem_baseTy sem_baseTm sem_App (subTm (rhs r) s) x
   }.
 
-Arguments sem_baseTy {_ _ _ _}.
-Arguments sem_baseTy_el {_ _ _ _}.
-Arguments sem_baseTyWf {_ _ _ _} _ _ _.
-Arguments sem_baseTy_isCompatRel {_ _ _ _}.
-Arguments sem_baseTm {_ _ _ _}.
-Arguments sem_App {_ _ _ _}.
-Arguments sem_App_gt_id {_ _ _ _} _ {_ _} _ _.
-Arguments sem_Rew {_ _ _ _}.
+Arguments sem_baseTy {_ _ _} _ _.
+Arguments sem_baseTy_el {_ _ _} _ _.
+Arguments sem_baseTyWf {_ _ _} _ _ _.
+Arguments sem_baseTy_isCompatRel {_ _ _} _.
+Arguments sem_baseTm {_ _ _} _.
+Arguments sem_App {_ _ _} _.
+Arguments sem_App_gt_id {_ _ _} _ {_ _} _ _.
+Arguments sem_Rew {_ _ _} _.
 
 Global Instance afsAlgebra_isCompatRel
-       {B F R : Type}
-       {X : afs B F R}
+       {B F : Type}
+       {X : afs B F}
        (Xalg : WMalgebra X)
   : forall (b : B), isCompatRel (sem_baseTy Xalg b)
   := sem_baseTy_isCompatRel Xalg.
 
 Proposition afsAlgebra_beta
-            {B F R : Type}
-            {X : afs B F R}
+            {B F : Type}
+            {X : afs B F}
             (Xalg : WMalgebra X)
             {C : con B}
             {A1 A2 : ty B}
@@ -85,8 +85,8 @@ Qed.
 
 (** Note that we obtain an interpretation if we have a weakly monotonic algebra *)
 Theorem afsAlgebra_to_Interpretation
-        {B F R : Type}
-        {X : afs B F R}
+        {B F : Type}
+        {X : afs B F}
         (Xalg : WMalgebra X)
   : Interpretation X.
 Proof.
@@ -116,8 +116,8 @@ Proof.
 Defined.
 
 Theorem afsAlgebra_to_WfInterpretation
-        {B F R : Type}
-        {X : afs B F R}
+        {B F : Type}
+        {X : afs B F}
         (Xalg : WMalgebra X)
   : isWf_interpretation (afsAlgebra_to_Interpretation Xalg).
 Proof.
@@ -126,8 +126,8 @@ Defined.
 
 (** The following lemmas are needed to prove strong normalization *)
 Definition sem_Ty_el
-           {B F R : Type}
-           {X : afs B F R}
+           {B F : Type}
+           {X : afs B F}
            (Xalg : WMalgebra X)
            (A : ty B)
   : sem_Ty (sem_baseTy Xalg) A.
@@ -142,8 +142,8 @@ Proof.
 Defined.
 
 Definition sem_Con_el
-           {B F R : Type}
-           {X : afs B F R}
+           {B F : Type}
+           {X : afs B F}
            (Xalg : WMalgebra X)
            (C : con B)
   : sem_Con (sem_baseTy Xalg) C.
@@ -156,8 +156,8 @@ Defined.
 Import AFSNotation.
 
 Definition sem_Rew_afs_Alg
-           {B F R : Type}
-           {X : afs B F R}
+           {B F : Type}
+           {X : afs B F}
            (Xalg : WMalgebra X)
            {C : con B}
            {A : ty B}
@@ -173,13 +173,12 @@ Definition sem_Rew_afs_Alg
          (sem_baseTm Xalg) (sem_App Xalg)
          t2).
 Proof.
-  refine (sem_Rewrite _ _ _ _ _ _ _ _ _ p)
-  ; apply Xalg.
+  refine (sem_Rewrite _ _ _ _ _ _ _ _ _ p) ; apply Xalg.
 Defined.
 
 Theorem afs_is_SN_from_Alg
-        {B F R : Type}
-        {X : afs B F R}
+        {B F : Type}
+        {X : afs B F}
         (Xalg : WMalgebra X)
   : isSN X.
 Proof.

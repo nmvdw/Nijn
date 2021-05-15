@@ -118,9 +118,16 @@ Proof.
     + simpl.
       subst.
       right.
-      apply in_map.
+      (*
+      apply isMember_map.
       apply IHv.
+       *)
+      admit.
     + simpl.
-      apply in_map.
+      (*
+      apply isMember_map.
       apply IHv.
 Defined.
+       *)
+      admit.
+Admitted.

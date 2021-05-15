@@ -352,8 +352,8 @@ Import AFSNotation.
 
 (** Rewriting is closed under weakening *)
 Definition Rew_Wk
-           {B F R : Type}
-           {X : afs B F R}
+           {B F : Type}
+           {X : afs B F}
            {C1 C2 : con B}
            {A : ty B}
            {t1 t2 : tm X C2 A}
@@ -388,8 +388,8 @@ Qed.
 
 (** Rewriting is closed under substitution *)
 Definition Rew_sub
-           {B F R : Type}
-           {X : afs B F R}
+           {B F : Type}
+           {X : afs B F}
            {C1 C2 : con B}
            {A : ty B}
            {t1 t2 : tm X C2 A}

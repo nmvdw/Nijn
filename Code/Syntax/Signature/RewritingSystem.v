@@ -204,8 +204,8 @@ Inductive baseRewStep
           {ar : F -> ty B}
           {R : Type}
           {Rcon : R -> con B}
-          {Rtar : R -> B}
-          (lhs rhs : forall (r : R), tm ar (Rcon r) (Base (Rtar r)))
+          {Rtar : R -> ty B}
+          (lhs rhs : forall (r : R), tm ar (Rcon r) (Rtar r))
           (C : con B)
   : forall (A : ty B), tm ar C A -> tm ar C A -> Type
   :=
@@ -226,8 +226,8 @@ Definition rewStep
            {ar : F -> ty B}
            {R : Type}
            {Rcon : R -> con B}
-           {Rtar : R -> B}
-           (lhs rhs : forall (r : R), tm ar (Rcon r) (Base (Rtar r)))
+           {Rtar : R -> ty B}
+           (lhs rhs : forall (r : R), tm ar (Rcon r) (Rtar r))
            {C : con B}
            {A : ty B}
   : tm ar C A -> tm ar C A -> Type
@@ -240,8 +240,8 @@ Definition rew
            {ar : F -> ty B}
            {R : Type}
            {Rcon : R -> con B}
-           {Rtar : R -> B}
-           (lhs rhs : forall (r : R), tm ar (Rcon r) (Base (Rtar r)))
+           {Rtar : R -> ty B}
+           (lhs rhs : forall (r : R), tm ar (Rcon r) (Rtar r))
            {C : con B}
            {A : ty B}
   : tm ar C A -> tm ar C A -> Type
@@ -254,8 +254,8 @@ Definition rew_step
            {ar : F -> ty B}
            {R : Type}
            {Rcon : R -> con B}
-           {Rtar : R -> B}
-           (lhs rhs : forall (r : R), tm ar (Rcon r) (Base (Rtar r)))
+           {Rtar : R -> ty B}
+           (lhs rhs : forall (r : R), tm ar (Rcon r) (Rtar r))
            {C : con B}
            {A : ty B}
            {t1 t2 : tm ar C A}
@@ -269,8 +269,8 @@ Definition rew_Trans
            {ar : F -> ty B}
            {R : Type}
            {Rcon : R -> con B}
-           {Rtar : R -> B}
-           {lhs rhs : forall (r : R), tm ar (Rcon r) (Base (Rtar r))}
+           {Rtar : R -> ty B}
+           {lhs rhs : forall (r : R), tm ar (Rcon r) (Rtar r)}
            {C : con B}
            {A : ty B}
            {t1 t2 t3 : tm ar C A}
@@ -285,8 +285,8 @@ Definition rew_App_l_help
            {ar : F -> ty B}
            {R : Type}
            {Rcon : R -> con B}
-           {Rtar : R -> B}
-           {lhs rhs : forall (r : R), tm ar (Rcon r) (Base (Rtar r))}
+           {Rtar : R -> ty B}
+           {lhs rhs : forall (r : R), tm ar (Rcon r) (Rtar r)}
            {C : con B}
            {A1 A2 A3 : ty B}
            {f1 f2 : tm ar C A3}
@@ -309,8 +309,8 @@ Definition rew_App_l
            {ar : F -> ty B}
            {R : Type}
            {Rcon : R -> con B}
-           {Rtar : R -> B}
-           {lhs rhs : forall (r : R), tm ar (Rcon r) (Base (Rtar r))}
+           {Rtar : R -> ty B}
+           {lhs rhs : forall (r : R), tm ar (Rcon r) (Rtar r)}
            {C : con B}
            {A1 A2 : ty B}
            {f1 f2 : tm ar C (A1 ⟶ A2)}
@@ -325,8 +325,8 @@ Definition rew_App_r
            {ar : F -> ty B}
            {R : Type}
            {Rcon : R -> con B}
-           {Rtar : R -> B}
-           {lhs rhs : forall (r : R), tm ar (Rcon r) (Base (Rtar r))}
+           {Rtar : R -> ty B}
+           {lhs rhs : forall (r : R), tm ar (Rcon r) (Rtar r)}
            {C : con B}
            {A1 A2 : ty B}
            {f : tm ar C (A1 ⟶ A2)}
@@ -347,8 +347,8 @@ Definition rew_Lam
            {ar : F -> ty B}
            {R : Type}
            {Rcon : R -> con B}
-           {Rtar : R -> B}
-           (lhs rhs : forall (r : R), tm ar (Rcon r) (Base (Rtar r)))
+           {Rtar : R -> ty B}
+           (lhs rhs : forall (r : R), tm ar (Rcon r) (Rtar r))
            {C : con B}
            {A1 A2 : ty B}
            {f1 f2 : tm ar (A1 ,, C) A2}
@@ -368,8 +368,8 @@ Definition rew_betaRed
            {ar : F -> ty B}
            {R : Type}
            {Rcon : R -> con B}
-           {Rtar : R -> B}
-           (lhs rhs : forall (r : R), tm ar (Rcon r) (Base (Rtar r)))
+           {Rtar : R -> ty B}
+           (lhs rhs : forall (r : R), tm ar (Rcon r) (Rtar r))
            {C : con B}
            {A1 A2 : ty B}
            (f : tm ar (A1 ,, C) A2)
@@ -388,8 +388,8 @@ Definition rew_baseStep
            {ar : F -> ty B}
            {R : Type}
            {Rcon : R -> con B}
-           {Rtar : R -> B}
-           (lhs rhs : forall (r : R), tm ar (Rcon r) (Base (Rtar r)))
+           {Rtar : R -> ty B}
+           (lhs rhs : forall (r : R), tm ar (Rcon r) (Rtar r))
            {C : con B}
            (r : R)
            (s : sub ar C (Rcon r))

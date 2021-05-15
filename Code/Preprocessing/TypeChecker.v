@@ -276,13 +276,7 @@ Qed.
 (** ** Type inference and type checking *)
 
 (** We use fhe following abbreivation *)
-Definition deppair
-           {A : Type}
-           {B : A -> Type}
-           (a : A)
-           (b : B a)
-  : { x : A & B x }
-  := existT _ a b.
+Notation "( a , b )" := (existT _ a b).
 
 (** To guarantee soundness, a derivation is computed by the function *)
 Fixpoint inferVar
@@ -292,11 +286,11 @@ Fixpoint inferVar
   : option { A : ty B & derivation_Var C A v }
   := match C , v with
      | ∙ , _ => None
-     | A ,, C , VzUt => Some (deppair A TypeVz)
+     | A ,, C , VzUt => Some (A , TypeVz)
      | A ,, C , VsUt v =>
        match inferVar C v with
        | None => None
-       | Some n => Some (deppair (projT1 n) (TypeVs (projT2 n)))
+       | Some (A , d) => Some (A , TypeVs d)
        end
      end.
 
@@ -314,9 +308,9 @@ Fixpoint check
      | UtNeToNf t =>
        match infer C ar t with
        | None => None
-       | Some n =>
-         match dec_eq (projT1 n) A with
-         | Yes p => Some (TypeNe (transport _ p (projT2 n)))
+       | Some (A' , d) =>
+         match dec_eq A' A with
+         | Yes p => Some (TypeNe (transport (fun z => derivation_Ne C ar z _) p d))
          | No _ => None
          end
        end
@@ -342,17 +336,17 @@ with infer
      | UtNeVar v =>
        match inferVar C v with
        | None => None
-       | Some n => Some (deppair (projT1 n) (TypeVar (projT2 n)))
+       | Some (A , d) => Some (A , TypeVar d)
        end
-     | UtNeBase f => Some (deppair (ar f) (TypeBase f))
+     | UtNeBase f => Some (ar f , TypeBase f)
      | UtNeApp f t =>
        match infer C ar f with
        | None => None
-       | Some (existT _ (Base _) n) => None
-       | Some (existT _ (A1 ⟶ A2) n) =>
+       | Some (Base _ , n) => None
+       | Some (A1 ⟶ A2 , n) =>
          match check C ar t A1 with
          | None => None
-         | Some m => Some (deppair A2 (TypeApp n m))
+         | Some m => Some (A2 , TypeApp n m)
          end
        end
      end.
@@ -363,7 +357,7 @@ Definition infer_var_complete
            {v : utVar}
            {A : ty B}
            (d : derivation_Var C A v)
-  : inferVar C v = Some (deppair A d).
+  : inferVar C v = Some (A , d).
 Proof.
   induction d as [ | ? ? ? ? d IHd ] ; simpl.
   - reflexivity.
@@ -391,7 +385,7 @@ with infer_complete
      {A : ty B}
      {t : utNe F}
      (Ht : derivation_Ne C ar A t)
-  : infer C ar t = Some (deppair A Ht).
+  : infer C ar t = Some (A , Ht).
 Proof.
   - destruct Ht as [ ? ? d | ? ? ? d ] ; simpl.
     + rewrite (infer_complete _ _ _ _ _ _ _ d).
@@ -432,5 +426,8 @@ Definition infer_to_tm
            (t : utNe F)
   : option { A : ty B & tm ar C A }
   := option_map
-       (fun z => deppair (projT1 z) (neToTm (derivation_to_ne (projT2 z))))
+       (fun z =>
+          match z with
+          | (A , d) => (A , neToTm (derivation_to_ne d))
+          end)
        (infer C ar t).
