@@ -12,33 +12,33 @@ Record Interpretation {B F : Type} (X : afs B F) :=
     semTy : ty B -> CompatRel ;
     semCon : con B -> CompatRel ;
     semTm : forall {C : con B} {A : ty B},
-        tm (Arity X) C A -> semCon C -> semTy A ;
+        tm (arity X) C A -> semCon C -> semTy A ;
     semRew : forall (r : rewriteRules X)
                     (C : con B)
-                    (s : sub (Arity X) C (vars r))
+                    (s : sub (arity X) C (vars r))
                     (x : semCon C),
         semTm (subTm (lhs r) s) x > semTm (subTm (rhs r) s) x ;
     semBeta : forall {C : con B}
                      {A1 A2 : ty B}
-                     (f : tm (Arity X) (A1,, C) A2)
-                     (t : tm (Arity X) C A1)
+                     (f : tm (arity X) (A1,, C) A2)
+                     (t : tm (arity X) C A1)
                      (x : semCon C),
         semTm ((λ f) · t) x >= semTm (subTm f (beta_sub t)) x ;
     compatAppL : forall {C : con B}
                         {A1 A2 : ty B}
-                        {f1 f2 : tm (Arity X) C (A1 ⟶ A2)}
-                        (t : tm (Arity X) C A1)
+                        {f1 f2 : tm (arity X) C (A1 ⟶ A2)}
+                        (t : tm (arity X) C A1)
                         (x : semCon C),
         semTm f1 x > semTm f2 x -> semTm (f1 · t) x > semTm (f2 · t) x ;
     compatAppR : forall {C : con B}
                         {A1 A2 : ty B}
-                        (f : tm (Arity X) C (A1 ⟶ A2))
-                        {t1 t2 : tm (Arity X) C A1}
+                        (f : tm (arity X) C (A1 ⟶ A2))
+                        {t1 t2 : tm (arity X) C A1}
                         (x : semCon C),
         semTm t1 x > semTm t2 x -> semTm (f · t1) x > semTm (f · t2) x ;
     compatLam : forall {C : con B}
                        {A1 A2 : ty B}
-                       (f1 f2 : tm (Arity X) (A1 ,, C) A2),
+                       (f1 f2 : tm (arity X) (A1 ,, C) A2),
         (forall (x : semCon (A1 ,, C)), semTm f1 x > semTm f2 x)
         ->
         forall (x : semCon C), semTm (λ f1) x > semTm (λ f2) x

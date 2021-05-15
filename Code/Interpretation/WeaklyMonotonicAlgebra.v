@@ -17,7 +17,7 @@ Record WMalgebra {B F : Type} (X : afs B F) :=
     sem_baseTy_el : forall (b : B), sem_baseTy b ;
     sem_baseTyWf : forall (b : B), Wf (fun (x y : sem_baseTy b) => x > y) ;
     sem_baseTy_isCompatRel : forall (b : B), isCompatRel (sem_baseTy b) ;
-    sem_baseTm : forall (f : F), sem_Ty sem_baseTy (Arity X f) ;
+    sem_baseTm : forall (f : F), sem_Ty sem_baseTy (arity X f) ;
     sem_App : forall (A1 A2 : ty B),
         weakMonotoneMap
           ((sem_Ty sem_baseTy A1 ⇒ sem_Ty sem_baseTy A2) * sem_Ty sem_baseTy A1)
@@ -36,7 +36,7 @@ Record WMalgebra {B F : Type} (X : afs B F) :=
         x1 > x2 -> sem_App _ _ (f , x1) > sem_App _ _ (f , x2) ;    
     sem_Rew : forall (r : rewriteRules X)
                      (C : con B)
-                     (s : sub (Arity X) C (vars r))
+                     (s : sub (arity X) C (vars r))
                      (x : sem_Con sem_baseTy C),
         sem_Tm sem_baseTy sem_baseTm sem_App (subTm (lhs r) s) x
         >
@@ -65,8 +65,8 @@ Proposition afsAlgebra_beta
             (Xalg : WMalgebra X)
             {C : con B}
             {A1 A2 : ty B}
-            (f : tm (Arity X) (A1 ,, C) A2)
-            (t : tm (Arity X) C A1)
+            (f : tm (arity X) (A1 ,, C) A2)
+            (t : tm (arity X) C A1)
             (x : sem_Con (sem_baseTy Xalg) C)
   : sem_Tm
       (sem_baseTy Xalg) (sem_baseTm Xalg) (sem_App Xalg)

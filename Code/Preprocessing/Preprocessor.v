@@ -190,23 +190,23 @@ Defined.
 (** * The output of the parser *)
 Record parsedAFS (B V F : Type) : Type :=
   {
-    TypeSymbols : list B ;
-    BaseTerms : assocList F (ty B) ;
-    FreeVars : assocList V (ty B) ;
-    Rewrites : list (rawNe V F * rawNf V F)
+    typeSymbols : list B ;
+    baseTerms : assocList F (ty B) ;
+    freeVars : assocList V (ty B) ;
+    rewrites : list (rawNe V F * rawNf V F)
   }.
 
-Arguments TypeSymbols {_ _ _} _.
-Arguments BaseTerms {_ _ _} _.
-Arguments FreeVars {_ _ _} _.
-Arguments Rewrites {_ _ _} _.
+Arguments typeSymbols {_ _ _} _.
+Arguments baseTerms {_ _ _} _.
+Arguments freeVars {_ _ _} _.
+Arguments rewrites {_ _ _} _.
 
 (** Accessors for AFS *)
 Definition baseTypes
            {B V F : Type}
            (X : parsedAFS B V F)
   : Type
-  := members (TypeSymbols X).
+  := members (typeSymbols X).
 
 Fixpoint to_baseType
          {B V F : Type}
@@ -216,7 +216,7 @@ Fixpoint to_baseType
   : option (ty (baseTypes X))
   := match A with
      | Base b =>
-       match decideIn b (TypeSymbols X) with
+       match decideIn b (typeSymbols X) with
        | Yes p => Some (Base (MakeMem b p))
        | No p => None
        end
@@ -232,7 +232,7 @@ Definition afs_arity
            `{decEq B}
            `{decEq F}
            (X : parsedAFS B V F)
-  : option (members (BaseTerms X) -> ty (baseTypes X))
+  : option (members (baseTerms X) -> ty (baseTypes X))
   := finite_option (fun p => to_baseType X (snd (member_el p))).
 
 Fixpoint list_to_con
@@ -249,7 +249,7 @@ Definition freeVars_to_con
            `{decEq B}
            (X : parsedAFS B V F)
   : option (con (baseTypes X))
-  := let l := map (fun z => to_baseType X (snd z)) (FreeVars X) in
+  := let l := map (fun z => to_baseType X (snd z)) (freeVars X) in
      option_map list_to_con (list_option l).
 
 Fixpoint check_functions_Nf
@@ -259,9 +259,9 @@ Fixpoint check_functions_Nf
          `{decEq V}
          (X : parsedAFS B V F)
          (C : con (baseTypes X))
-         (ar : members (BaseTerms X) -> ty (baseTypes X))
+         (ar : members (baseTerms X) -> ty (baseTypes X))
          (t : rawNf V F)
-  : option (rawNf V (members (BaseTerms X)))
+  : option (rawNf V (members (baseTerms X)))
   := match t with
      | RawNeToNf t => option_map RawNeToNf (check_functions_Ne X C ar t)
      | RawNfLam x t => option_map (RawNfLam x) (check_functions_Nf X C ar t)
@@ -273,15 +273,15 @@ with check_functions_Ne
      `{decEq V}
      (X : parsedAFS B V F)
      (C : con (baseTypes X))
-     (ar : members (BaseTerms X) -> ty (baseTypes X))
+     (ar : members (baseTerms X) -> ty (baseTypes X))
      (t : rawNe V F)
-  : option (rawNe V (members (BaseTerms X)))
+  : option (rawNe V (members (baseTerms X)))
   := match t with
      | RawNeVar v => Some (RawNeVar v)
      | RawNeBase f =>
        option_map
          (fun p => RawNeBase (MakeMem (pair f (proj1_sig p)) (proj2_sig p)))
-         (getKey f (BaseTerms X))
+         (getKey f (baseTerms X))
      | RawNeApp f t =>
        check_functions_Ne X C ar f
        >>= fun f => check_functions_Nf X C ar t
@@ -294,7 +294,7 @@ Definition to_rewriteRule
            `{decEq B}
            `{decEq V}
            {X : parsedAFS B V F}
-           (ar : members (BaseTerms X) -> ty (baseTypes X))
+           (ar : members (baseTerms X) -> ty (baseTypes X))
            (t : rawNe V F * rawNf V F)
   : option (rewriteRule ar)
   := freeVars_to_con X
@@ -313,10 +313,10 @@ Definition parsedAFS_to_afs
            `{decEq F}
            `{decEq V}
            (X : parsedAFS B V F)
-  : option (afs (baseTypes X) (members (BaseTerms X)))
+  : option (afs (baseTypes X) (members (baseTerms X)))
   := afs_arity X
      >>= fun ar => freeVars_to_con X
-     >>= fun C => list_option (map (to_rewriteRule ar) (Rewrites X))
+     >>= fun C => list_option (map (to_rewriteRule ar) (rewrites X))
      >>= fun rs => Some (make_afs ar rs).
 
 Definition parsedAFS_to_fin_afs
@@ -325,7 +325,7 @@ Definition parsedAFS_to_fin_afs
            `{decEq F}
            `{decEq V}
            (X : parsedAFS B V F)
-  : option (fin_afs (baseTypes X) (members (BaseTerms X)))
+  : option (fin_afs (baseTypes X) (members (baseTerms X)))
   := option_map
        (fun z => make_fin_afs z _ _)
        (parsedAFS_to_afs X).

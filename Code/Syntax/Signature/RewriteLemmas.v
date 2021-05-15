@@ -413,9 +413,9 @@ Proof.
         apply AFSBeta.
         pose (Beta (subTm f (keepSub A1 s)) (subTm x s)) as p.
         unfold beta_sub in *.
-        assert (subTm (subTm f (keepSub A1 s)) (idSub C1 (Arity X) && subTm x s)
+        assert (subTm (subTm f (keepSub A1 s)) (idSub C1 (arity X) && subTm x s)
                 =
-                subTm (subTm f (idSub C (Arity X) && x)) s)
+                subTm (subTm f (idSub C (arity X) && x)) s)
           as H.
         {
           rewrite subTm_comp.
