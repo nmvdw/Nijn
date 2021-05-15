@@ -202,7 +202,7 @@ Global Instance decEq_bool : decEq bool
 
 (** The product of types with decidable equality has decidable equality *)
 Section ProductDecEq.
-  Context (A B : Type)
+  Context {A B : Type}
           `{decEq A}
           `{decEq B}.
 
@@ -237,7 +237,7 @@ End ProductDecEq.
 
 (** The sum of types with decidable equality has decidable equality *)
 Section SumDecEq.
-  Context (A B : Type)
+  Context {A B : Type}
           `{decEq A}
           `{decEq B}.
 

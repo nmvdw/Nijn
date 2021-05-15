@@ -13,20 +13,31 @@ Definition assocList
   : Type
   := list (A * B).
 
-Program Fixpoint getKey
-        {A B : Type}
-        `{decEq A}
-        (a : A)
-        (xs : assocList A B)
+Definition in_eq_hd
+           {A : Type}
+           {a1 a2 : A}
+           {l : list A}
+           (p : a1 = a2)
+  : In a2 (a1 :: l).
+Proof.
+  induction p.
+  apply in_eq.
+Qed.
+
+Fixpoint getKey
+         {A B : Type}
+         `{decEq A}
+         (a : A)
+         (xs : assocList A B)
   : option { b : B | In (pair a b) xs }
   := match xs with
      | nil => None
      | (pair x b) :: xs =>
        match dec_eq x a with
-       | Yes p => Some (exist _ b _)
+       | Yes p => Some (exist _ b (in_eq_hd (path_pair p eq_refl)))
        | No p =>
          match getKey a xs with
-         | Some (exist _ b' p) => Some (exist _ b' _)
+         | Some (exist _ b' p) => Some (exist _ b' (in_cons _ _ _ p))
          | None => None
          end
        end
