@@ -307,12 +307,12 @@ Fixpoint check
   := match t with
      | UtNeToNf t =>
        match infer C ar t with
-       | None => None
        | Some (A' , d) =>
          match dec_eq A' A with
          | Yes p => Some (TypeNe (transport (fun z => derivation_Ne C ar z _) p d))
          | No _ => None
          end
+       | None => None
        end
      | UtNfLam t =>
        match A with
@@ -335,19 +335,19 @@ with infer
   := match t with
      | UtNeVar v =>
        match inferVar C v with
-       | None => None
        | Some (A , d) => Some (A , TypeVar d)
+       | None => None
        end
      | UtNeBase f => Some (ar f , TypeBase f)
      | UtNeApp f t =>
        match infer C ar f with
-       | None => None
        | Some (Base _ , n) => None
        | Some (A1 ⟶ A2 , n) =>
          match check C ar t A1 with
          | None => None
          | Some m => Some (A2 , TypeApp n m)
          end
+       | None => None
        end
      end.
 

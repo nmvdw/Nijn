@@ -33,6 +33,19 @@ Arguments make_afs {_ _} _ _.
 Arguments Arity {_ _} _ _.
 Arguments RewriteRules {_ _} _.
 
+Record fin_afs (B : Type) (F : Type) :=
+  make_fin_afs
+    {
+      Carrier :> afs B F ;
+      BaseTyFin : isFinite B ;
+      BaseTmFin : isFinite F
+    }.
+
+Arguments make_fin_afs {_ _} _ _ _.
+Arguments Carrier {_ _} _.
+Arguments BaseTyFin {_ _} _.
+Arguments BaseTmFin {_ _} _.
+
 Definition rewriteRules
            {B F : Type}
            (X : afs B F)

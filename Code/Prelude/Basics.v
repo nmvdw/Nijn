@@ -1,3 +1,4 @@
+Require Import Prelude.Funext.
 Require Import List.
 Require Import Bool.
 Require Import String.
@@ -17,6 +18,28 @@ Definition comp
 
 Notation "g 'o' f" := (comp g f) (at level 40, left associativity).
 Arguments comp {_ _ _} _ _ _/.
+
+Definition option_bind
+           {A B : Type}
+           (x : option A)
+           (f : A -> option B)
+  : option B
+  := match x with
+     | Some a => f a
+     | None => None
+     end.
+
+Notation "x >>= f" := (option_bind x f) (at level 70).
+
+Fixpoint list_option
+         {A : Type}
+         (l : list (option A))
+  : option (list A)
+  := match l with
+     | nil => Some nil
+     | x :: xs =>
+       list_option xs >>= fun ys => x >>= fun y => Some (y :: ys)
+     end.
 
 (** * Decidable propositions *)
 Inductive dec (A : Prop) : Type :=
@@ -613,6 +636,34 @@ Proof.
      apply (in_els_members l l (fun _ H => H))).
 Defined.
 
+Definition dec_eq_members
+           {A : Type}
+           (l : list A)
+           `{decEq A}
+           (a1 a2 : members l)
+  : dec (a1 = a2).
+Proof.
+  destruct a1 as [a1 p1], a2 as [a2 p2].
+  destruct (dec_eq a1 a2) as [p | p].
+  - refine (Yes _).
+    abstract
+      (subst ;
+       f_equal ;
+       apply proof_irrelevance).
+  - refine (No _).
+    abstract
+      (intro q ;
+       inversion q ;
+       contradiction).
+Defined.
+
+Global Instance decEq_members
+       {A : Type}
+       (l : list A)
+       `{decEq A}
+  : decEq (members l)
+  := {| dec_eq := dec_eq_members l |}.
+
 (** * If we have a finite type and a decidable proposition on it, then we can decide whether that proposition holds for every element of that type. *)
 Definition decide_finite_list
            {A : Type}
@@ -666,4 +717,34 @@ Proof.
     apply p.
     intros a ?.
     apply n.
+Defined.
+
+(** ** Decidable membership of lists *)
+Definition decideIn
+           {A : Type}
+           `{decEq A}
+           (a : A)
+           (xs : list A)
+  : dec (In a xs).
+Proof.
+  induction xs as [ | x xs IHxs ].
+  - refine (No (fun q => _)).
+    abstract
+      (simpl in * ;
+       contradiction).
+  - destruct (dec_eq x a) as [ p | p ].
+    + refine (Yes _).
+      abstract
+        (left ;
+         exact p).
+    + destruct IHxs as [ q | q ].
+      * refine (Yes _).
+        abstract
+          (right ;
+           exact q).
+      * refine (No _).
+        abstract
+          (intro r ;
+           induction r ;
+           contradiction).
 Defined.

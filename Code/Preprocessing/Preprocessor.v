@@ -7,83 +7,7 @@ Require Import List.
 Require Import Coq.Program.Equality.
 Require Import Prelude.Funext.
 
-(* For rewriting rules, use *)
-
 (** Help functions *)
-Definition dec_eq_members
-           {A : Type}
-           (l : list A)
-           `{decEq A}
-           (a1 a2 : members l)
-  : dec (a1 = a2).
-Proof.
-  destruct a1 as [a1 p1], a2 as [a2 p2].
-  destruct (dec_eq a1 a2) as [p | p].
-  - refine (Yes _).
-    abstract
-      (subst ;
-       f_equal ;
-       apply proof_irrelevance).
-  - refine (No _).
-    abstract
-      (intro q ;
-       inversion q ;
-       contradiction).
-Defined.
-
-Global Instance decEq_members
-       {A : Type}
-       (l : list A)
-       `{decEq A}
-  : decEq (members l)
-  := {| dec_eq := dec_eq_members l |}.
-
-Fixpoint list_option
-         {A : Type}
-         (l : list (option A))
-  : option (list A)
-  := match l with
-     | nil => Some nil
-     | x :: xs =>
-       match list_option xs with
-       | Some ys =>
-         match x with
-         | Some y => Some (y :: ys)
-         | None => None
-         end
-       | None => None
-       end
-     end.
-
-Definition decideIn
-           {A : Type}
-           `{decEq A}
-           (a : A)
-           (xs : list A)
-  : dec (In a xs).
-Proof.
-  induction xs as [ | x xs IHxs ].
-  - refine (No (fun q => _)).
-    abstract
-      (simpl in * ;
-       contradiction).
-  - destruct (dec_eq x a) as [ p | p ].
-    + refine (Yes _).
-      abstract
-        (left ;
-         exact p).
-    + destruct IHxs as [ q | q ].
-      * refine (Yes _).
-        abstract
-          (right ;
-           exact q).
-      * refine (No _).
-        abstract
-          (intro r ;
-           induction r ;
-           contradiction).
-Defined.
-
 Definition assocList
            (A B : Type)
   : Type
@@ -147,10 +71,7 @@ Fixpoint list_option_pair
   := match l with
      | nil => Some nil
      | (x , Some p) :: xs =>
-       match list_option_pair xs with
-       | Some xs => Some ((x , p) :: xs)
-       | None => None
-       end
+       option_map (fun xs => (x , p) :: xs) (list_option_pair xs)
      | (x , None) :: xs => None
      end.
 
@@ -381,35 +302,19 @@ Definition to_rewriteRule
   : option (rewriteRule ar)
   := match t with
      | pair t1 t2 =>
-       match freeVars_to_con X with
-       | Some C =>
-         match check_functions_Ne X C ar t1 with
-         | Some t1 =>
-           match rawNfToUtNe t1 with
-           | Some t1 =>
-             match infer_to_tm C ar t1 with
-             | Some (A , t1) =>
-               match check_functions_Nf X C ar t2 with
-               | Some t2 =>
-                 match rawNfToUtNf t2 with
-                 | Some t2 =>
-                   match check_to_tm C ar t2 A with
-                   | Some t2 => Some (make_rewrite C _ t1 t2)
-                   | None => None
-                   end
-                 | None => None
-                 end
-               | None => None
-               end
-             | None => None
+       freeVars_to_con X
+       >>= fun C => check_functions_Ne X C ar t1
+       >>= fun t1 => rawNfToUtNe t1
+       >>= fun t1 => infer_to_tm C ar t1
+       >>= fun z =>
+             match z with
+             | (A , t1) =>
+               check_functions_Nf X C ar t2
+               >>= fun t2 => rawNfToUtNf t2
+               >>= fun t2 => check_to_tm C ar t2 A
+               >>= fun t2 => Some (make_rewrite C _ t1 t2)
              end
-           | None => None
-           end
-         | None => None
-         end
-       | None => None
-       end
-     end.
+          end.
 
 Definition parsedAFS_to_afs
            {B V F : Type}
@@ -418,18 +323,18 @@ Definition parsedAFS_to_afs
            `{decEq V}
            (X : parsedAFS B V F)
   : option (afs (baseTypes X) (members (BaseTerms X)))
-  := match afs_arity X with
-     | Some ar =>
-       match freeVars_to_con X with
-       | Some C =>
-         match list_option (map (to_rewriteRule ar) (Rewrites X)) with
-         | Some rs => Some (make_afs ar rs)
-         | None => None
-         end
-       | None => None
-       end
-     | None => None
-     end.
+  := afs_arity X
+     >>= fun ar => freeVars_to_con X
+     >>= fun C => list_option (map (to_rewriteRule ar) (Rewrites X))
+     >>= fun rs => Some (make_afs ar rs).
 
-Require Import Extraction.
-Recursive Extraction parsedAFS_to_afs.
+Definition parsedAFS_to_fin_afs
+           {B V F : Type}
+           `{decEq B}
+           `{decEq F}
+           `{decEq V}
+           (X : parsedAFS B V F)
+  : option (fin_afs (baseTypes X) (members (BaseTerms X)))
+  := option_map
+       (fun z => make_fin_afs z _ _)
+       (parsedAFS_to_afs X).
