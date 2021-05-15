@@ -210,10 +210,9 @@ Fixpoint to_baseType
        | No p => None
        end
      | A1 ⟶ A2 =>
-       match to_baseType X A1 , to_baseType X A2 with
-       | Some A1 , Some A2 => Some (A1 ⟶ A2)
-       | _ , _ => None
-       end
+       to_baseType X A1
+       >>= fun A1 => to_baseType X A2
+       >>= fun A2 => Some (A1 ⟶ A2)
      end.
 
 (** * Processing to an AFS *)
@@ -240,10 +239,7 @@ Definition freeVars_to_con
            (X : parsedAFS B V F)
   : option (con (baseTypes X))
   := let l := map (fun z => to_baseType X (snd z)) (FreeVars X) in
-     match list_option l with
-     | Some tys => Some (list_to_con tys)
-     | None => None
-     end.
+     option_map list_to_con (list_option l).
 
 Fixpoint check_functions_Nf
          {B V F : Type}
@@ -256,16 +252,8 @@ Fixpoint check_functions_Nf
          (t : rawNf V F)
   : option (rawNf V (members (BaseTerms X)))
   := match t with
-     | RawNeToNf t =>
-       match check_functions_Ne X C ar t with
-       | Some t => Some (RawNeToNf t)
-       | None => None
-       end
-     | RawNfLam x t =>
-       match check_functions_Nf X C ar t with
-       | Some t => Some (RawNfLam x t)
-       | None => None
-       end
+     | RawNeToNf t => option_map RawNeToNf (check_functions_Ne X C ar t)
+     | RawNfLam x t => option_map (RawNfLam x) (check_functions_Nf X C ar t)
      end
 with check_functions_Ne
      {B V F : Type}
@@ -280,15 +268,13 @@ with check_functions_Ne
   := match t with
      | RawNeVar v => Some (RawNeVar v)
      | RawNeBase f =>
-       match getKey f (BaseTerms X) with
-       | Some p => Some (RawNeBase (MakeMem (pair f (proj1_sig p)) (proj2_sig p)))
-       | None => None
-       end
+       option_map
+         (fun p => RawNeBase (MakeMem (pair f (proj1_sig p)) (proj2_sig p)))
+         (getKey f (BaseTerms X))
      | RawNeApp f t =>
-       match check_functions_Ne X C ar f , check_functions_Nf X C ar t with
-       | Some f , Some t => Some (RawNeApp f t)
-       | _ , _ => None
-       end
+       check_functions_Ne X C ar f
+       >>= fun f => check_functions_Nf X C ar t
+       >>= fun t => Some (RawNeApp f t)
      end.
 
 Definition to_rewriteRule

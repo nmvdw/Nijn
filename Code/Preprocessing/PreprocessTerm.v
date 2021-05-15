@@ -71,11 +71,7 @@ Fixpoint rawVarToUtVar
      | v :: vs =>
        match dec_eq x v with
        | Yes _ => Some VzUt
-       | No _ =>
-         match rawVarToUtVar vs x with
-         | Some v' => Some (VsUt v')
-         | None => None
-         end
+       | No _ => option_map VsUt (rawVarToUtVar vs x)
        end
      end.
 
@@ -87,11 +83,7 @@ Fixpoint rawNfToUtNf_vars
          (t : rawNf V F)
   : option (utNf F)
   := match t with
-     | RawNeToNf t =>
-       match rawNeToUtNe_vars vs t with
-       | Some t' => Some (UtNeToNf t')
-       | None => None
-       end
+     | RawNeToNf t => option_map UtNeToNf (rawNeToUtNe_vars vs t)
      | RawNfLam a t => rawNfToUtNf_vars (a :: vs) t
      end
 with rawNeToUtNe_vars
@@ -101,17 +93,12 @@ with rawNeToUtNe_vars
      (t : rawNe V F)
   : option (utNe F)
   := match t with
-     | RawNeVar v =>
-       match rawVarToUtVar vs v with
-       | Some t => Some (UtNeVar t)
-       | None => None
-       end
+     | RawNeVar v => option_map UtNeVar (rawVarToUtVar vs v)
      | RawNeBase f => Some (UtNeBase f)
      | RawNeApp t1 t2 =>
-       match rawNeToUtNe_vars vs t1 , rawNfToUtNf_vars vs t2 with
-       | Some t1 , Some t2 => Some (UtNeApp t1 t2)
-       | _ , _ => None
-       end
+       rawNeToUtNe_vars vs t1
+       >>= fun t1 => rawNfToUtNf_vars vs t2
+       >>= fun t2 => Some (UtNeApp t1 t2)
      end.
 
 Definition rawNfToUtNf
