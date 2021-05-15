@@ -83,20 +83,20 @@ Global Instance decEq_Var
   := {| dec_eq := dec_eq_Var |}.
 
 (** * The type of variables is finite *)
-Definition all_Vars
+Fixpoint all_Vars
            {B : Type}
            `{decEq B}
            (C : con B)
-  : forall (A : ty B), list (var C A).
-Proof.
-  induction C as [ | A1 C IHC ].
-  - exact (fun _ => nil).
-  - intro A2.
-    destruct (dec_eq A1 A2) as [ p | p ].
-    + induction p.
-      exact (Vz :: map Vs (IHC A1)).
-    + exact (map Vs (IHC A2)).
-Defined.
+  : forall (A : ty B), list (var C A)
+  := match C with
+     | ∙ => fun _ => nil
+     | A1 ,, C =>
+       fun A2 =>
+         match dec_eq A1 A2 with
+         | Yes p => transport (var _) p Vz :: map Vs (all_Vars C A2)
+         | No p => map Vs (all_Vars C A2)
+         end
+     end.
 
 Global Instance isFinite_var
        {B : Type}

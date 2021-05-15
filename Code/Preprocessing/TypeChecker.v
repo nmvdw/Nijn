@@ -307,9 +307,9 @@ Fixpoint check
   := match t with
      | UtNeToNf t =>
        match infer C ar t with
-       | Some (A' , d) =>
-         match dec_eq A' A with
-         | Yes p => Some (TypeNe (transport (fun z => derivation_Ne C ar z _) p d))
+       | Some z =>
+         match dec_eq (projT1 z) A with
+         | Yes p => Some (TypeNe (transport (fun z => derivation_Ne C ar z _) p (projT2 z)))
          | No _ => None
          end
        | None => None
@@ -317,11 +317,7 @@ Fixpoint check
      | UtNfLam t =>
        match A with
        | Base _ => None
-       | A1 ⟶ A2 =>
-         match check (A1 ,, C) ar t A2 with
-         | None => None
-         | Some n => Some (TypeLam n)
-         end
+       | A1 ⟶ A2 => option_map TypeLam (check (A1 ,, C) ar t A2)
        end
      end
 with infer
@@ -342,11 +338,7 @@ with infer
      | UtNeApp f t =>
        match infer C ar f with
        | Some (Base _ , n) => None
-       | Some (A1 ⟶ A2 , n) =>
-         match check C ar t A1 with
-         | None => None
-         | Some m => Some (A2 , TypeApp n m)
-         end
+       | Some (A1 ⟶ A2 , n) => option_map (fun m => (A2 , TypeApp n m)) (check C ar t A1)
        | None => None
        end
      end.
@@ -426,8 +418,5 @@ Definition infer_to_tm
            (t : utNe F)
   : option { A : ty B & tm ar C A }
   := option_map
-       (fun z =>
-          match z with
-          | (A , d) => (A , neToTm (derivation_to_ne d))
-          end)
+       (fun z => (projT1 z , neToTm (derivation_to_ne (projT2 z))))
        (infer C ar t).
