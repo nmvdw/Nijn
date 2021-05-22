@@ -591,19 +591,17 @@ Proposition subVar_red_or_eq
             (r : s1 ~>βs s2)
             {A : ty B}
             (v : var C2 A)
-  : (subVar v s1 = subVar v s2)
-    +
-    (subVar v s1 ~>β* subVar v s2).
+  : subVar v s1 ~>β* subVar v s2.
 Proof.
   induction v.
   - dependent destruction r ; simpl ; cbn.
-    + right.
+    + left.
       apply betaRed_step.
       assumption.
-    + left.
+    + right.
       reflexivity.
   - dependent destruction r ; simpl ; cbn.
-    + left.
+    + right.
       reflexivity.
     + exact (IHv _ _ r).
 Qed.
@@ -617,40 +615,38 @@ Proposition subTm_red_or_eq
             (r : s1 ~>βs s2)
             {A : ty B}
             (t : tm ar C2 A)
-  : (subTm t s1 = subTm t s2)
-    +
-    (subTm t s1 ~>β* subTm t s2).
+  : subTm t s1 ~>β* subTm t s2.
 Proof.
   revert C1 s1 s2 r.
   induction t as [ b | ? ? v | ? ? ? f IHf | ? ? ? f IHf t IHt ]
   ; simpl ; intros C1 s1 s2 r.
-  - left ; reflexivity.
+  - right ; reflexivity.
   - apply subVar_red_or_eq.
     exact r.
   - specialize (IHf _ (keepSub _ s1) (keepSub _ s2) (keepSub_red _ r)).
     destruct IHf as [p | p].
     + left.
-      rewrite p.
-      reflexivity.
-    + right.
       apply beta_Lam.
       exact p.
+    + right.
+      rewrite p.
+      reflexivity.
   - specialize (IHf _ _ _ r).
     specialize (IHt _ _ _ r).
     destruct IHf as [p | p], IHt as [q | q].
     + left.
-      rewrite p, q.
-      reflexivity.
-    + right.
+      exact (beta_Trans (beta_App_l _ p) (beta_App_r _ q)).
+    + left.
+      rewrite q.
+      apply beta_App_l.
+      exact p.
+    + left.
       rewrite p.
       apply beta_App_r.
       exact q.
     + right.
-      rewrite q.
-      apply beta_App_l.
-      exact p.
-    + right.
-      exact (beta_Trans (beta_App_l _ p) (beta_App_r _ q)).
+      rewrite p, q.
+      reflexivity.    
 Qed.
 
 Proposition sub_beta_red_or_eq
@@ -662,9 +658,7 @@ Proposition sub_beta_red_or_eq
             (f : tm ar (A1 ,, C) A2)
             {t1 t2 : tm ar C A1}
             (r : t1 ~>β t2)
-  : (subTm f (beta_sub t1) = subTm f (beta_sub t2))
-    +
-    (subTm f (beta_sub t1) ~>β* subTm f (beta_sub t2)).
+  : subTm f (beta_sub t1) ~>β* subTm f (beta_sub t2).
 Proof.
   exact (subTm_red_or_eq (beta_sub_red r) f).
 Qed.
@@ -704,8 +698,8 @@ Definition repeat_app_left
            {A1 A2 : ty B}
            (ps : repeat_app ar C A1 A2)
            {t1 t2 : tm ar C A1}
-           (r : t1 ~>β* t2)
-  : t1 ·· ps ~>β* t2 ·· ps.
+           (r : t1 ~>β+ t2)
+  : t1 ·· ps ~>β+ t2 ·· ps.
 Proof.
   induction ps as [ | ? ? ? ? ? ps IHps ] ; simpl.
   - exact r.
@@ -875,11 +869,11 @@ Proof.
     + subst.
       apply (IHt u' (TStep p)).
       destruct (sub_beta_red_or_eq f p) as [q | q].
-      * rewrite <- q.
-        exact Hsub.
       * refine (red_to_beta_SN Hsub _).
         apply repeat_app_left.
         exact q.
+      * rewrite <- q.
+        exact Hsub.
     + subst.
       apply (IHf f' (TStep p) t).
       * apply acc ; assumption.

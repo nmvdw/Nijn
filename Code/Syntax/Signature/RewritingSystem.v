@@ -87,7 +87,7 @@ Definition betaRed
   : tm ar C A -> tm ar C A -> Type
   := transitiveClosure (fun t1 t2 => t1 ~>β t2).
 
-Notation "t1 '~>β*' t2" := (betaRed t1 t2) (at level 70).
+Notation "t1 '~>β+' t2" := (betaRed t1 t2) (at level 70).
 
 (** Formers for beta reduction *)
 Definition betaRed_step
@@ -98,7 +98,7 @@ Definition betaRed_step
            {A : ty B}
            {t1 t2 : tm ar C A}
            (p : t1 ~>β t2)
-  : t1 ~>β* t2
+  : t1 ~>β+ t2
   := TStep p.
 
 Definition beta_Trans
@@ -108,9 +108,9 @@ Definition beta_Trans
            {C : con B}
            {A : ty B}
            {t1 t2 t3 : tm ar C A}
-           (p : t1 ~>β* t2)
-           (q : t2 ~>β* t3)
-  : t1 ~>β* t3
+           (p : t1 ~>β+ t2)
+           (q : t2 ~>β+ t3)
+  : t1 ~>β+ t3
   := Trans p q.
 
 Definition beta_rewrite_transport
@@ -135,9 +135,9 @@ Definition beta_App_l_help
            {A1 A2 A3 : ty B}
            {f1 f2 : tm ar C A3}
            (x : tm ar C A1)
-           (p : f1 ~>β* f2)
+           (p : f1 ~>β+ f2)
            (q : A3 = (A1 ⟶ A2))
-  : ((transport (tm ar C) q f1) · x) ~>β* ((transport (tm ar C) q f2) · x).
+  : ((transport (tm ar C) q f1) · x) ~>β+ ((transport (tm ar C) q f2) · x).
 Proof.
   induction p.
   - apply TStep.
@@ -155,8 +155,8 @@ Definition beta_App_l
            {A1 A2 : ty B}
            {f1 f2 : tm ar C (A1 ⟶ A2)}
            (x : tm ar C A1)
-           (p : f1 ~>β* f2)
-  : (f1 · x) ~>β* (f2 · x)
+           (p : f1 ~>β+ f2)
+  : (f1 · x) ~>β+ (f2 · x)
   := beta_App_l_help x p eq_refl.
 
 Definition beta_App_r
@@ -167,8 +167,8 @@ Definition beta_App_r
            {A1 A2 : ty B}
            (f : tm ar C (A1 ⟶ A2))
            {x1 x2 : tm ar C A1}
-           (p : x1 ~>β* x2)
-  : (f · x1) ~>β* (f · x2).
+           (p : x1 ~>β+ x2)
+  : (f · x1) ~>β+ (f · x2).
 Proof.
   induction p.
   - apply TStep.
@@ -184,8 +184,8 @@ Definition beta_Lam
            {C : con B}
            {A1 A2 : ty B}
            {f1 f2 : tm ar (A1 ,, C) A2}
-           (p : f1 ~>β* f2)
-  : (λ f1) ~>β* (λ f2).
+           (p : f1 ~>β+ f2)
+  : (λ f1) ~>β+ (λ f2).
 Proof.
   induction p.
   - apply TStep.
@@ -202,11 +202,164 @@ Definition beta_betaRed
            {A1 A2 : ty B}
            (f : tm ar (A1 ,, C) A2)
            (x : tm ar C A1)
-  : ((λ f) · x) ~>β* (subTm f (beta_sub x)).
+  : ((λ f) · x) ~>β+ (subTm f (beta_sub x)).
 Proof.
   apply TStep.
   apply CStep.
   apply Beta.
+Defined.
+
+(** ** A non-negative number of rewriting steps *)
+Definition betaRed_nonneg
+           {B : Type}
+           {F : Type}
+           {ar : F -> ty B}
+           {C : con B}
+           {A : ty B}
+  : tm ar C A -> tm ar C A -> Type
+  := reflexiveClosure (fun t1 t2 => t1 ~>β+ t2).
+
+Notation "t1 '~>β*' t2" := (betaRed_nonneg t1 t2) (at level 70).
+
+Definition betaRed_nonneg_refl
+           {B : Type}
+           {F : Type}
+           {ar : F -> ty B}
+           {C : con B}
+           {A : ty B}
+           (t : tm ar C A)
+  : t ~>β* t.
+Proof.
+  right.
+  reflexivity.
+Defined.
+
+Definition betaRed_nonneg_step
+           {B : Type}
+           {F : Type}
+           {ar : F -> ty B}
+           {C : con B}
+           {A : ty B}
+           {t1 t2 : tm ar C A}
+           (p : t1 ~>β t2)
+  : t1 ~>β* t2.
+Proof.
+  left.
+  apply betaRed_step.
+  exact p.
+Qed.
+
+Definition betaRed_nonneg_steps
+           {B : Type}
+           {F : Type}
+           {ar : F -> ty B}
+           {C : con B}
+           {A : ty B}
+           {t1 t2 : tm ar C A}
+           (p : t1 ~>β+ t2)
+  : t1 ~>β* t2.
+Proof.
+  left.
+  exact p.
+Qed.
+
+
+Definition beta_nonneg_Trans
+           {B : Type}
+           {F : Type}
+           {ar : F -> ty B}
+           {C : con B}
+           {A : ty B}
+           {t1 t2 t3 : tm ar C A}
+           (p : t1 ~>β* t2)
+           (q : t2 ~>β* t3)
+  : t1 ~>β* t3.
+Proof.
+  destruct p as [r1 | p], q as [r2 | q].
+  - left.
+    exact (beta_Trans r1 r2).
+  - subst.
+    left.
+    exact r1.
+  - subst.
+    left.
+    exact r2.
+  - subst.
+    right.
+    reflexivity.
+Defined.
+
+Definition beta_nonneg_App_l
+           {B : Type}
+           {F : Type}
+           {ar : F -> ty B}
+           {C : con B}
+           {A1 A2 : ty B}
+           {f1 f2 : tm ar C (A1 ⟶ A2)}
+           (x : tm ar C A1)
+           (p : f1 ~>β* f2)
+  : (f1 · x) ~>β* (f2 · x).
+Proof.
+  destruct p as [r | p].
+  - left.
+    apply beta_App_l.
+    exact r.
+  - subst.
+    right.
+    reflexivity.
+Defined.
+
+Definition beta_nonneg_App_r
+           {B : Type}
+           {F : Type}
+           {ar : F -> ty B}
+           {C : con B}
+           {A1 A2 : ty B}
+           (f : tm ar C (A1 ⟶ A2))
+           {x1 x2 : tm ar C A1}
+           (p : x1 ~>β* x2)
+  : (f · x1) ~>β* (f · x2).
+Proof.
+  destruct p as [r | p].
+  - left.
+    apply beta_App_r.
+    exact r.
+  - subst.
+    right.
+    reflexivity.
+Defined.
+
+Definition beta_nonneg_Lam
+           {B : Type}
+           {F : Type}
+           {ar : F -> ty B}
+           {C : con B}
+           {A1 A2 : ty B}
+           {f1 f2 : tm ar (A1 ,, C) A2}
+           (p : f1 ~>β* f2)
+  : (λ f1) ~>β* (λ f2).
+Proof.
+  destruct p as [r | p].
+  - left.
+    apply beta_Lam.
+    exact r.
+  - subst.
+    right.
+    reflexivity.
+Defined.
+
+Definition beta_nonneg_betaRed
+           {B : Type}
+           {F : Type}
+           {ar : F -> ty B}
+           {C : con B}
+           {A1 A2 : ty B}
+           (f : tm ar (A1 ,, C) A2)
+           (x : tm ar C A1)
+  : ((λ f) · x) ~>β* (subTm f (beta_sub x)).
+Proof.
+  left.
+  apply beta_betaRed.
 Defined.
 
 (** * Rewriting system in an AFS *)

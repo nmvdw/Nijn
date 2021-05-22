@@ -27,6 +27,7 @@ Syntax/StrongNormalization/BetaReductionSN.v
 Preprocessing/TypeChecker.v
 Preprocessing/PreprocessTerm.v
 Preprocessing/Preprocessor.v
+Preprocessing/Printing.v
 
 Interpretation/OrderInterpretation.v
 Interpretation/WeaklyMonotonicAlgebra.v

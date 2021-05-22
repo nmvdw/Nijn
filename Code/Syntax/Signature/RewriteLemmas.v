@@ -219,8 +219,8 @@ Proposition wkTm_red
             {A : ty B}
             {t1 t2 : tm ar C1 A}
             (p : wWeakened w t1)
-            (r : t1 ~>β* t2)
-  : { q : wWeakened w t2 & term_of p ~>β* term_of q }.
+            (r : t1 ~>β+ t2)
+  : { q : wWeakened w t2 & term_of p ~>β+ term_of q }.
 Proof.
   induction r as [ ? ? r | ? ? ? r1 IHr1 r2 IHr2].
   - pose (wkTm_red_step p r) as H.
@@ -271,8 +271,8 @@ Definition betaRed_Wk
            {A : ty B}
            {t1 t2 : tm ar C2 A}
            (w : wk C1 C2)
-           (p : t1 ~>β* t2)
-  : wkTm t1 w ~>β* wkTm t2 w.
+           (p : t1 ~>β+ t2)
+  : wkTm t1 w ~>β+ wkTm t2 w.
 Proof.
   revert w.
   revert C1.
@@ -334,8 +334,8 @@ Definition betaRed_sub
            {A : ty B}
            {t1 t2 : tm ar C2 A}
            (s : sub ar C1 C2)
-           (p : t1 ~>β* t2)
-  : subTm t1 s ~>β* subTm t2 s.
+           (p : t1 ~>β+ t2)
+  : subTm t1 s ~>β+ subTm t2 s.
 Proof.
   revert s.
   revert C1.

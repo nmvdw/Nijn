@@ -29,3 +29,7 @@ Proof.
   apply TStep.
   exact r.
 Qed.
+
+(** * Reflexive closure *)
+Definition reflexiveClosure {A : Type} (R : A -> A -> Type) : A -> A -> Type :=
+  fun a1 a2 => (R a1 a2 + (a1 = a2))%type.

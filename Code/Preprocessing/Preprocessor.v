@@ -301,11 +301,10 @@ Definition to_rewriteRule
      >>= fun C => check_functions_Ne X C ar (fst t)
      >>= fun t1 => rawNfToUtNe t1
      >>= fun t1 => infer_to_tm C ar t1
-     >>= fun z =>
-           check_functions_Nf X C ar (snd t)
-           >>= fun t2 => rawNfToUtNf t2
-           >>= fun t2 => check_to_tm C ar t2 (projT1 z)
-           >>= fun t2 => Some (make_rewrite C _ (projT2 z) t2).
+     >>= fun z => check_functions_Nf X C ar (snd t)
+     >>= fun t2 => rawNfToUtNf t2
+     >>= fun t2 => check_to_tm C ar t2 (projT1 z)
+     >>= fun t2 => Some (make_rewrite C _ (projT2 z) t2).
 
 Definition parsedAFS_to_afs
            {B V F : Type}
