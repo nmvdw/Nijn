@@ -340,17 +340,3 @@ Definition parsedAFS_to_fin_afs
   := error_map
        (fun z => make_fin_afs z _ _)
        (parsedAFS_to_afs X).
-
-Definition test
-  : rawNf nat nat. 
-Proof.
-  refine (RawNfLam 1 (RawNeToNf (RawNeVar 2))).
-Defined.
-
-Definition test'
-           (ar : nat -> ty nat)
-  := error_map
-       (fun z => check_to_tm ∙ ar z (Base 1 ⟶ Base 1))
-       (rawNfToUtNf_vars (2 :: nil) test).
-
-Eval compute in (test' (fun n => Base n)).
