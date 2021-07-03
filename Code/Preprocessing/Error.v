@@ -19,7 +19,7 @@ Arguments ScopeError {_}.
 Arguments UndefinedSymbol {_}.
 
 Definition error_return
-           (A : Type)
+           {A : Type}
   : A -> error A
   := Ret.
 
@@ -64,3 +64,33 @@ Fixpoint list_error
      | x :: xs =>
        list_error xs >>= fun ys => x >>= fun y => Ret (y :: ys)
      end.
+
+(** Monad laws *)
+Proposition error_left_identity
+            {A B : Type}
+            (a : A)
+            (f : A -> error B)
+  : (error_return a >>= f) = f a.
+Proof.
+  reflexivity.
+Qed.
+
+Proposition error_right_identity
+            {A : Type}
+            (x : error A)
+  : x >>= error_return = x.
+Proof.
+  destruct x ; reflexivity.
+Qed.
+
+Proposition error_associativity
+            {A B C : Type}
+            (x : error A)
+            (f : A -> error B)
+            (g : B -> error C)
+  : ((x >>= f) >>= g)
+    =
+    (x >>= (fun z => f z >>= g)).
+Proof.
+  destruct x ; reflexivity.
+Qed.
