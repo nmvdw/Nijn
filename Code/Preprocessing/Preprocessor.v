@@ -1,5 +1,6 @@
 Require Import Prelude.Funext.
 Require Import Prelude.Basics.
+Require Import Preprocessing.Error.
 Require Import Preprocessing.TypeChecker.
 Require Import Preprocessing.PreprocessTerm.
 Require Import Signature.
@@ -29,16 +30,20 @@ Fixpoint getKey
          `{decEq A}
          (a : A)
          (xs : assocList A B)
-  : option { b : B | In (pair a b) xs }
+  : error { b : B | In (pair a b) xs }
   := match xs with
-     | nil => None
+     | nil => UndefinedSymbol
      | (pair x b) :: xs =>
        match dec_eq x a with
-       | Yes p => Some (exist _ b (in_eq_hd (path_pair p eq_refl)))
+       | Yes p => Ret (exist _ b (in_eq_hd (path_pair p eq_refl)))
        | No p =>
          match getKey a xs with
-         | Some (exist _ b' p) => Some (exist _ b' (in_cons _ _ _ p))
-         | None => None
+         | Ret (exist _ b' p) => Ret (exist _ b' (in_cons _ _ _ p))
+         | TypeCheckErrorNoVar => TypeCheckErrorNoVar
+         | TypeCheckErrorNoBase => TypeCheckErrorNoBase
+         | TypeCheckErrorOther => TypeCheckErrorOther
+         | ScopeError => ScopeError
+         | UndefinedSymbol => UndefinedSymbol
          end
        end
      end.
@@ -74,16 +79,20 @@ Fixpoint dmap
      | x :: xs => (x , f x) :: dmap f xs
      end.
 
-Fixpoint list_option_pair
+Fixpoint list_error_pair
          {A : Type}
          {B : A -> Type}
-         (l : list { a : A & option (B a) })
-  : option (list { a : A & B a })
+         (l : list { a : A & error (B a) })
+  : error (list { a : A & B a })
   := match l with
-     | nil => Some nil
-     | (x , Some p) :: xs =>
-       option_map (fun xs => (x , p) :: xs) (list_option_pair xs)
-     | (x , None) :: xs => None
+     | nil => Ret nil
+     | (x , Ret p) :: xs =>
+       error_map (fun xs => (x , p) :: xs) (list_error_pair xs)
+     | (x , TypeCheckErrorNoVar) :: _ => TypeCheckErrorNoVar
+     | (x , TypeCheckErrorNoBase) :: _ => TypeCheckErrorNoBase
+     | (x , TypeCheckErrorOther) :: _  => TypeCheckErrorOther
+     | (x , ScopeError) :: xs => ScopeError
+     | (x , UndefinedSymbol) :: xs => UndefinedSymbol
      end.
 
 Fixpoint list_to_map_el
@@ -136,12 +145,12 @@ Proof.
       exact p.
 Qed.
 
-Definition in_list_option_pair
+Definition in_list_error_pair
            {A : Type}
            {B : A -> Type}
-           {l1 : list { a : A & option (B a) }}
+           {l1 : list { a : A & error (B a) }}
            {l2 : list { a : A & B a }}
-           (p : list_option_pair l1 = Some l2)
+           (p : list_error_pair l1 = Ret l2)
            (a : A)
            (q : In a (fst_list l1))
   : In a (fst_list l2).
@@ -150,41 +159,46 @@ Proof.
   induction l1 as [ | x xs IHxs ] ; intros l2 p.
   - simpl in *.
     contradiction.
-  - simpl in *.
-    destruct x as [ x [ z | ]].
-    destruct (list_option_pair xs) as [ ys | ] ; simpl in *.
-    + inversion p.
-      subst ; simpl.
-      destruct q as [ q | q ].
-      * left.
-        exact q.
-      * right.
-        apply IHxs.
-        ** exact q.
-        ** reflexivity.
-    + discriminate.
-    + discriminate.
+  - destruct x as [ x [ z | | | | | ]]
+    ; simpl in *
+    ; try discriminate.
+    destruct (list_error_pair xs) as [ ys | | | | | ]
+    ; simpl in *
+    ; try discriminate.
+    inversion p.
+    subst ; simpl.
+    destruct q as [ q | q ].
+    + left.
+      exact q.
+    + right.
+      apply IHxs.
+      * exact q.
+      * reflexivity.
 Qed.
 
-Definition finite_option
+Definition finite_error
            {A : Type}
            {B : A -> Type}
            `{isFinite A}
            `{decEq A}
-           (f : forall (a : A), option (B a))
-  : option (forall (a : A), B a).
+           (f : forall (a : A), error (B a))
+  : error (forall (a : A), B a).
 Proof.
-  pose (l := list_option_pair (dmap f els)).
-  assert (Hl : list_option_pair (dmap f els) = l) by reflexivity.
+  pose (l := list_error_pair (dmap f els)).
+  assert (Hl : list_error_pair (dmap f els) = l) by reflexivity.
   revert Hl.
-  destruct l as [ l | ] ; intros p.
-  - refine (Some _).
+  destruct l as [ l | | | | | ] ; intros p.
+  - refine (Ret _).
     simple refine (list_to_map l _).
     intro a.
-    apply (in_list_option_pair p).
+    apply (in_list_error_pair p).
     apply in_dmap.
     apply allIsMember.
-  - exact None.
+  - exact TypeCheckErrorNoVar.
+  - exact TypeCheckErrorNoBase.
+  - exact TypeCheckErrorOther.
+  - exact ScopeError.
+  - exact UndefinedSymbol.
 Defined.
 
 (** * The output of the parser *)
@@ -213,17 +227,17 @@ Fixpoint to_baseType
          `{decEq B}
          (X : parsedAFS B V F)
          (A : ty B)
-  : option (ty (baseTypes X))
+  : error (ty (baseTypes X))
   := match A with
      | Base b =>
        match decideIn b (typeSymbols X) with
-       | Yes p => Some (Base (MakeMem b p))
-       | No p => None
+       | Yes p => Ret (Base (MakeMem b p))
+       | No p => UndefinedSymbol
        end
      | A1 ⟶ A2 =>
        to_baseType X A1
        >>= fun A1 => to_baseType X A2
-       >>= fun A2 => Some (A1 ⟶ A2)
+       >>= fun A2 => Ret (A1 ⟶ A2)
      end.
 
 (** * Processing to an AFS *)
@@ -232,8 +246,8 @@ Definition afs_arity
            `{decEq B}
            `{decEq F}
            (X : parsedAFS B V F)
-  : option (members (baseTerms X) -> ty (baseTypes X))
-  := finite_option (fun p => to_baseType X (snd (member_el p))).
+  : error (members (baseTerms X) -> ty (baseTypes X))
+  := finite_error (fun p => to_baseType X (snd (member_el p))).
 
 Fixpoint list_to_con
          {B : Type}
@@ -248,9 +262,9 @@ Definition freeVars_to_con
            {B V F : Type}
            `{decEq B}
            (X : parsedAFS B V F)
-  : option (con (baseTypes X))
+  : error (con (baseTypes X))
   := let l := map (fun z => to_baseType X (snd z)) (freeVars X) in
-     option_map list_to_con (list_option l).
+     error_map list_to_con (list_error l).
 
 Fixpoint check_functions_Nf
          {B V F : Type}
@@ -258,13 +272,12 @@ Fixpoint check_functions_Nf
          `{decEq F}
          `{decEq V}
          (X : parsedAFS B V F)
-         (C : con (baseTypes X))
          (ar : members (baseTerms X) -> ty (baseTypes X))
          (t : rawNf V F)
-  : option (rawNf V (members (baseTerms X)))
+  : error (rawNf V (members (baseTerms X)))
   := match t with
-     | RawNeToNf t => option_map RawNeToNf (check_functions_Ne X C ar t)
-     | RawNfLam x t => option_map (RawNfLam x) (check_functions_Nf X C ar t)
+     | RawNeToNf t => error_map RawNeToNf (check_functions_Ne X ar t)
+     | RawNfLam x t => error_map (RawNfLam x) (check_functions_Nf X ar t)
      end
 with check_functions_Ne
      {B V F : Type}
@@ -272,20 +285,19 @@ with check_functions_Ne
      `{decEq F}
      `{decEq V}
      (X : parsedAFS B V F)
-     (C : con (baseTypes X))
      (ar : members (baseTerms X) -> ty (baseTypes X))
      (t : rawNe V F)
-  : option (rawNe V (members (baseTerms X)))
+  : error (rawNe V (members (baseTerms X)))
   := match t with
-     | RawNeVar v => Some (RawNeVar v)
+     | RawNeVar v => Ret (RawNeVar v)
      | RawNeBase f =>
-       option_map
+       error_map
          (fun p => RawNeBase (MakeMem (pair f (proj1_sig p)) (proj2_sig p)))
          (getKey f (baseTerms X))
      | RawNeApp f t =>
-       check_functions_Ne X C ar f
-       >>= fun f => check_functions_Nf X C ar t
-       >>= fun t => Some (RawNeApp f t)
+       check_functions_Ne X ar f
+       >>= fun f => check_functions_Nf X ar t
+       >>= fun t => Ret (RawNeApp f t)
      end.
 
 Definition to_rewriteRule
@@ -294,17 +306,17 @@ Definition to_rewriteRule
            `{decEq B}
            `{decEq V}
            {X : parsedAFS B V F}
+           (C : con (baseTypes X))
            (ar : members (baseTerms X) -> ty (baseTypes X))
            (t : rawNe V F * rawNf V F)
-  : option (rewriteRule ar)
-  := freeVars_to_con X
-     >>= fun C => check_functions_Ne X C ar (fst t)
-     >>= fun t1 => rawNfToUtNe t1
+  : error (rewriteRule ar)
+  := check_functions_Ne X ar (fst t)
+     >>= fun t1 => rawNeToUtNe_vars (map fst (freeVars X)) t1
      >>= fun t1 => infer_to_tm C ar t1
-     >>= fun z => check_functions_Nf X C ar (snd t)
-     >>= fun t2 => rawNfToUtNf t2
+     >>= fun z => check_functions_Nf X ar (snd t)
+     >>= fun t2 => rawNfToUtNf_vars (map fst (freeVars X)) t2
      >>= fun t2 => check_to_tm C ar t2 (projT1 z)
-     >>= fun t2 => Some (make_rewrite C _ (projT2 z) t2).
+     >>= fun t2 => Ret (make_rewrite C _ (projT2 z) t2).
 
 Definition parsedAFS_to_afs
            {B V F : Type}
@@ -312,11 +324,11 @@ Definition parsedAFS_to_afs
            `{decEq F}
            `{decEq V}
            (X : parsedAFS B V F)
-  : option (afs (baseTypes X) (members (baseTerms X)))
+  : error (afs (baseTypes X) (members (baseTerms X)))
   := afs_arity X
      >>= fun ar => freeVars_to_con X
-     >>= fun C => list_option (map (to_rewriteRule ar) (rewrites X))
-     >>= fun rs => Some (make_afs ar rs).
+     >>= fun C => list_error (map (to_rewriteRule C ar) (rewrites X))
+     >>= fun rs => Ret (make_afs ar rs).
 
 Definition parsedAFS_to_fin_afs
            {B V F : Type}
@@ -324,7 +336,21 @@ Definition parsedAFS_to_fin_afs
            `{decEq F}
            `{decEq V}
            (X : parsedAFS B V F)
-  : option (fin_afs (baseTypes X) (members (baseTerms X)))
-  := option_map
+  : error (fin_afs (baseTypes X) (members (baseTerms X)))
+  := error_map
        (fun z => make_fin_afs z _ _)
        (parsedAFS_to_afs X).
+
+Definition test
+  : rawNf nat nat. 
+Proof.
+  refine (RawNfLam 1 (RawNeToNf (RawNeVar 2))).
+Defined.
+
+Definition test'
+           (ar : nat -> ty nat)
+  := error_map
+       (fun z => check_to_tm ∙ ar z (Base 1 ⟶ Base 1))
+       (rawNfToUtNf_vars (2 :: nil) test).
+
+Eval compute in (test' (fun n => Base n)).

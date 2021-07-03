@@ -24,6 +24,7 @@ Syntax/StrongNormalization/SN.v
 Syntax/StrongNormalization/BetaNormalForm.v
 Syntax/StrongNormalization/BetaReductionSN.v
 
+Preprocessing/Error.v
 Preprocessing/TypeChecker.v
 Preprocessing/PreprocessTerm.v
 Preprocessing/Preprocessor.v

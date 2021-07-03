@@ -1,6 +1,9 @@
 Require Import Prelude.Basics.
+Require Import Preprocessing.Error.
 Require Import Preprocessing.TypeChecker.
 Require Import List.
+
+Open Scope error.
 
 (** * Named terms *)
 
@@ -65,13 +68,13 @@ Fixpoint rawVarToUtVar
          `{decEq V}
          (vs : list V)
          (x : V)
-  : option utVar
+  : error utVar
   := match vs with
-     | nil => None
+     | nil => ScopeError
      | v :: vs =>
        match dec_eq x v with
-       | Yes _ => Some VzUt
-       | No _ => option_map VsUt (rawVarToUtVar vs x)
+       | Yes _ => Ret VzUt
+       | No _ => error_map VsUt (rawVarToUtVar vs x)
        end
      end.
 
@@ -81,36 +84,24 @@ Fixpoint rawNfToUtNf_vars
          `{decEq V}
          (vs : list V)
          (t : rawNf V F)
-  : option (utNf F)
+  : error (utNf F)
   := match t with
-     | RawNeToNf t => option_map UtNeToNf (rawNeToUtNe_vars vs t)
-     | RawNfLam a t => rawNfToUtNf_vars (a :: vs) t
+     | RawNeToNf t => error_map UtNeToNf (rawNeToUtNe_vars vs t)
+     | RawNfLam a t =>
+       rawNfToUtNf_vars (a :: vs) t
+       >>= fun t1 => Ret (UtNfLam t1)
      end
 with rawNeToUtNe_vars
      {V F : Type}
      `{decEq V}
      (vs : list V)
      (t : rawNe V F)
-  : option (utNe F)
+  : error (utNe F)
   := match t with
-     | RawNeVar v => option_map UtNeVar (rawVarToUtVar vs v)
-     | RawNeBase f => Some (UtNeBase f)
+     | RawNeVar v => error_map UtNeVar (rawVarToUtVar vs v)
+     | RawNeBase f => Ret (UtNeBase f)
      | RawNeApp t1 t2 =>
        rawNeToUtNe_vars vs t1
        >>= fun t1 => rawNfToUtNf_vars vs t2
-       >>= fun t2 => Some (UtNeApp t1 t2)
+       >>= fun t2 => Ret (UtNeApp t1 t2)
      end.
-
-Definition rawNfToUtNf
-           {V F : Type}
-           `{decEq V}
-           (t : rawNf V F)
-  : option (utNf F)
-  := rawNfToUtNf_vars (freeVarsNf t) t.
-
-Definition rawNfToUtNe
-           {V F : Type}
-           `{decEq V}
-           (t : rawNe V F)
-  : option (utNe F)
-  := rawNeToUtNe_vars (freeVarsNe t) t.

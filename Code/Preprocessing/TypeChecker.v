@@ -1,6 +1,7 @@
 Require Import Prelude.Basics.
 Require Import Syntax.Signature.
 Require Import Syntax.StrongNormalization.BetaNormalForm.
+Require Import Preprocessing.Error.
 
 (** * The type checker *)
 
@@ -283,14 +284,18 @@ Fixpoint inferVar
          {B : Type}
          (C : con B)
          (v : utVar)
-  : option { A : ty B & derivation_Var C A v }
+  : error { A : ty B & derivation_Var C A v }
   := match C , v with
-     | ∙ , _ => None
-     | A ,, C , VzUt => Some (A , TypeVz)
+     | ∙ , _ => TypeCheckErrorNoVar
+     | A ,, C , VzUt => Ret (A , TypeVz)
      | A ,, C , VsUt v =>
        match inferVar C v with
-       | None => None
-       | Some (A , d) => Some (A , TypeVs d)
+       | Ret (A , d) => Ret (A , TypeVs d)
+       | TypeCheckErrorNoVar => TypeCheckErrorNoVar
+       | TypeCheckErrorNoBase => TypeCheckErrorNoBase
+       | TypeCheckErrorOther => TypeCheckErrorOther
+       | ScopeError => ScopeError
+       | UndefinedSymbol => UndefinedSymbol
        end
      end.
 
@@ -302,22 +307,25 @@ Fixpoint check
          (ar : F -> ty B)
          (t : utNf F)
          (A : ty B)
-         {struct t}
-  : option (derivation_Nf C ar A t)
+  : error (derivation_Nf C ar A t)
   := match t with
      | UtNeToNf t =>
        match infer C ar t with
-       | Some z =>
+       | Ret z =>
          match dec_eq (projT1 z) A with
-         | Yes p => Some (TypeNe (transport (fun z => derivation_Ne C ar z _) p (projT2 z)))
-         | No _ => None
+         | Yes p => Ret (TypeNe (transport (fun z => derivation_Ne C ar z _) p (projT2 z)))
+         | No _ => TypeCheckErrorOther
          end
-       | None => None
+     | TypeCheckErrorNoVar => TypeCheckErrorNoVar
+     | TypeCheckErrorNoBase => TypeCheckErrorNoBase
+     | TypeCheckErrorOther => TypeCheckErrorOther
+       | ScopeError => ScopeError
+       | UndefinedSymbol => UndefinedSymbol
        end
      | UtNfLam t =>
        match A with
-       | Base _ => None
-       | A1 ⟶ A2 => option_map TypeLam (check (A1 ,, C) ar t A2)
+       | Base _ => TypeCheckErrorOther
+       | A1 ⟶ A2 => error_map TypeLam (check (A1 ,, C) ar t A2)
        end
      end
 with infer
@@ -327,19 +335,27 @@ with infer
      (C : con B)
      (ar : F -> ty B)
      (t : utNe F)
-  : option { A : ty B & derivation_Ne C ar A t }
+  : error { A : ty B & derivation_Ne C ar A t }
   := match t with
      | UtNeVar v =>
        match inferVar C v with
-       | Some (A , d) => Some (A , TypeVar d)
-       | None => None
+       | Ret (A , d) => Ret (A , TypeVar d)
+       | TypeCheckErrorNoVar => TypeCheckErrorNoVar
+       | TypeCheckErrorNoBase => TypeCheckErrorNoBase
+       | TypeCheckErrorOther => TypeCheckErrorOther
+       | ScopeError => ScopeError
+       | UndefinedSymbol => UndefinedSymbol
        end
-     | UtNeBase f => Some (ar f , TypeBase f)
+     | UtNeBase f => Ret (ar f , TypeBase f)
      | UtNeApp f t =>
        match infer C ar f with
-       | Some (Base _ , n) => None
-       | Some (A1 ⟶ A2 , n) => option_map (fun m => (A2 , TypeApp n m)) (check C ar t A1)
-       | None => None
+       | Ret (Base _ , n) => TypeCheckErrorOther
+       | Ret (A1 ⟶ A2 , n) => error_map (fun m => (A2 , TypeApp n m)) (check C ar t A1)
+       | TypeCheckErrorNoVar => TypeCheckErrorNoVar
+       | TypeCheckErrorNoBase => TypeCheckErrorNoBase
+       | TypeCheckErrorOther => TypeCheckErrorOther
+       | ScopeError => ScopeError
+       | UndefinedSymbol => UndefinedSymbol
        end
      end.
 
@@ -349,7 +365,7 @@ Definition infer_var_complete
            {v : utVar}
            {A : ty B}
            (d : derivation_Var C A v)
-  : inferVar C v = Some (A , d).
+  : inferVar C v = Ret (A , d).
 Proof.
   induction d as [ | ? ? ? ? d IHd ] ; simpl.
   - reflexivity.
@@ -367,7 +383,7 @@ Fixpoint check_complete
          {A : ty B}
          {t : utNf F}
          (Ht : derivation_Nf C ar A t)
-  : check C ar t A = Some Ht
+  : check C ar t A = Ret Ht
 with infer_complete
      {B : Type}
      `{decEq B}
@@ -377,7 +393,7 @@ with infer_complete
      {A : ty B}
      {t : utNe F}
      (Ht : derivation_Ne C ar A t)
-  : infer C ar t = Some (A , Ht).
+  : infer C ar t = Ret (A , Ht).
 Proof.
   - destruct Ht as [ ? ? d | ? ? ? d ] ; simpl.
     + rewrite (infer_complete _ _ _ _ _ _ _ d).
@@ -406,8 +422,8 @@ Definition check_to_tm
            (ar : F -> ty B)
            (t : utNf F)
            (A : ty B)
-  : option (tm ar C A)
-  := option_map (fun z => nfToTm (derivation_to_nf z)) (check C ar t A).
+  : error (tm ar C A)
+  := error_map (fun z => nfToTm (derivation_to_nf z)) (check C ar t A).
 
 Definition infer_to_tm
            {B : Type}
@@ -416,7 +432,7 @@ Definition infer_to_tm
            (C : con B)
            (ar : F -> ty B)
            (t : utNe F)
-  : option { A : ty B & tm ar C A }
-  := option_map
+  : error { A : ty B & tm ar C A }
+  := error_map
        (fun z => (projT1 z , neToTm (derivation_to_ne (projT2 z))))
        (infer C ar t).

@@ -3,6 +3,8 @@ Require Import Signature.
 Require Import String.
 Require Import List.
 Require Import Coq.Program.Equality.
+Require Import Preprocessing.Preprocessor.
+Require Import Preprocessing.Error.
 
 Local Open Scope string.
 
@@ -380,6 +382,50 @@ Definition show_afs
           (append p (separate p) (show_afs_functions p X))
           (append p (separate p) (show_afs_rewrites p X))).
 
+Definition show_afs_members
+           {S B V F : Type}
+           `{decEq B}
+           `{decEq F}
+           `{decEq V}
+           (p : afs_show S B V F)
+           (X : parsedAFS B V F)
+  : afs_show S (baseTypes X) V (members (baseTerms X)).
+Proof.
+  simple refine (make_afs_show _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _).
+  - exact (startTypes p).
+  - exact (startTerms p).
+  - exact (startRewrites p).
+  - exact (append p).
+  - exact (leftParen p).
+  - exact (rightParen p).
+  - exact (separate p).
+  - exact (empty p).
+  - exact (colon p).
+  - exact (fresh p).
+  - intros [b ?].
+    exact (showBase p b).
+  - exact (arrow p).
+  - intros [f ?].
+    exact (showBaseFun p (fst f)).
+  - exact (showVars p).
+  - exact (showLam p).
+  - exact (showLamSep p).
+  - exact (appSep p).
+  - exact (rewriteSym p).
+Defined.
+
+Definition print_parsed
+           {S B V F : Type}
+           `{decEq B}
+           `{decEq F}
+           `{decEq V}
+           (p : afs_show S B V F)
+           (X : parsedAFS B V F)
+  : error S
+  := error_map
+       (show_afs (show_afs_members p X))
+       (parsedAFS_to_fin_afs X).
+
 Fixpoint show_nat
          (n : nat)
   : string
@@ -388,7 +434,7 @@ Fixpoint show_nat
      | S n => String.append "|" (show_nat n)
      end.
 
-Definition string_printer : afs_show string string string string.
+Definition string_printer : afs_show string string string (string * ty string).
 Proof.
   simple refine (make_afs_show _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _).
   - exact "Types".
@@ -403,10 +449,45 @@ Proof.
   - exact show_nat.
   - exact (fun s => s).
   - exact " -> ".
-  - exact (fun s => s).
+  - exact (fun s => fst s).
   - exact (fun s => s).
   - exact "̈\\".
   - exact ".".
   - exact " ".
   - exact "~>".
+Defined.
+
+Definition afs_members
+           {S B V F : Type}
+           `{decEq B}
+           `{decEq F}
+           `{decEq V}
+           (Bl : list B)
+           (Fl : list F)
+           (p : afs_show S B V F)
+  : afs_show S (members Bl) V (members Fl).
+Proof.
+  simple refine (make_afs_show _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _).
+  - exact (startTypes p).
+  - exact (startTerms p).
+  - exact (startRewrites p).
+  - exact (append p).
+  - exact (leftParen p).
+  - exact (rightParen p).
+  - exact (separate p).
+  - exact (empty p).
+  - exact (colon p).
+  - exact (fresh p).
+  - intro x.
+    destruct x as [b ?].
+    exact (showBase p b).
+  - exact (arrow p).
+  - intro x.
+    destruct x as [f ?].
+    exact (showBaseFun p f).
+  - exact (showVars p).
+  - exact (showLam p).
+  - exact (showLamSep p).
+  - exact (appSep p).
+  - exact (rewriteSym p).
 Defined.
