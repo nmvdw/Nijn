@@ -199,7 +199,7 @@ Definition dec_eq_bool
 
 Global Instance decEq_bool : decEq bool
   := {| dec_eq := dec_eq_bool |}.
-
+  
 (** The product of types with decidable equality has decidable equality *)
 Section ProductDecEq.
   Context {A B : Type}

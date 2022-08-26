@@ -386,7 +386,7 @@ Proof.
     exact (gt_ge (p x) (q x)).
 Qed.
 
-(** The function space is well-founded is we can find an element of the domain *)
+(** The function space is well-founded if we can find an element of the domain *)
 Proposition fun_Wf
             (X Y : CompatRel)
             (x : X)

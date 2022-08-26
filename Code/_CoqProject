@@ -32,3 +32,5 @@ Preprocessing/Printing.v
 
 Interpretation/OrderInterpretation.v
 Interpretation/WeaklyMonotonicAlgebra.v
+
+Examples/Map.v

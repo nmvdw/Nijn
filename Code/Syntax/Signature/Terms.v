@@ -22,7 +22,7 @@ Arguments Lam {_} {_} {_} {_} {_} {_} _.
 Arguments App {_} {_} {_} {_} {_} {_} _ _.
 
 Notation "'λ' x" := (Lam x) (at level 10) : signature.
-Notation "f · x" := (App f x) (at level 20, left associativity) : signature.
+Notation "f · x" := (App f x) (at level 20, left associativity) : signature.  
 
 (** * Decidable alpha equality of terms *)
 Definition is_BaseTm
