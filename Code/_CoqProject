@@ -32,5 +32,6 @@ Preprocessing/Printing.v
 
 Interpretation/OrderInterpretation.v
 Interpretation/WeaklyMonotonicAlgebra.v
+Interpretation/Polynomial.v
 
 Examples/Map.v

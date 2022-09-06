@@ -12,36 +12,37 @@ Require Import Coq.Program.Equality.
 
 (** We use weakly monotonic algebras to obtain interpretations. They consist of the following data. *)
 Record WMalgebra {B F : Type} (X : afs B F) :=
-  {
-    sem_baseTy : B -> CompatRel ;
-    sem_baseTy_el : forall (b : B), sem_baseTy b ;
-    sem_baseTyWf : forall (b : B), Wf (fun (x y : sem_baseTy b) => x > y) ;
-    sem_baseTy_isCompatRel : forall (b : B), isCompatRel (sem_baseTy b) ;
-    sem_baseTm : forall (f : F), sem_Ty sem_baseTy (arity X f) ;
-    sem_App : forall (A1 A2 : ty B),
+  make_WMalgebra
+    {
+      sem_baseTy : B -> CompatRel ;
+      sem_baseTy_el : forall (b : B), sem_baseTy b ;
+      sem_baseTyWf : forall (b : B), Wf (fun (x y : sem_baseTy b) => x > y) ;
+      sem_baseTy_isCompatRel : forall (b : B), isCompatRel (sem_baseTy b) ;
+      sem_baseTm : forall (f : F), sem_Ty sem_baseTy (arity X f) ;
+      sem_App : forall (A1 A2 : ty B),
         weakMonotoneMap
           ((sem_Ty sem_baseTy A1 ⇒ sem_Ty sem_baseTy A2) * sem_Ty sem_baseTy A1)
           (sem_Ty sem_baseTy A2) ;
-    sem_App_gt_id : forall {A1 A2 : ty B}
-                           (f : sem_Ty sem_baseTy A1 ⇒ sem_Ty sem_baseTy A2)
-                           (x : sem_Ty sem_baseTy A1),
+      sem_App_gt_id : forall {A1 A2 : ty B}
+                             (f : sem_Ty sem_baseTy A1 ⇒ sem_Ty sem_baseTy A2)
+                             (x : sem_Ty sem_baseTy A1),
         sem_App _ _ (f , x) >= f x ;
-    sem_App_l : forall (A1 A2 : ty B)
-                       (f1 f2 : sem_Ty sem_baseTy A1 ⇒ sem_Ty sem_baseTy A2)
-                       (x : sem_Ty sem_baseTy A1),
+      sem_App_l : forall (A1 A2 : ty B)
+                         (f1 f2 : sem_Ty sem_baseTy A1 ⇒ sem_Ty sem_baseTy A2)
+                         (x : sem_Ty sem_baseTy A1),
         f1 > f2 -> sem_App _ _ (f1 , x) > sem_App _ _ (f2 , x) ;    
-    sem_App_r : forall (A1 A2 : ty B)
-                       (f : sem_Ty sem_baseTy A1 ⇒ sem_Ty sem_baseTy A2)
-                       (x1 x2 : sem_Ty sem_baseTy A1),
+      sem_App_r : forall (A1 A2 : ty B)
+                         (f : sem_Ty sem_baseTy A1 ⇒ sem_Ty sem_baseTy A2)
+                         (x1 x2 : sem_Ty sem_baseTy A1),
         x1 > x2 -> sem_App _ _ (f , x1) > sem_App _ _ (f , x2) ;    
-    sem_Rew : forall (r : rewriteRules X)
-                     (C : con B)
-                     (s : sub (arity X) C (vars r))
-                     (x : sem_Con sem_baseTy C),
+      sem_Rew : forall (r : rewriteRules X)
+                       (C : con B)
+                       (s : sub (arity X) C (vars r))
+                       (x : sem_Con sem_baseTy C),
         sem_Tm sem_baseTy sem_baseTm sem_App (subTm (lhs r) s) x
         >
         sem_Tm sem_baseTy sem_baseTm sem_App (subTm (rhs r) s) x
-  }.
+    }.
 
 Arguments sem_baseTy {_ _ _} _ _.
 Arguments sem_baseTy_el {_ _ _} _ _.
@@ -51,6 +52,8 @@ Arguments sem_baseTm {_ _ _} _.
 Arguments sem_App {_ _ _} _.
 Arguments sem_App_gt_id {_ _ _} _ {_ _} _ _.
 Arguments sem_Rew {_ _ _} _.
+
+Arguments make_WMalgebra {B F} X _ _ _ _ _ _ _ _ _ _.
 
 Global Instance afsAlgebra_isCompatRel
        {B F : Type}

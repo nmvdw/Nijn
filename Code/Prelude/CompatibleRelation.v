@@ -606,6 +606,65 @@ Definition lambda_abs
   : X ⇒ (Y ⇒ Z)
   := make_monotone (fun x : X => lambda_abs_on_X f x) _.
 
+Global Instance plus_iswWeakMonotone
+                {A : CompatRel}
+                (f g : weakMonotoneMap A nat_CompatRel)
+  : weakMonotone (fun a => (f a + g a : nat_CompatRel)).
+Proof.
+  intros a1 a2 p.
+  pose (is_weak_monotone _ _ f _ _ p).
+  pose (is_weak_monotone _ _ g _ _ p).
+  cbn in *.
+  nia.
+Qed.
+
+Definition plus_WM
+           {A : CompatRel}
+           (f g : weakMonotoneMap A nat_CompatRel)
+  : weakMonotoneMap A nat_CompatRel
+  := make_monotone (fun a => (f a + g a : nat_CompatRel)) _.
+
+Global Instance mult_isWeakMonotone
+                {A : CompatRel}
+                (f g : weakMonotoneMap A nat_CompatRel)
+  : weakMonotone (fun a => (f a * g a : nat_CompatRel)%nat).
+Proof.
+  intros a1 a2 p.
+  pose (is_weak_monotone _ _ f _ _ p).
+  pose (is_weak_monotone _ _ g _ _ p).
+  cbn in *.
+  nia.
+Qed.
+
+Definition mult_WM
+           {A : CompatRel}
+           (f g : weakMonotoneMap A nat_CompatRel)
+  : weakMonotoneMap A nat_CompatRel
+  := make_monotone (fun a => (f a * g a : nat_CompatRel)%nat) _.
+
+Global Instance app_isWeakMonotone
+                {A B C : CompatRel}
+                `{isCompatRel C}
+                (f : weakMonotoneMap A (B ⇒ C))
+                (x : weakMonotoneMap A B)
+  : weakMonotone (fun a : A => f a (x a)).
+Proof.
+  intros a1 a2 p.
+  refine (ge_trans
+            (is_weak_monotone _ _ f _ _ p (x a1))
+            _).
+  exact (is_weak_monotone _ _ (f a2) _ _ (is_weak_monotone _ _ x _ _ p)).
+Qed.
+  
+Definition app_WM
+           {A B C : CompatRel}
+           `{isCompatRel C}
+           (f : weakMonotoneMap A (B ⇒ C))
+           (x : weakMonotoneMap A B)
+  : weakMonotoneMap A C
+  := make_monotone (fun a => f a (x a)) _.
+
+
 (** * Equality of weakly monotone maps *)
 Definition eq_weakMonotoneMap_help
            {X Y : CompatRel}
