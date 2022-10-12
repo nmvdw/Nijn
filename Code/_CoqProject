@@ -6,7 +6,10 @@ Prelude/Funext.v
 Prelude/Basics.v
 Prelude/Props.v
 Prelude/WellfoundedRelation.v
-Prelude/CompatibleRelation.v
+Prelude/Orders/CompatibleRelation.v
+Prelude/Orders/MonotonicMaps.v
+Prelude/Orders/Examples.v
+Prelude/Orders.v
 Prelude/Lexico.v
 Prelude/TransitiveClosure.v
 
@@ -34,4 +37,4 @@ Interpretation/OrderInterpretation.v
 Interpretation/WeaklyMonotonicAlgebra.v
 Interpretation/Polynomial.v
 
-Examples/Map.v
+# Examples/Map.v

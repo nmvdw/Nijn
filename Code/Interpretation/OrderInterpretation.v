@@ -1,6 +1,6 @@
 Require Import Prelude.Funext.
 Require Import Prelude.WellfoundedRelation.
-Require Import Prelude.CompatibleRelation.
+Require Import Prelude.Orders.
 Require Import Prelude.Lexico.
 Require Import Syntax.Signature.
 Require Import Syntax.StrongNormalization.SN.

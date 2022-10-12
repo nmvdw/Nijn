@@ -2,118 +2,13 @@ Require Import Prelude.Funext.
 Require Import Prelude.Basics.
 Require Import Prelude.Props.
 Require Import Prelude.WellfoundedRelation.
+Require Import Prelude.Orders.CompatibleRelation.
+Require Import Prelude.Orders.MonotonicMaps.
 Require Import Lia.
 Require Import Coq.Program.Equality.
 
 Declare Scope compat.
 Open Scope compat.
-
-(** * Compatible relations *)
-
-(** A compatible relation is a type equipped with two relations *)
-Record CompatRel :=
-  {
-    carrier :> Type ;
-    gt : carrier -> carrier -> Prop ;
-    ge : carrier -> carrier -> Prop
-  }.
-
-Arguments gt {_} _ _.
-Arguments ge {_} _ _.
-
-Notation "x > y" := (gt x y) : compat.
-Notation "x >= y" := (ge x y) : compat.
-
-(** These are the axioms that should hold for compatible relations. Note that we do not require the relations to be well-founded, but that condition is formulated separately. *)
-Class isCompatRel (X : CompatRel) :=
-  {
-    gt_trans : forall {x y z : X},
-      x > y -> y > z -> x > z ;
-    ge_trans : forall {x y z : X},
-      x >= y -> y >= z -> x >= z ;
-    ge_refl : forall (x : X),
-      x >= x ;
-    compat : forall {x y : X},
-      x > y -> x >= y ;
-    ge_gt : forall {x y z : X},
-      x >= y -> y > z -> x > z ;
-    gt_ge : forall {x y z : X},
-      x > y -> y >= z -> x > z ;
-    gt_prop : forall (x y : X),
-      isaprop (x > y) ;
-    ge_prop : forall (x y : X),
-      isaprop (x >= y)
-  }.
-
-Global Instance gt_isaprop
-       (X : CompatRel)
-       `{isCompatRel X}
-       (x y : X)
-  : isaprop (x > y)
-  := gt_prop x y.
-
-Global Instance ge_isaprop
-       (X : CompatRel)
-       `{isCompatRel X}
-       (x y : X)
-  : isaprop (x >= y)
-  := ge_prop x y.
-
-(** * Lemmata for compatible relations *)
-Proposition eq_gt
-            {X : CompatRel}
-            {x y z : X}
-            (p : x = y)
-            (q : y > z)
-  : x > z.
-Proof.
-  induction p.
-  exact q.
-Qed.
-
-Proposition gt_eq
-            {X : CompatRel}
-            {x y z : X}
-            (p : x > y)
-            (q : y = z)
-  : x > z.
-Proof.
-  induction q.
-  exact p.
-Qed.
-
-Proposition eq_ge
-            {X : CompatRel}
-            {x y z : X}
-            (p : x = y)
-            (q : y >= z)
-  : x >= z.
-Proof.
-  induction p.
-  exact q.
-Qed.
-
-Proposition ge_eq
-            {X : CompatRel}
-            {x y z : X}
-            (p : x >= y)
-            (q : y = z)
-  : x >= z.
-Proof.
-  induction q.
-  exact p.
-Qed.
-
-Proposition eq_to_ge
-            {X : CompatRel}
-            `{isCompatRel X}
-            {x y : X}
-            (p : x = y)
-  : x >= y.
-Proof.
-  induction p.
-  apply ge_refl.
-Qed.
 
 (** * Exmaples of compatible relations *)
 
@@ -136,6 +31,20 @@ Global Instance unit_isCompatRel : isCompatRel unit_CompatRel.
 Proof.
   unshelve esplit ; cbn ; auto ; try (apply _).
 Qed.
+
+Definition unit_strict_minimal_element
+  : strict_minimal_element unit_CompatRel.
+Proof.
+  simple refine (make_strict_min_el _ _ _).
+  - exact tt.
+  - intros y Hx.
+    induction y.
+    contradiction.
+Defined.
+
+Definition unit_minimal_element
+  : minimal_element unit_CompatRel
+  := is_minimal_to_strict_minimal unit_strict_minimal_element.
 
 (** Compatible relations are well-founded *)
 Definition prod_CompatRel
@@ -222,6 +131,93 @@ Proof.
       * apply q.
 Qed.
 
+Definition prod_minimal_element
+           {X Y : CompatRel}
+           (x : minimal_element X)
+           (y : minimal_element Y)
+  : minimal_element (X * Y).
+Proof.
+  simple refine (make_min_el _ _ _).
+  - exact (min_el _ x , min_el _ y).
+  - intro z.
+    split ; cbn.
+    + apply is_minimal.
+    + apply is_minimal.
+Defined.
+
+(**
+ 
+ *)
+Definition tuple_CompatRel
+          (X : CompatRel)
+          (Y : QuasiRel)
+  : CompatRel
+  := {| carrier := X * Y ;
+        gt x y := fst x > fst y /\ (snd x >= snd y)%qr ;
+        ge x y := fst x >= fst y /\ (snd x >= snd y)%qr |}.
+
+Global Instance tuple_isCompatRel
+              (X : CompatRel)
+              `{isCompatRel X}
+              (Y : QuasiRel)
+              `{isQuasiRel Y}
+  : isCompatRel (tuple_CompatRel X Y).
+Proof.
+  unshelve esplit ; cbn ; try (intros ; apply _).
+  - intros x y z [ p1 p2 ] [ q1 q2 ].
+    split.
+    + exact (gt_trans p1 q1).
+    + exact (ge_qr_trans p2 q2).
+  - intros x y z [ p1 p2 ] [ q1 q2 ].
+    split.
+    + exact (ge_trans p1 q1).
+    + exact (ge_qr_trans p2 q2).
+  - intros x.
+    split.
+    + apply ge_refl.
+    + apply ge_qr_refl.
+  - intros x y [ p1 p2 ].
+    split.
+    + exact (compat p1).
+    + exact p2.
+  - intros x y z [ p1 p2 ] [ q1 q2 ].
+    split.
+    + exact (ge_gt p1 q1).
+    + exact (ge_qr_trans p2 q2).
+  - intros x y z [ p1 p2 ] [ q1 q2 ].
+    split.
+    + exact (gt_ge p1 q1).
+    + exact (ge_qr_trans p2 q2).
+Qed.
+
+Definition isWf_pair_tuple
+           (X : CompatRel)
+           (Y : QuasiRel)
+           {x : X} {y : Y}
+           (Hx : isWf (@gt X) x)
+  : isWf (@gt _) ((x , y) : tuple_CompatRel X Y).
+Proof.
+  revert y.
+  induction Hx as [x Hx IHx].
+  intros y.
+  apply acc.
+  intros [z1 z2] [Hz1 Hz2] ; simpl in *.
+  apply IHx.
+  assumption.
+Qed.
+
+Proposition Wf_tuple
+           (X : CompatRel)
+           (Y : QuasiRel)
+           (HX : Wf (@gt X))
+  : Wf (@gt (tuple_CompatRel X Y)).
+Proof.
+  intros x.
+  destruct x as [x y].
+  apply isWf_pair_tuple.
+  apply HX.
+Qed.
+          
 (** Dependent product of well-founded relations *)
 Definition depprod_CompatRel
            {X : Type}
@@ -254,6 +250,18 @@ Proof.
     exact (gt_ge (p x) (q x)).
 Qed.
 
+Definition depprod_minimal_element
+           {X : Type}
+           (Y : X -> CompatRel)
+           (y : forall (x : X), minimal_element (Y x))
+  : minimal_element (∏ Y).
+Proof.
+  simple refine (make_min_el _ _ _).
+  - exact (fun x => y x).
+  - intros z x.
+    apply is_minimal.
+Defined.
+
 (** The power of well-founded relations *)
 Fixpoint power_CompatRel
          (X : CompatRel)
@@ -276,6 +284,19 @@ Proof.
   - apply _.
   - apply _.
 Qed.
+
+Definition power_minimal_element
+           (X : CompatRel)
+           (n : nat)
+           (x : minimal_element X)
+  : minimal_element (X ^ n).
+Proof.
+  induction n as [ | n IHn ].
+  - apply unit_minimal_element.
+  - apply prod_minimal_element.
+    + exact x.
+    + exact IHn.
+Defined.
 
 (** The natural numbers have the structure of well-founded relation *)
 Definition nat_CompatRel
@@ -309,54 +330,23 @@ Proof.
   unshelve esplit ; cbn ; intros ; try lia ; try (apply _).
 Qed.
 
-(** * Monotone maps *)
-
-(** We have two kinds of structure preserving maps between compatible relations. First of all, we can look at strictly monotone maps, which preserve the strict order. *)
-Class strictMonotone {X Y : CompatRel} (f : X -> Y) :=
-  map_gt : forall (x y : X),
-    x > y -> f x > f y.
-
-Global Instance strictMonotone_isaprop
-       {X Y : CompatRel}
-       `{isCompatRel Y}
-       (f : X -> Y)
-  : isaprop (strictMonotone f).
+Definition nat_strict_minimal_element
+  : strict_minimal_element nat_CompatRel.
 Proof.
-  unfold strictMonotone.
-  apply _.
-Qed.
+  simple refine (make_strict_min_el _ _ _).
+  - exact 0.
+  - intros n Hn.
+    cbn.
+    lia.
+Defined.
 
-(** Second of all, we can look at weak monotone maps, which preserve the other order *)
-Class weakMonotone {X Y : CompatRel} (f : X -> Y) :=
-  map_ge : forall (x y : X),
-    x >= y -> f x >= f y.
+Definition nat_minimal_element
+  : minimal_element nat_CompatRel
+  := is_minimal_to_strict_minimal nat_strict_minimal_element.
 
-Global Instance weakMonotone_isaprop
-       {X Y : CompatRel}
-       `{isCompatRel Y}
-       (f : X -> Y)
-  : isaprop (weakMonotone f).
-Proof.
-  unfold weakMonotone.
-  apply _.
-Qed.
-
-(** The weakly monotone maps between two compatible relations forms again a compatible relation *)
-Record weakMonotoneMap (X Y : CompatRel) :=
-  make_monotone
-    {
-      fun_carrier :> X -> Y ;
-      is_weak_monotone : weakMonotone fun_carrier
-    }.
-
-Arguments make_monotone {_ _} _ _.
-
-Global Instance weakMonotoneMap_isWeakMonotone
-       {X Y : CompatRel}
-       (f : weakMonotoneMap X Y)
-  : weakMonotone f
-  := is_weak_monotone _ _ f.
-
+(**
+ Function space of weakly monotonic maps
+ *)
 Definition fun_CompatRel
            (X Y : CompatRel)
   : CompatRel
@@ -399,6 +389,51 @@ Proof.
     apply p.
 Qed.
 
+(**
+ Function space of strongly monotonic maps
+ *)
+Definition strong_fun_CompatRel
+           (X Y : CompatRel)
+  : CompatRel
+  := {| carrier := strongMonotoneMap X Y ;
+        gt f g := forall (x : X), f x > g x ;
+        ge f g := forall (x : X), f x >= g x  |}.
+
+Notation "X ==> Y" := (strong_fun_CompatRel X Y) (at level 99).
+
+Global Instance strong_fun_isCompatRel
+       (X Y : CompatRel)
+       `{isCompatRel Y}
+  : isCompatRel (X ==> Y).
+Proof.
+  unshelve esplit ; cbn ; try (intros ; apply _).
+  - intros f g h p q x.
+    exact (gt_trans (p x) (q x)).
+  - intros f g h p q x.
+    exact (ge_trans (p x) (q x)).
+  - intros f x.
+    exact (ge_refl (f x)).
+  - intros f g p x.
+    exact (compat (p x)).
+  - intros f g h p q x.
+    exact (ge_gt (p x) (q x)).
+  - intros f g h p q x.
+    exact (gt_ge (p x) (q x)).
+Qed.
+
+(** The function space is well-founded if we can find an element of the domain *)
+Proposition strong_fun_Wf
+            (X Y : CompatRel)
+            (x : X)
+            (HY : Wf (fun (x y : Y) => x > y))
+  : Wf (fun (f g : strong_fun_CompatRel X Y) => f > g).
+Proof.
+  simple refine (fiber_Wf HY _ _).
+  - exact (fun f => f x).
+  - intros f g p ; simpl.
+    apply p.
+Qed.
+
 (** * Examples of weakly monotone maps *)
 
 (** The constant functions *)
@@ -418,6 +453,19 @@ Definition const_WM
            (y : Y)
   : X ⇒ Y
   := make_monotone (fun (_ : X) => y) _.
+
+Definition min_el_fun_space
+           (X : CompatRel)
+           {Y : CompatRel}
+           `{isCompatRel Y}
+           (m : minimal_element Y)
+  : minimal_element (X ⇒ Y).
+Proof.
+  simple refine (make_min_el _ _ _).
+  - exact (const_WM _ _ m).
+  - intros f x.
+    apply m.
+Defined.
 
 (** The identity function *)
 Global Instance id_strictMonotone (X : CompatRel)
@@ -439,7 +487,12 @@ Definition id_WM
   : X ⇒ X
   := make_monotone id _.
 
-(** THe composition *)
+Definition id_strong_monotone
+           (X : CompatRel)
+  : X ==> X
+  := make_strong_monotone id _ _.
+
+(** The composition *)
 Global Instance comp_strictMonotone
        {X Y Z : CompatRel}
        (f : X -> Y)
@@ -473,6 +526,13 @@ Definition comp_WM
   : X ⇒ Z
   := make_monotone (g o f) _.
 
+Definition comp_strong_monotone
+           {X Y Z : CompatRel}
+           (f : X ==> Y)
+           (g : Y ==> Z)
+  : X ==> Z
+  := make_strong_monotone (g o f) _ _.
+
 (** The first projection *)
 Global Instance fst_strictMonotone
        {X Y : CompatRel}
@@ -495,6 +555,11 @@ Definition fst_WM
   : (X * Y) ⇒ X
   := make_monotone _ _.
 
+Definition fst_strong_monotone
+           (X Y : CompatRel)
+  : (X * Y) ==> X
+  := make_strong_monotone _ _ _.
+
 (** The second projection *)
 Global Instance snd_strictMonotone
        {X Y : CompatRel}
@@ -516,6 +581,11 @@ Definition snd_WM
            (X Y : CompatRel)
   : (X * Y) ⇒ Y
   := make_monotone _ _.
+
+Definition snd_strong_monotone
+           (X Y : CompatRel)
+  : (X * Y) ==> Y
+  := make_strong_monotone _ _ _.
 
 (** The pairing of weakly monotone maps *)
 Global Instance pair_weakMonotone
@@ -561,6 +631,13 @@ Definition pair_WM
   : X ⇒ (Y * Z)
   := @make_monotone X (Y * Z) (fun x => (f x , g x)) _.
 
+Definition pair_strong_monotone
+           {X Y Z : CompatRel}
+           (f : X ==> Y)
+           (g : X ==> Z)
+  : X ==> (Y * Z)
+  := @make_strong_monotone X (Y * Z) (fun x => (f x , g x)) _ _.
+
 (** Lambda abstraction *)
 Global Instance lambda_abs_on_X_monotone
        {X Y Z : CompatRel}
@@ -599,30 +676,52 @@ Proof.
 Qed.
 
 Definition lambda_abs
-       {X Y Z : CompatRel}
-       `{isCompatRel X}
-       `{isCompatRel Y}
-       (f : Y * X ⇒ Z)
+            {X Y Z : CompatRel}
+            `{isCompatRel X}
+            `{isCompatRel Y}
+            (f : Y * X ⇒ Z)
   : X ⇒ (Y ⇒ Z)
   := make_monotone (fun x : X => lambda_abs_on_X f x) _.
 
-Global Instance plus_iswWeakMonotone
+Global Instance plus_isWeakMonotone
                 {A : CompatRel}
-                (f g : weakMonotoneMap A nat_CompatRel)
+                (f g : A -> nat_CompatRel)
+                `{Hf : weakMonotone _ _ f}
+                `{Hg : weakMonotone _ _ g}
   : weakMonotone (fun a => (f a + g a : nat_CompatRel)).
 Proof.
   intros a1 a2 p.
-  pose (is_weak_monotone _ _ f _ _ p).
-  pose (is_weak_monotone _ _ g _ _ p).
+  pose (Hf _ _ p).
+  pose (Hg _ _ p).
+  cbn in *.
+  nia.
+Qed.
+
+Global Instance plus_isStrictMonotone
+                {A : CompatRel}
+                (f g : A -> nat_CompatRel)
+                `{Hf : strictMonotone _ _ f}
+                `{Hg : strictMonotone _ _ g}
+  : strictMonotone (fun a => (f a + g a : nat_CompatRel)).
+Proof.
+  intros a1 a2 p.
+  pose (Hf a1 a2 p).
+  pose (Hg a1 a2 p).
   cbn in *.
   nia.
 Qed.
 
 Definition plus_WM
            {A : CompatRel}
-           (f g : weakMonotoneMap A nat_CompatRel)
-  : weakMonotoneMap A nat_CompatRel
+           (f g : A ⇒ nat_CompatRel)
+  : A ⇒ nat_CompatRel
   := make_monotone (fun a => (f a + g a : nat_CompatRel)) _.
+
+Definition plus_strong_monotone
+           {A : CompatRel}
+           (f g : A ==> nat_CompatRel)
+  : A ==> nat_CompatRel
+  := make_strong_monotone (fun a => (f a + g a : nat_CompatRel)) _ _.
 
 Global Instance mult_isWeakMonotone
                 {A : CompatRel}
@@ -645,8 +744,8 @@ Definition mult_WM
 Global Instance app_isWeakMonotone
                 {A B C : CompatRel}
                 `{isCompatRel C}
-                (f : weakMonotoneMap A (B ⇒ C))
-                (x : weakMonotoneMap A B)
+                (f : A ⇒ (B ⇒ C))
+                (x : A ⇒ B)
   : weakMonotone (fun a : A => f a (x a)).
 Proof.
   intros a1 a2 p.
@@ -659,38 +758,74 @@ Qed.
 Definition app_WM
            {A B C : CompatRel}
            `{isCompatRel C}
-           (f : weakMonotoneMap A (B ⇒ C))
-           (x : weakMonotoneMap A B)
-  : weakMonotoneMap A C
+           (f : A ⇒ (B ⇒ C))
+           (x : A ⇒ B)
+  : A ⇒ C
   := make_monotone (fun a => f a (x a)) _.
 
-
-(** * Equality of weakly monotone maps *)
-Definition eq_weakMonotoneMap_help
-           {X Y : CompatRel}
-           `{isCompatRel Y}
-           (f g : weakMonotoneMap X Y)
-           (p : fun_carrier _ _ f = fun_carrier _ _ g)
-  : f = g.
+Global Instance strong_app_isWeakMonotone
+                {A B C : CompatRel}
+                `{isCompatRel C}
+                (f : A ==> (B ==> C))
+                (x : A ==> B)
+  : weakMonotone (fun a : A => f a (x a)).
 Proof.
-  destruct f as [f Hf].
-  destruct g as [g Hg].
-  cbn in p.
-  revert Hf Hg.
-  rewrite p.
-  intros Hf Hg.
-  f_equal.
-  apply all_eq.
+  intros a1 a2 p.
+  refine (ge_trans
+            (strong_is_weak _ _ f _ _ p (x a1))
+            _).
+  exact (strong_is_weak _ _ (f a2) _ _ (strong_is_weak _ _ x _ _ p)).
 Qed.
 
-Definition eq_weakMonotoneMap
-           {X Y : CompatRel}
-           `{isCompatRel Y}
-           (f g : weakMonotoneMap X Y)
-           (p : forall (x : X), f x = g x)
-  : f = g.
+Global Instance strong_app_isStrictMonotone
+                {A B C : CompatRel}
+                `{isCompatRel C}
+                (f : A ==> (B ==> C))
+                (x : A ==> B)
+  : strictMonotone (fun a : A => f a (x a)).
 Proof.
-  apply eq_weakMonotoneMap_help.
-  apply funext.
-  exact p.
+  intros a1 a2 p.
+  refine (gt_trans
+            (strong_is_strict _ _ f _ _ p (x a1))
+            _).
+  exact (strong_is_strict _ _ (f a2) _ _ (strong_is_strict _ _ x _ _ p)).
 Qed.
+
+Definition app_strong_monotone
+           {A B C : CompatRel}
+           `{isCompatRel C}
+           (f : A ==> (B ==> C))
+           (x : A ==> B)
+  : A ==> C
+  := make_strong_monotone (fun a => f a (x a)) _ _.
+
+(** We also need the following monotone maps *)
+Definition plus_as_weakMonotoneMap
+  : nat_CompatRel * nat_CompatRel ⇒ nat_CompatRel
+  := @make_monotone
+       (nat_CompatRel * nat_CompatRel)
+       nat_CompatRel
+       (fun x => fst x + snd x)
+       _.
+
+Global Instance apply_el_is_weak_monotone
+                {A₁ A₂ A₃ : CompatRel}
+                (f : A₂ ⇒ A₃)
+                (x : A₁)
+  : @weakMonotone (A₁ ⇒ A₂) A₃ (fun h => f (h x)).
+Proof.
+  intros h₁ h₂ p.
+  apply map_ge.
+  apply p.
+Qed.
+  
+Definition apply_el_WM
+           {A₁ A₂ A₃ : CompatRel}
+           (f : A₂ ⇒ A₃)
+           (x : A₁)
+  : (A₁ ⇒ A₂) ⇒ A₃
+  := @make_monotone
+       (A₁ ⇒ A₂)
+       A₃
+       (fun h => f (h x))
+       _.
