@@ -45,7 +45,7 @@ Fixpoint sem_base_poly
       (sem_Con (fun _ => nat_CompatRel) C)
       nat_CompatRel
   := match P with
-     | P_const n   => const_WM _ nat_CompatRel n
+     | P_const n     => const_WM _ nat_CompatRel n
      | P_plus P1 P2  => plus_WM (sem_base_poly P1) (sem_base_poly P2)
      | P_mult P1 P2  => mult_WM (sem_base_poly P1) (sem_base_poly P2)
      | from_poly P   => sem_poly P
@@ -59,7 +59,7 @@ with sem_poly
       (sem_Con (fun _ => nat_CompatRel) C)
       (sem_Ty (fun _ => nat_CompatRel) A)
   := match P with 
-     | P_base P   => sem_base_poly P
+     | P_base P     => sem_base_poly P
      | P_var v      => sem_Var (fun _ => nat_CompatRel) v
      | P_app P1 P2  => app_WM (sem_poly P1) (sem_poly P2)
      | P_lam P      => lambda_abs (sem_poly P)
@@ -71,13 +71,13 @@ Notation "⟦ P ⟧B" := (sem_base_poly P).
 Section PolyAlgebra.
   Context {B : Type} {F : Type}
           (X : afs B F)
-          (P : forall (f : F), poly ∙ (arity X f)).
+          (J : forall (f : F), poly ∙ (arity X f)).
 
   Definition p_base : B -> CompatRel
     := fun (_ : B) => nat_CompatRel.
 
-  Definition p_tm (f : F) : sem_Ty p_base (arity X f)
-    := sem_poly (P f) tt.
+  Definition p_fun_sym (f : F) : sem_Ty p_base (arity X f)
+    := sem_poly (J f) tt.
   
   Fixpoint minimal_element_sem_ty
            (A : ty B)
@@ -95,6 +95,18 @@ Section PolyAlgebra.
        | A₁ ⟶ A₂ => apply_el_WM (lower_value_function A₂) (minimal_element_sem_ty A₁)
        end.
 
+  Proposition lower_value_function_strict_monotonic
+              {A : ty B}
+              {x x' : sem_Ty p_base A}
+              (p : x > x')
+    : lower_value_function A x > lower_value_function A x'.
+  Proof.
+    induction A as [ b | A₁ IHA₁ A₂ IHA₂ ] ; cbn.
+    - exact p.
+    - apply IHA₂.
+      apply p.
+  Qed.
+              
   Fixpoint plus_ty_nat
            (A : ty B)
     : sem_Ty p_base A * nat_CompatRel ⇒ sem_Ty p_base A
@@ -110,6 +122,20 @@ Section PolyAlgebra.
                    (comp_WM (snd_WM _ _) (snd_WM _ _)))
                 (plus_ty_nat A₂))
        end.
+
+  Proposition plus_ty_nat_strict_monotone
+              {A : ty B}
+              (x : sem_Ty p_base A)
+              {y y' : nat_CompatRel}
+              (p : y > y')
+    : plus_ty_nat A (x , y) > plus_ty_nat A (x , y').
+  Proof.
+    induction A as [ b | A₁ IHA₁ A₂ IHA₂ ] ; cbn.
+    - cbn in p.
+      lia.
+    - intros z.
+      apply IHA₂.
+  Qed.
 
   Fixpoint plus_ty
            (A : ty B)
@@ -128,6 +154,49 @@ Section PolyAlgebra.
                       (fst_WM _ _)))
                 (plus_ty A₂))
        end.
+
+  Proposition plus_ty_ge_right
+              {A : ty B}
+              (x y y' : sem_Ty p_base A)
+              (p : y >= y')
+    : plus_ty A (x , y) >= y'.
+  Proof.
+    induction A as [ b | A₁ IHA₁ A₂ IHA₂ ] ; cbn.
+    - cbn in p.
+      lia.
+    - intros z.
+      apply IHA₂.
+      apply p.
+  Qed.
+
+  Proposition plus_ty_strict_weak_monotonic
+              {A : ty B}
+              {x x' y y' : sem_Ty p_base A}
+              (p : x > x')
+              (q : y >= y')
+    : plus_ty A (x , y) > plus_ty A (x' , y').
+  Proof.
+    induction A as [ b | A₁ IHA₁ A₂ IHA₂ ] ; cbn.
+    - cbn in p, q.
+      lia.
+    - intros z.
+      apply IHA₂.
+      + apply p.
+      + apply q.
+  Qed.
+
+  Proposition plus_ty_strict_monotonic
+              {A : ty B}
+              {x x' y y' : sem_Ty p_base A}
+              (p : x > x')
+              (q : y > y')
+    : plus_ty A (x , y) > plus_ty A (x' , y').
+  Proof.
+    apply plus_ty_strict_weak_monotonic.
+    - exact p.
+    - apply compat.
+      exact q.
+  Qed.
              
   Fixpoint sum_of_lower_value_function
            (A : ty B)
@@ -154,7 +223,7 @@ Section PolyAlgebra.
            _
            (plus_ty_nat
               _
-              (sum_of_lower_value_function _
+              (sum_of_lower_value_function A2
                ,
                lower_value_function _ f + lower_value_function _ x)
             ,
@@ -214,7 +283,10 @@ Section PolyAlgebra.
               (x : sem_Ty p_base A₁)
     : p_app_fun (f , x) >= f x.
   Proof.
-  Admitted.
+    unfold p_app_fun ; cbn.
+    apply plus_ty_ge_right.
+    apply ge_refl.
+  Qed.
 
   Proposition p_app_strict_l
               (A₁ A₂ : ty B)
@@ -223,7 +295,22 @@ Section PolyAlgebra.
               (p : f₁ > f₂)
     : p_app_fun (f₁ , x) > p_app_fun (f₂ , x).
   Proof.
-  Admitted.
+    unfold p_app_fun ; cbn.
+    apply plus_ty_strict_monotonic.
+    - apply plus_ty_nat_strict_monotone.
+      cbn.
+      enough (lower_value_function A₂ (f₁ (minimal_element_sem_ty A₁))
+              >
+              lower_value_function A₂ (f₂ (minimal_element_sem_ty A₁)))
+        as H.
+      {
+        cbn in H.
+        nia.
+      }
+      apply lower_value_function_strict_monotonic.
+      apply p.
+    - apply p.
+  Qed.
 
   Proposition p_app_strict_r
               (A₁ A₂ : ty B)
@@ -232,21 +319,37 @@ Section PolyAlgebra.
               (p : x₁ > x₂)
     : p_app_fun (f , x₁) > p_app_fun (f , x₂).
   Proof.
-  Admitted.
+    unfold p_app_fun ; cbn.
+    apply plus_ty_strict_weak_monotonic.
+    - apply plus_ty_nat_strict_monotone.
+      enough (lower_value_function A₁ x₁
+              >
+              lower_value_function A₁ x₂)
+        as H.
+      {
+        cbn ; cbn in H.
+        nia.
+      }
+      apply lower_value_function_strict_monotonic.
+      exact p.
+    - apply map_ge.
+      apply compat.
+      exact p.
+  Qed.
 
   Definition poly_WMalgebra_rewrite_rules
              (H : forall (r : rewriteRules X)
                          (x : sem_Con p_base (vars r)),
-                  sem_Tm p_base p_tm p_app (lhs r) x
+                  sem_Tm p_base p_fun_sym p_app (lhs r) x
                   >
-                  sem_Tm p_base p_tm p_app (rhs r) x)
+                  sem_Tm p_base p_fun_sym p_app (rhs r) x)
              (r : rewriteRules X)
              (C : con B)
              (s : sub (arity X) C (vars r))
              (x : sem_Con p_base C)
-    : sem_Tm p_base p_tm p_app (subTm (lhs r) s) x
+    : sem_Tm p_base p_fun_sym p_app (subTm (lhs r) s) x
       >
-      sem_Tm p_base p_tm p_app (subTm (rhs r) s) x.
+      sem_Tm p_base p_fun_sym p_app (subTm (rhs r) s) x.
   Proof.
     rewrite !sub_Lemma.
     apply H.
@@ -255,9 +358,9 @@ Section PolyAlgebra.
   Definition poly_WMalgebra
              (H : forall (r : rewriteRules X)
                          (x : sem_Con p_base (vars r)),
-                  sem_Tm p_base p_tm p_app (lhs r) x
+                  sem_Tm p_base p_fun_sym p_app (lhs r) x
                   >
-                    sem_Tm p_base p_tm p_app (rhs r) x)
+                  sem_Tm p_base p_fun_sym p_app (rhs r) x)
     : WMalgebra X.
   Proof.
     simple refine (make_WMalgebra
@@ -266,7 +369,7 @@ Section PolyAlgebra.
                      (fun _ => 0)
                      (fun _ => nat_Wf)
                      _
-                     p_tm
+                     p_fun_sym
                      p_app
                      _ _ _ _).
     - exact p_app_ge_id.
