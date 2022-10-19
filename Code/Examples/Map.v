@@ -1,12 +1,14 @@
 Require Import Lia.
+Require Import PeanoNat.
+Import Nat.
+Require Import List.
+Require Import Prelude.Basics.
 Require Import Prelude.Orders.
 Require Import Syntax.Signature.
 Require Import Syntax.StrongNormalization.SN.
 Require Import Interpretation.WeaklyMonotonicAlgebra.
 Require Import Interpretation.Polynomial.
-Require Import Interpretation.OrderInterpretation.
-
-Local Open Scope nat.
+Require Import Interpretation.PolynomialTactics.
 
 Inductive base_types : Type :=
 | TBtype : base_types
@@ -106,69 +108,6 @@ Definition map_isSN
   : isSN map_afs.
 Proof.
   apply afs_is_SN_from_Alg.
-  simple refine (poly_WMalgebra _ _ _).
-  - exact map_fun_poly.
-  - intros r x.
-    destruct r as [ r Hr ].
-    repeat (destruct Hr as [ | Hr ]) ; try subst ; cbn -[Nat.add Nat.mul].
-    + nia.
-    + rewrite !PeanoNat.Nat.mul_0_l.
-      rewrite !plus_O_n.
-      rewrite <- !plus_n_O.
-      induction x as [ f [ n [ m [] ]]].
-      cbn -[Nat.add Nat.mul].
-      enough (forall (z z' z'' z''' : nat),
-                 z = f 0
-                 ->
-                 z' = f (3 + n + (3 + n) + m + (m + (3 + n) + (3 + m + n)))
-                 ->
-                 z'' = f n
-                 ->
-                 z''' = f m
-                 ->
-                 3
-                 + z
-                 + (3 + z)
-                 + (3 + n + (3 + n) + m + (m + (3 + n) + (3 + m + n)))
-                 + (3 + n + (3 + n) + m + (m + (3 + n) + (3 + m + n)) + (3 + z)
-                 + (3 + 3 * (3 + n + (3 + n) + m + (m + (3 + n) + (3 + m + n)))
-                 + z'
-                 + 3 * (3 + n + (3 + n) + m + (m + (3 + n) + (3 + m + n))) * z'))
-                 >
-                 3
-                 + (z + n + z'')
-                 + (3 + (z + n + z''))
-                 + (3 + f 0 + (3 + z) + m + (m + (3 + z) + (3 + 3 * m + z''' + 3 * m * z''')))
-                 + (3 + f 0 + (3 + z) + m + (m + (3 + z) + (3 + 3 * m + z''' + 3 * m * z'''))
-                 + (3 + (z + n + z''))
-                 + (3 + (3 + f 0 + (3 + z) + m + (m + (3 + z)
-                 + (3 + 3 * m + z''' + 3 * m * z''')))
-                 + (z + n + z'')))).
-      {
-        apply H ; reflexivity.
-      }
-      intros a b c d ? ? ? ?.
-      assert (b >= a).
-      {
-        subst.
-        apply f.
-        cbn.
-        nia.
-      }
-      assert (b >= c).
-      {
-        subst.
-        apply f.
-        cbn.
-        nia.
-      }
-      assert (b >= d).
-      {
-        subst.
-        apply f.
-        cbn.
-        nia.
-      }
-      nia.
-    + destruct Hr.
+  apply (poly_WMalgebra _ map_fun_poly).
+  solve_poly.
 Qed.
