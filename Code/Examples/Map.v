@@ -102,15 +102,6 @@ Definition map_fun_poly
               +P (P_const 3) *P (from_poly y0) *P from_poly (G1 ·P P_base (from_poly y0)))
      end.
 
-Definition koe
-           {n1 n2 m1 m2 : nat}
-           (p : n1 = n2)
-           (q : n2 > m2)
-           (r : m1 = m2)
-  : n1 > m1.
-nia.
-Qed.
-
 Definition map_isSN
   : isSN map_afs.
 Proof.
@@ -124,106 +115,60 @@ Proof.
     + rewrite !PeanoNat.Nat.mul_0_l.
       rewrite !plus_O_n.
       rewrite <- !plus_n_O.
-      induction x as [ f [ y0 [ y1 [] ]]].
+      induction x as [ f [ n [ m [] ]]].
       cbn -[Nat.add Nat.mul].
-
-      (*
-      assert (f (3 + y0 + (3 + y0) + y1 + (y1 + (3 + y0) + (3 + y1 + y0))) >= f y1).
+      enough (forall (z z' z'' z''' : nat),
+                 z = f 0
+                 ->
+                 z' = f (3 + n + (3 + n) + m + (m + (3 + n) + (3 + m + n)))
+                 ->
+                 z'' = f n
+                 ->
+                 z''' = f m
+                 ->
+                 3
+                 + z
+                 + (3 + z)
+                 + (3 + n + (3 + n) + m + (m + (3 + n) + (3 + m + n)))
+                 + (3 + n + (3 + n) + m + (m + (3 + n) + (3 + m + n)) + (3 + z)
+                 + (3 + 3 * (3 + n + (3 + n) + m + (m + (3 + n) + (3 + m + n)))
+                 + z'
+                 + 3 * (3 + n + (3 + n) + m + (m + (3 + n) + (3 + m + n))) * z'))
+                 >
+                 3
+                 + (z + n + z'')
+                 + (3 + (z + n + z''))
+                 + (3 + f 0 + (3 + z) + m + (m + (3 + z) + (3 + 3 * m + z''' + 3 * m * z''')))
+                 + (3 + f 0 + (3 + z) + m + (m + (3 + z) + (3 + 3 * m + z''' + 3 * m * z'''))
+                 + (3 + (z + n + z''))
+                 + (3 + (3 + f 0 + (3 + z) + m + (m + (3 + z)
+                 + (3 + 3 * m + z''' + 3 * m * z''')))
+                 + (z + n + z'')))).
       {
+        apply H ; reflexivity.
+      }
+      intros a b c d ? ? ? ?.
+      assert (b >= a).
+      {
+        subst.
         apply f.
         cbn.
         nia.
       }
-      assert (f (3 + y0 + (3 + y0) + y1 + (y1 + (3 + y0) + (3 + y1 + y0))) >= f y0).
+      assert (b >= c).
       {
+        subst.
         apply f.
         cbn.
         nia.
       }
-      assert (f (3 + y0 + (3 + y0) + y1 + (y1 + (3 + y0) + (3 + y1 + y0))) >= f 0).
+      assert (b >= d).
       {
+        subst.
         apply f.
         cbn.
         nia.
       }
       nia.
-       *)
-      
-      assert (f(4*y0 + 3*y1 + 12) >= f y1).
-      {
-        apply f.
-        cbn.
-        nia.
-      }
-      assert (f(4*y0 + 3*y1 + 12) >= f y0).
-      {
-        apply f.
-        cbn.
-        nia.
-      }
-      assert (f(4*y0 + 3*y1 + 12) >= f 0).
-      {
-        apply f.
-        cbn.
-        nia.
-      }
-      
-      enough (36 * f(4*y0 + 3*y1 + 12)
-              + 9 * y1 * f(4*y0 + 3*y1 + 12)
-              + 12 * y0 * f(4*y0 + 3*y1 + 12)
-              + f(4*y0 + 3*y1 + 12)
-              + 3*(f 0)
-              + 20*y0
-              + 15*y1
-              + 72
-              >
-              9*y1*f(y1)
-              + 4*(f y0)
-              + 3*(f y1)
-              + 13*(f 0)
-              + 4*y0
-              + 15*y1
-              + 48).
-      {
-        refine (koe _ H2 _) ; nia.
-
-      }
-      nia.
-      
-      nia.
-        - nia.
-        apply koe.
-        Search (_ > _).
-        admit.
-      }
-      nia.
-        nia.
-
-      assert (f (3 + y0 + (3 + y0) + y1 + (y1 + (3 + y0) + (3 + y1 + y0))) >= f y0).
-      {
-        apply f ; cbn.
-        nia.
-      }
-      assert (f (3 + y0 + (3 + y0) + y1 + (y1 + (3 + y0) + (3 + y1 + y0))) >= f y1).
-      {
-        apply f ; cbn.
-        nia.
-      }
-      assert (forall (z : nat), f z >= f 0).
-      {
-        intro.
-        apply f ; cbn.
-        nia.
-      }
-      nia.
-      
-      f y0
-        f y0
-        nia.
-      cbn.
-      Check fst x.
-      Check snd x.
-      rewrite !plus_O_n.
-      admit.
     + destruct Hr.
-Admitted.
+Qed.

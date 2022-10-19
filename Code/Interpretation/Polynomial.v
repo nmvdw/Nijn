@@ -1,17 +1,14 @@
-Require Import Prelude.Funext.
-Require Import Prelude.WellfoundedRelation.
+Require Import Prelude.Basics.
 Require Import Prelude.Orders.
-Require Import Prelude.Lexico.
 Require Import Syntax.Signature.
 Require Import Syntax.StrongNormalization.SN.
-Require Import Syntax.StrongNormalization.BetaReductionSN.
 Require Import Interpretation.OrderInterpretation.
 Require Import Interpretation.WeaklyMonotonicAlgebra.
 
 Require Import Lia.
 
 Declare Scope poly_scope.
-
+            
 Inductive base_poly {B : Type} : con B -> Type :=
 | P_const : forall {C : con B}, nat -> base_poly C
 | P_plus : forall {C : con B}, base_poly C -> base_poly C -> base_poly C
@@ -244,22 +241,11 @@ Section PolyAlgebra.
       apply map_ge.
       split.
       * apply ge_refl.
-      * assert (lower_value_function A1 (snd x₁)
-                >=
-                lower_value_function A1 (snd x₂)).
-        {
-          apply map_ge.
-          apply p.
-        }
-        assert (lower_value_function A2 (fst x₁ (minimal_element_sem_ty A1))
-                >=
-                lower_value_function A2 (fst x₂ (minimal_element_sem_ty A1))).
-        {
-          apply map_ge.
-          apply p.
-        }
-        cbn in *.
-        nia.
+      * apply plus_ge.
+        ** apply (lower_value_function A2).
+           apply p.
+        ** apply (lower_value_function A1).
+           apply p.
     - cbn.
       cbn in p.
       destruct p as [ p1 p2 ].

@@ -3,6 +3,17 @@ Require Import List.
 Require Import Bool.
 Require Import String.
 Require Import Coq.Program.Equality.
+Require Import Lia.
+
+(** Useful lemma *)
+Proposition plus_ge
+            {n1 n2 m1 m2 : nat}
+            (p : n1 >= n2)
+            (q : m1 >= m2)
+  : n1 + m1 >= n2 + m2.
+Proof.
+  nia.
+Qed.
 
 (** * Basics functions *)
 
