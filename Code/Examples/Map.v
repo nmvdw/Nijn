@@ -98,7 +98,5 @@ Definition map_fun_poly
 Definition map_isSN
   : isSN map_afs.
 Proof.
-  apply afs_is_SN_from_Alg.
-  apply (poly_WMalgebra _ map_fun_poly).
-  solve_poly.
+  solve_poly map_fun_poly.
 Qed.
