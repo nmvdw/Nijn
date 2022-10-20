@@ -9,6 +9,9 @@ Require Import Syntax.StrongNormalization.SN.
 Require Import Interpretation.WeaklyMonotonicAlgebra.
 Require Import Interpretation.Polynomial.
 Require Import Interpretation.PolynomialTactics.
+Require Import Interpretation.PolynomialNotation.
+
+Open Scope poly_scope.
 
 Inductive base_types : Type :=
 | TBtype : base_types
@@ -79,8 +82,6 @@ Definition map_afs
        map_ar
        (map_nil :: map_cons :: nil).
 
-Open Scope poly_scope.
-
 Definition map_fun_poly
            (f : fun_symbols)
   : poly ∙ (arity map_afs f)
@@ -92,16 +93,16 @@ Definition map_fun_poly
        let y0 := P_var Vz in
        λP
        let y1 := P_var (Vs Vz) in
-       P_base (P_const 3 +P from_poly y0 +P from_poly y1)
+       P_base (P_const 3 +P y0 +P y1)
      | TMap =>
        λP
        let y0 := P_var Vz in
        λP
        let G1 := P_var (Vs Vz) in
        P_base (P_const 3
-              +P (P_const 3) *P (from_poly y0)
-              +P from_poly (G1 ·P P_base (from_poly y0))
-              +P (P_const 3) *P (from_poly y0) *P from_poly (G1 ·P P_base (from_poly y0)))
+              +P (P_const 3) *P y0
+              +P G1 ·P from_poly y0
+              +P (P_const 3) *P y0 *P G1 ·P from_poly y0)
      end.
 
 Definition map_isSN

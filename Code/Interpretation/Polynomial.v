@@ -6,8 +6,6 @@ Require Import Interpretation.OrderInterpretation.
 Require Import Interpretation.WeaklyMonotonicAlgebra.
 
 Require Import Lia.
-
-Declare Scope poly_scope.
             
 Inductive base_poly {B : Type} : con B -> Type :=
 | P_const : forall {C : con B}, nat -> base_poly C
@@ -28,11 +26,6 @@ with poly {B : Type} : con B -> ty B -> Type :=
 | P_lam : forall {C : con B} {A₁ A₂ : ty B},
             poly (A₁ ,, C) A₂
             -> poly C (A₁ ⟶ A₂).
-
-Notation "P1 +P P2" := (P_plus P1 P2) (at level 50) : poly_scope.
-Notation "P1 *P P2" := (P_mult P1 P2) (at level 40) : poly_scope.
-Notation "'λP' P" := (P_lam P) (at level 10) : poly_scope.
-Notation "P1 ·P P2" := (P_app P1 P2) (at level 20) : poly_scope.
 
 Fixpoint sem_base_poly
          {B : Type}
@@ -61,9 +54,6 @@ with sem_poly
      | P_app P1 P2  => app_WM (sem_poly P1) (sem_poly P2)
      | P_lam P      => lambda_abs (sem_poly P)
      end.
-
-Notation "⟦ P ⟧" := (sem_poly P).
-Notation "⟦ P ⟧B" := (sem_base_poly P).
 
 Section PolyAlgebra.
   Context {B : Type} {F : Type}
