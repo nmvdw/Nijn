@@ -39,4 +39,7 @@ Interpretation/Polynomial.v
 Interpretation/PolynomialTactics.v
 Interpretation/PolynomialNotation.v
 
-# Examples/Map.v
+Nijn.v
+
+Examples/Map.v
+Examples/MapAlt.v

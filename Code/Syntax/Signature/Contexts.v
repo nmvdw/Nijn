@@ -13,7 +13,7 @@ Arguments Empty {_}.
 Arguments Extend {_} _ _.
 
 Notation "∙" := Empty : signature.
-Notation "A ,, Γ" := (Extend A Γ) (at level 70, right associativity) : signature.
+Notation "A ,, Γ" := (Extend A Γ) (at level 80, right associativity) : signature.
 
 (** * Variables *)
 

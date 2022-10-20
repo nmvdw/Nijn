@@ -20,22 +20,15 @@ Definition map_ar
      | TMap   => (Btype ⟶ Btype) ⟶ List ⟶ List
      end.
 
-Definition Nil
-           {C : con base_types}
+Definition Nil {C}
   : tm map_ar C List
   := BaseTm TNil.
 
-Definition Cons
-           {C : con base_types}
-           (x : tm map_ar C Btype)
-           (xs : tm map_ar C List)
+Definition Cons {C} x xs
   : tm map_ar C List
   := BaseTm TCons · x · xs.
 
-Definition Map
-           {C : con base_types}
-           (f : tm map_ar C (Btype ⟶ Btype))
-           (xs : tm map_ar C List)
+Definition Map {C} f xs
   : tm map_ar C List
   := BaseTm TMap · f · xs.
 
@@ -43,8 +36,8 @@ Definition Map
 Definition map_nil
   : rewriteRule map_ar
   := make_rewrite
-       (Btype ⟶ Btype ,, ∙)
-       List
+       (_ ,, ∙)
+       _
        (let f := TmVar Vz in
         Map f Nil)
        Nil.
@@ -52,8 +45,8 @@ Definition map_nil
 Definition map_cons
   : rewriteRule map_ar
   := make_rewrite
-       (Btype ⟶ Btype ,, Btype ,, List ,, ∙)
-       List
+       (_ ,, _ ,, _ ,, ∙)
+       _
        (let f := TmVar Vz in
         let x := TmVar (Vs Vz) in
         let xs := TmVar (Vs (Vs Vz)) in
