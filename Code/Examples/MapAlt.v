@@ -11,33 +11,31 @@ Definition List : ty base_types := Base TList.
 (** The function symbols and their arities *)
 Inductive fun_symbols := TNil | TCons | TMap.
 
-Definition map_ar
-           (f : fun_symbols)
+Definition map_ar f
   : ty base_types
   := match f with
-     | TNil   => List
-     | TCons  => Btype ⟶ List ⟶ List
-     | TMap   => (Btype ⟶ Btype) ⟶ List ⟶ List
+     | TNil => List
+     | TCons => Btype ⟶ List ⟶ List
+     | TMap => (Btype ⟶ Btype) ⟶ List ⟶ List
      end.
 
 Definition Nil {C}
-  : tm map_ar C List
+  : tm map_ar C _
   := BaseTm TNil.
 
 Definition Cons {C} x xs
-  : tm map_ar C List
+  : tm map_ar C _
   := BaseTm TCons · x · xs.
 
 Definition Map {C} f xs
-  : tm map_ar C List
+  : tm map_ar C _
   := BaseTm TMap · f · xs.
 
 (** The rewrite rules *)
 Definition map_nil
   : rewriteRule map_ar
   := make_rewrite
-       (_ ,, ∙)
-       _
+       (_ ,, ∙) _
        (let f := TmVar Vz in
         Map f Nil)
        Nil.
@@ -45,8 +43,7 @@ Definition map_nil
 Definition map_cons
   : rewriteRule map_ar
   := make_rewrite
-       (_ ,, _ ,, _ ,, ∙)
-       _
+       (_ ,, _ ,, _ ,, ∙) _
        (let f := TmVar Vz in
         let x := TmVar (Vs Vz) in
         let xs := TmVar (Vs (Vs Vz)) in
@@ -64,27 +61,18 @@ Definition map_afs
        (map_nil :: map_cons :: nil).
 
 (** The polynomials *)
-Definition map_fun_poly
-           (f : fun_symbols)
+Definition map_fun_poly f
   : poly ∙ (arity map_afs f)
   := match f with
-     | TNil =>
-       P_base (P_const 2)
+     | TNil => P_base (P_const 2)
      | TCons =>
-       λP
-       let y0 := P_var Vz in
-       λP
-       let y1 := P_var (Vs Vz) in
+       λP let y0 := P_var Vz in
+       λP let y1 := P_var (Vs Vz) in
        P_base (P_const 3 +P y0 +P y1)
      | TMap =>
-       λP
-       let y0 := P_var Vz in
-       λP
-       let G1 := P_var (Vs Vz) in
-       P_base (P_const 3
-              +P P_const 3 *P y0
-              +P G1 ·P y0
-              +P P_const 3 *P y0 *P G1 ·P y0)
+       λP let y0 := P_var Vz in
+       λP let G1 := P_var (Vs Vz) in
+       P_base (P_const 3 +P P_const 3 *P y0 +P G1 ·P y0 +P P_const 3 *P y0 *P G1 ·P y0)
      end.
 
 (** Strong normalization *)
