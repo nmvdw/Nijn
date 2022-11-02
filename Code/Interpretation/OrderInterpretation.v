@@ -4,58 +4,8 @@ Require Import Prelude.Orders.
 Require Import Prelude.Lexico.
 Require Import Syntax.Signature.
 Require Import Syntax.StrongNormalization.SN.
+Require Import Syntax.StrongNormalization.BetaReductionSN.
 Require Import Coq.Program.Equality.
-
-(** * Interpretations of AFS *)
-Record Interpretation {B F : Type} (X : afs B F) :=
-  {
-    semTy : ty B -> CompatRel ;
-    semCon : con B -> CompatRel ;
-    semTm : forall {C : con B} {A : ty B},
-        tm (arity X) C A -> semCon C -> semTy A ;
-    semRew : forall (r : rewriteRules X)
-                    (C : con B)
-                    (s : sub (arity X) C (vars r))
-                    (x : semCon C),
-        semTm (subTm (lhs r) s) x > semTm (subTm (rhs r) s) x ;
-    semBeta : forall {C : con B}
-                     {A1 A2 : ty B}
-                     (f : tm (arity X) (A1,, C) A2)
-                     (t : tm (arity X) C A1)
-                     (x : semCon C),
-        semTm ((λ f) · t) x >= semTm (subTm f (beta_sub t)) x ;
-    compatAppL : forall {C : con B}
-                        {A1 A2 : ty B}
-                        {f1 f2 : tm (arity X) C (A1 ⟶ A2)}
-                        (t : tm (arity X) C A1)
-                        (x : semCon C),
-        semTm f1 x > semTm f2 x -> semTm (f1 · t) x > semTm (f2 · t) x ;
-    compatAppR : forall {C : con B}
-                        {A1 A2 : ty B}
-                        (f : tm (arity X) C (A1 ⟶ A2))
-                        {t1 t2 : tm (arity X) C A1}
-                        (x : semCon C),
-        semTm t1 x > semTm t2 x -> semTm (f · t1) x > semTm (f · t2) x ;
-    compatLam : forall {C : con B}
-                       {A1 A2 : ty B}
-                       (f1 f2 : tm (arity X) (A1 ,, C) A2),
-        (forall (x : semCon (A1 ,, C)), semTm f1 x > semTm f2 x)
-        ->
-        forall (x : semCon C), semTm (λ f1) x > semTm (λ f2) x
-  }.
-
-Arguments semTy {_ _ _} _ _.
-Arguments semCon {_ _ _} _ _.
-Arguments semTm {_ _ _} _ {_ _} _ _.
-Arguments semRew {_ _ _} _ {_} _ _.
-Arguments semBeta {_ _ _} _ {_ _ _} _ _ _.
-
-Definition isWf_interpretation
-           {B F : Type}
-           {X : afs B F}
-           (I : Interpretation X)
-  : Prop
-  := forall (b : B), Wf (fun (x y : semTy I (Base b)) => x > y).
 
 (** Below we discuss the lemmas which are needed to get an interpretation of an AFS *)
 Section OrderInterpretation.
@@ -151,6 +101,36 @@ Section OrderInterpretation.
     - exact (comp_WM (pair_WM IHf IHt) (semApp A1 A2)).
   Defined.
 End OrderInterpretation.
+
+Definition sem_Ty_el
+           {B : Type}
+           (semB : B -> CompatRel)
+           `{forall (b : B), isCompatRel (semB b)}
+           (els : forall (b : B), semB b)
+           (A : ty B)
+  : sem_Ty semB A.
+Proof.
+  induction A as [ | A1 IHA1 A2 IHA2 ].
+  - apply els.
+  - exact (const_WM _ _ IHA2).
+Defined.
+
+Definition sem_Con_el
+           {B : Type}
+           (semB : B -> CompatRel)
+           `{forall (b : B), isCompatRel (semB b)}           
+           (els : forall (b : B), semB b)
+           (C : con B)
+  : sem_Con semB C.
+Proof.
+  induction C as [ | A C IHC ].
+  - exact tt.
+  - split.
+    + apply sem_Ty_el.
+      * apply _.
+      * exact els.
+    + apply IHC.
+Defined.
 
 (** Interpretation of weakenings *)
 Definition sem_Wk
@@ -499,66 +479,78 @@ Proof.
     apply sem_idSub.
 Qed.
 
-Definition interpretation_to_lexico
-           {B : Type}
-           {semB : B -> CompatRel}
-           `{forall (b : B), isCompatRel (semB b)}
-           {F : Type}
-           {ar : F -> ty B}
-           (semF : forall (f : F), sem_Ty semB (ar f))
-           (semApp : forall (A1 A2 : ty B),
-               weakMonotoneMap
-                 ((sem_Ty semB A1 ⇒ sem_Ty semB A2) * sem_Ty semB A1)
-                 (sem_Ty semB A2))
-           {C : con B}
-           {A : ty B}
-           (x : tm ar C A)
-  : (sem_Con semB C ⇒ sem_Ty semB A) * tm ar C A
-  := (sem_Tm semB semF semApp x , x).
+Record Interpretation {B F : Type} (X : afs B F) : Type :=
+  make_Interpretation
+    {
+      semB : B -> CompatRel ;
+      semB_isCompatRel : forall (b : B), isCompatRel (semB b) ;
+      els : forall (b : B), semB b ;
+      semB_Wf : forall (b : B), Wf (fun (x y : semB b) => x > y) ;
+      semF : forall (f : F), sem_Ty semB (arity X f) ;
+      semApp : forall (A1 A2 : ty B),
+        weakMonotoneMap
+          ((sem_Ty semB A1 ⇒ sem_Ty semB A2) * sem_Ty semB A1)
+          (sem_Ty semB A2) ;
+      sem_App_l : forall (A1 A2 : ty B)
+                         (f1 f2 : sem_Ty semB A1 ⇒ sem_Ty semB A2)
+                         (x : sem_Ty semB A1),
+        f1 > f2 -> semApp _ _ (f1 , x) > semApp _ _ (f2 , x) ;
+      sem_App_r : forall (A1 A2 : ty B)
+                         (f : sem_Ty semB A1 ⇒ sem_Ty semB A2)
+                         (x1 x2 : sem_Ty semB A1),
+        x1 > x2 -> semApp _ _ (f , x1) > semApp _ _ (f , x2) ;
+      semApp_gt_id : forall (A1 A2 : ty B)
+                            (f : sem_Ty semB A1 ⇒ sem_Ty semB A2)
+                            (x : sem_Ty semB A1),
+        semApp _ _ (f , x) >= f x ;
+      semR : forall (r : rewriteRules X)
+                    (C : con B)
+                    (s : sub (arity X) C (vars r))
+                    (x : sem_Con semB C),
+        sem_Tm semB semF semApp (subTm (lhs r) s) x
+        >
+        sem_Tm semB semF semApp (subTm (rhs r) s) x
+    }.
 
-Definition sem_Rewrite
-           {B : Type}
-           (semB : B -> CompatRel)
-           `{forall (b : B), isCompatRel (semB b)}
-           {F : Type}
-           {ar : F -> ty B}
-           (semF : forall (f : F), sem_Ty semB (ar f))
-           (semApp : forall (A1 A2 : ty B),
-               weakMonotoneMap
-              ((sem_Ty semB A1 ⇒ sem_Ty semB A2) * sem_Ty semB A1)
-              (sem_Ty semB A2))
-           (sem_App_l : forall (A1 A2 : ty B)
-                               (f1 f2 : sem_Ty semB A1 ⇒ sem_Ty semB A2)
-                               (x : sem_Ty semB A1),
-               f1 > f2 -> semApp _ _ (f1 , x) > semApp _ _ (f2 , x))
-           (sem_App_r : forall (A1 A2 : ty B)
-                               (f : sem_Ty semB A1 ⇒ sem_Ty semB A2)
-                               (x1 x2 : sem_Ty semB A1),
-               x1 > x2 -> semApp _ _ (f , x1) > semApp _ _ (f , x2))
-           (semApp_gt_id : forall (A1 A2 : ty B)
-                                  (f : sem_Ty semB A1 ⇒ sem_Ty semB A2)
-                                  (x : sem_Ty semB A1),
-               semApp _ _ (f , x) >= f x)
-           {R : Type}
-           {Rcon : R -> con B}
-           {Rtar : R -> ty B}
-           (lhs rhs : forall (r : R), tm ar (Rcon r) (Rtar r))
-           (semR : forall (r : R)
-                          (C : con B)
-                          (s : sub ar C (Rcon r))
-                          (x : sem_Con semB C),
-               sem_Tm semB semF semApp (subTm (lhs r) s) x
-               >
-               sem_Tm semB semF semApp (subTm (rhs r) s) x)
+Arguments semB {B F X} _ _.
+Arguments semF {B F X} _ _.
+Arguments semApp {B F X} _ _.
+Arguments els {B F X} _ _.
+Arguments make_Interpretation {_ _} _ _.
+
+Global Instance interpretation_isCompatRel
+                {B F : Type}
+                {X : afs B F}
+                (I : Interpretation X)
+                (b : B)
+  : isCompatRel (semB I b).
+Proof.
+  apply semB_isCompatRel.
+Defined.           
+
+Definition interpretation_to_lexico
+           {B F : Type}
+           {X : afs B F}
+           (I : Interpretation X)
            {C : con B}
            {A : ty B}
-           {t1 t2 : tm ar C A}
+           (x : tm (arity X) C A)
+  : (sem_Con (semB I) C ⇒ sem_Ty (semB I) A) * tm (arity X) C A
+  := (sem_Tm (semB I) (semF I) (semApp I) x , x).
+
+Definition sem_Rewrite_lexico
+           {B F : Type}
+           {X : afs B F}
+           (I : Interpretation X)
+           {C : con B}
+           {A : ty B}
+           (t1 t2 : tm (arity X) C A)
            (p : rew lhs rhs t1 t2)
   : lexico
-      (sem_Con semB C ⇒ sem_Ty semB A)
+      (sem_Con (semB I) C ⇒ sem_Ty (semB I) A)
       (fun s1 s2 => betaRed s1 s2)
-      (interpretation_to_lexico semF semApp t1)
-      (interpretation_to_lexico semF semApp t2).
+      (interpretation_to_lexico I t1)
+      (interpretation_to_lexico I t2).
 Proof.
   induction p.
   - induction r.
@@ -627,4 +619,25 @@ Proof.
       exact (beta_Trans q1 q2).
     + apply IHp1.
     + apply IHp2.
+Qed.
+
+Theorem afs_is_SN_from_Interpretation
+        {B F : Type}
+        {X : afs B F}
+        (I : Interpretation X)
+  : isSN X.
+Proof.
+  intros C A.
+  simple refine (fiber_Wf _ _ (sem_Rewrite_lexico I)).
+  apply lexico_Wf.
+  - apply _.
+  - apply fun_Wf.
+    + exact (sem_Con_el _ (els I) _).
+    + induction A.
+      * apply semB_Wf.
+      * simpl.
+        apply fun_Wf.
+        ** exact (sem_Ty_el _ (els I) _).
+        ** apply IHA2.
+  - apply BetaRed_SN.
 Qed.

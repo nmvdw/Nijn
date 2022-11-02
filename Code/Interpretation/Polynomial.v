@@ -3,7 +3,6 @@ Require Import Prelude.Orders.
 Require Import Syntax.Signature.
 Require Import Syntax.StrongNormalization.SN.
 Require Import Interpretation.OrderInterpretation.
-Require Import Interpretation.WeaklyMonotonicAlgebra.
 
 Require Import Lia.
             
@@ -337,20 +336,23 @@ Section PolyAlgebra.
                   sem_Tm p_base p_fun_sym p_app (lhs r) x
                   >
                   sem_Tm p_base p_fun_sym p_app (rhs r) x)
-    : WMalgebra X.
+    : Interpretation X.
   Proof.
-    simple refine (make_WMalgebra
+    simple refine (make_Interpretation
                      X
                      p_base
+                     _
                      (fun _ => 0)
                      (fun _ => nat_Wf)
-                     _
                      p_fun_sym
                      p_app
-                     _ _ _ _).
-    - exact p_app_ge_id.
+                     _
+                     _
+                     _
+                     _).
     - exact p_app_strict_l.
     - exact p_app_strict_r.
+    - exact p_app_ge_id.
     - exact (poly_WMalgebra_rewrite_rules H).
   Defined.
 End PolyAlgebra.

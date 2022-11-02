@@ -5,8 +5,8 @@ Require Import List.
 Require Import Prelude.Basics.
 Require Import Prelude.Orders.
 Require Import Syntax.Signature.
+Require Import Interpretation.OrderInterpretation.
 Require Import Interpretation.Polynomial.
-Require Import Interpretation.WeaklyMonotonicAlgebra.
 
 Open Scope nat.
 
@@ -64,7 +64,7 @@ Ltac destruct_WM :=
               generate_ineqs Hf
           end).
 Ltac solve_poly pols :=
-  apply afs_is_SN_from_Alg ;
+  apply afs_is_SN_from_Interpretation ;
   apply (poly_WMalgebra _ pols) ;
   generate_goals ;
   (destruct_con ; destruct_WM ; nia).

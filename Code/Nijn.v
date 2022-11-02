@@ -24,7 +24,6 @@ Require Export Syntax.StrongNormalization.BetaNormalForm.
 Require Export Syntax.StrongNormalization.BetaReductionSN.
 
 Require Export Interpretation.OrderInterpretation.
-Require Export Interpretation.WeaklyMonotonicAlgebra.
 Require Export Interpretation.Polynomial.
 Require Export Interpretation.PolynomialTactics.
 Require Export Interpretation.PolynomialNotation.

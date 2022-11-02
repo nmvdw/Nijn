@@ -34,7 +34,6 @@ Preprocessing/Preprocessor.v
 Preprocessing/Printing.v
 
 Interpretation/OrderInterpretation.v
-Interpretation/WeaklyMonotonicAlgebra.v
 Interpretation/Polynomial.v
 Interpretation/PolynomialTactics.v
 Interpretation/PolynomialNotation.v
@@ -42,4 +41,3 @@ Interpretation/PolynomialNotation.v
 Nijn.v
 
 Examples/Map.v
-Examples/MapAlt.v
