@@ -29,7 +29,7 @@ Definition map_Tm
            (A : ty B)
            {A' : ty B}
            (t : tm X C A')
-  : tm X ((A' ⟶ A),, C) A
+  : tm X (A' ⟶ A ,, C) A
   := TmVar Vz · wkTm t (Drop _ (idWk C)).
 
 Definition Rew_map_Tm
