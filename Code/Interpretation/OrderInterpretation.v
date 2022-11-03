@@ -18,8 +18,8 @@ Section OrderInterpretation.
            (A : ty B)
     : CompatRel
     := match A with
-       | Base b => semB b
-       | A1 ⟶ A2 => sem_Ty A1 ⇒ sem_Ty A2
+       | Base b    => semB b
+       | A1 ⟶ A2  => sem_Ty A1 ⇒ sem_Ty A2
        end.
 
   Global Instance sem_Ty_CompatRel
@@ -34,8 +34,8 @@ Section OrderInterpretation.
            (C : con B)
     : CompatRel
     := match C with
-       | ∙ => unit_CompatRel
-       | A ,, C => sem_Ty A * sem_Con C
+       | ∙       => unit_CompatRel
+       | A ,, C  => sem_Ty A * sem_Con C
        end.
 
   Global Instance sem_Con_isCompatRel
@@ -51,8 +51,8 @@ Section OrderInterpretation.
            (v : var C A)
     : sem_Con C -> sem_Ty A
     := match v with
-       | Vz => fst
-       | Vs v => fun x => sem_Var_map v (snd x)
+       | Vz    => fst
+       | Vs v  => fun x => sem_Var_map v (snd x)
        end.
 
   Global Instance sem_Var_strictMonotone
@@ -85,21 +85,37 @@ Section OrderInterpretation.
           {ar : F -> ty B}
           (semF : forall (f : F), sem_Ty (ar f))
           (semApp : forall (A1 A2 : ty B),
-              weakMonotoneMap ((sem_Ty A1 ⇒ sem_Ty A2) * sem_Ty A1) (sem_Ty A2)).
+              (sem_Ty A1 ⇒ sem_Ty A2) * sem_Ty A1 ⇒ sem_Ty A2).
 
   (** Interpretation of terms *)
-  Definition sem_Tm
-             {C : con B}
-             {A : ty B}
-             (t : tm ar C A)
-    : weakMonotoneMap (sem_Con C) (sem_Ty A).
+  Fixpoint sem_Tm
+           {C : con B}
+           {A : ty B}
+           (t : tm ar C A)
+    : sem_Con C ⇒ sem_Ty A
+    := match t with
+       | BaseTm f  => const_WM _ _ (semF f)
+       | TmVar v   => sem_Var v
+       | λ f       => lambda_abs (sem_Tm f)
+       | f · t     => comp_WM (pair_WM (sem_Tm f) (sem_Tm t)) (semApp _ _)
+       end.
+  
+  Fixpoint sem_Sub
+           {C1 C2 : con B}
+           (s : sub ar C1 C2)
+    : sem_Con C1 -> sem_Con C2
+    := match s with
+       | ToEmpty C => fun _ => tt
+       | s && t => fun x => (sem_Tm t x , sem_Sub s x)
+       end.
+
+  Global Instance sem_Sub_weakMonotone
+                  {C1 C2 : con B}
+                  (s : sub ar C1 C2)
+    : weakMonotone (sem_Sub s).
   Proof.
-    induction t as [ ? f | ? ? v | ? ? ? ? IHf | ? ? ? f IHf t IHt ].
-    - exact (const_WM _ _ (semF f)).
-    - exact (sem_Var v).
-    - exact (lambda_abs IHf).      
-    - exact (comp_WM (pair_WM IHf IHt) (semApp A1 A2)).
-  Defined.
+    induction s ; apply _.
+  Qed.
 End OrderInterpretation.
 
 Definition sem_Ty_el
@@ -158,45 +174,6 @@ Proof.
   induction w ; apply _.
 Qed.
 
-(** Interpretation of substitutions *)
-Definition sem_Sub
-           {B : Type}
-           (semB : B -> CompatRel)
-           `{forall (b : B), isCompatRel (semB b)}
-           {F : Type}
-           {ar : F -> ty B}
-           (semF : forall (f : F), sem_Ty semB (ar f))
-           (semApp : forall (A1 A2 : ty B),
-               weakMonotoneMap
-                 ((sem_Ty semB A1 ⇒ sem_Ty semB A2) * sem_Ty semB A1)
-                 (sem_Ty semB A2))
-           {C1 C2 : con B}
-           (s : sub ar C1 C2)
-  : sem_Con semB C1 -> sem_Con semB C2.
-Proof.
-  induction s as [ | ? ? ? ? s IHs t ].
-  - exact (fun _ => tt).
-  - exact (fun x => (sem_Tm semB semF semApp t x , IHs semF x)).
-Defined.
-
-Global Instance sem_Sub_weakMonotone
-       {B : Type}
-       (semB : B -> CompatRel)
-       `{forall (b : B), isCompatRel (semB b)}
-       {F : Type}
-       {ar : F -> ty B}
-       (semF : forall (f : F), sem_Ty semB (ar f))
-       (semApp : forall (A1 A2 : ty B),
-           weakMonotoneMap
-             ((sem_Ty semB A1 ⇒ sem_Ty semB A2) * sem_Ty semB A1)
-             (sem_Ty semB A2))
-       {C1 C2 : con B}
-       (s : sub ar C1 C2)
-  : weakMonotone (sem_Sub semB semF semApp s).
-Proof.
-  induction s ; apply _.
-Qed.
-
 Global Instance sem_Wk_strictMonotone
        {B : Type}
        (semB : B -> CompatRel)
@@ -212,6 +189,7 @@ Proof.
   - apply _.
 Qed.
 
+(** Interpretation of substitutions *)
 Proposition sem_idWk
             {B : Type}
             (semB : B -> CompatRel)
@@ -361,7 +339,7 @@ Proof.
   induction s.
   - reflexivity.
   - simpl.
-    rewrite (IHs semF).
+    rewrite IHs.
     repeat f_equal.
     exact (sem_dropIdWk _ _ _ t x y).
 Qed.

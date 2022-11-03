@@ -5,11 +5,13 @@ Require Import Syntax.Signature.TermWeakenings.
 
 (** * Substitutions *)
 
-Inductive sub {B : Type} {F : Type} : (F -> ty B) -> con B -> con B -> Type :=
-| ToEmpty : forall {ar : F -> ty B} (C : con B), sub ar C ∙
-| ExtendSub : forall {ar : F -> ty B} {C1 C2 : con B} {A : ty B},
+Inductive sub {B : Type} {F : Type} (ar : F -> ty B) : con B -> con B -> Type :=
+| ToEmpty : forall (C : con B), sub ar C ∙
+| ExtendSub : forall {C1 C2 : con B} {A : ty B},
     sub ar C1 C2 -> tm ar C1 A -> sub ar C1 (A ,, C2).
 
+Arguments ToEmpty {B F ar} C.
+Arguments ExtendSub {B F ar C1 C2 A}.
 Notation "s && t" := (ExtendSub s t).
 
 (** * Operations on substitutions *)
@@ -113,7 +115,7 @@ Definition compSub
            (s1 : sub ar C1 C2)
   : sub ar C1 C3.
 Proof.
-  induction s2 as [ | ? ? ? ? s2 IHs2 t ].
+  induction s2 as [ | ? ? ? s2 IHs2 t ].
   - apply ToEmpty.
   - exact (IHs2 s1 && t [ s1 ]).
 Defined.
