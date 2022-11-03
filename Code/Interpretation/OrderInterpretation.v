@@ -516,17 +516,19 @@ Definition interpretation_to_lexico
   : (sem_Con (semB I) C ⇒ sem_Ty (semB I) A) * tm (arity X) C A
   := (sem_Tm (semB I) (semF I) (semApp I) x , x).
 
+Import AFSNotation.
+
 Definition sem_Rewrite_lexico
            {B F : Type}
            {X : afs B F}
            (I : Interpretation X)
            {C : con B}
            {A : ty B}
-           (t1 t2 : tm (arity X) C A)
-           (p : rew lhs rhs t1 t2)
+           (t1 t2 : tm X C A)
+           (p : t1 ~> t2)
   : lexico
       (sem_Con (semB I) C ⇒ sem_Ty (semB I) A)
-      (fun s1 s2 => betaRed s1 s2)
+      (fun s1 s2 => s1 ~>β+ s2)
       (interpretation_to_lexico I t1)
       (interpretation_to_lexico I t2).
 Proof.

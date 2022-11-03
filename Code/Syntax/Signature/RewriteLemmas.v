@@ -358,8 +358,8 @@ Definition Rew_Wk
            {A : ty B}
            {t1 t2 : tm X C2 A}
            (w : wk C1 C2)
-           (p : rew X t1 t2)
-  : rew X (wkTm t1 w) (wkTm t2 w).
+           (p : t1 ~> t2)
+  : wkTm t1 w ~> wkTm t2 w.
 Proof.
   revert w.
   revert C1.
@@ -394,8 +394,8 @@ Definition Rew_sub
            {A : ty B}
            {t1 t2 : tm X C2 A}
            (s : sub _ C1 C2)
-           (p : rew X t1 t2)
-  : rew X (t1 [ s ]) (t2 [ s ]).
+           (p : t1 ~> t2)
+  : t1 [ s ] ~> t2 [ s ].
 Proof.
   revert s.
   revert C1.

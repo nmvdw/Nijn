@@ -109,4 +109,6 @@ Module AFSNotation.
              {A : ty B}
              (t1 t2 : tm X C A)
     := RewritingSystem.rew lhs rhs t1 t2.
+
+  Notation "t1 ~> t2" := (rew _ t1 t2) (at level 70).
 End AFSNotation.
