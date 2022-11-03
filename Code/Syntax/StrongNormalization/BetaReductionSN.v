@@ -134,7 +134,7 @@ Proof.
   intros A' v.
   assert (subVar v s
           =
-          subTm (TmVar (wkVar v (dropId C2 _))) (s && t))
+          TmVar (wkVar v (dropId C2 _)) [ s && t ])
     as H.
   {
     rewrite wkVar_is_subVar.
@@ -615,7 +615,7 @@ Proposition subTm_red_or_eq
             (r : s1 ~>βs s2)
             {A : ty B}
             (t : tm ar C2 A)
-  : subTm t s1 ~>β* subTm t s2.
+  : t [ s1 ] ~>β* t [ s2 ].
 Proof.
   revert C1 s1 s2 r.
   induction t as [ b | ? ? v | ? ? ? f IHf | ? ? ? f IHf t IHt ]
@@ -658,7 +658,7 @@ Proposition sub_beta_red_or_eq
             (f : tm ar (A1 ,, C) A2)
             {t1 t2 : tm ar C A1}
             (r : t1 ~>β t2)
-  : subTm f (beta_sub t1) ~>β* subTm f (beta_sub t2).
+  : f [ beta_sub t1 ] ~>β* f [ beta_sub t2 ].
 Proof.
   exact (subTm_red_or_eq (beta_sub_red r) f).
 Qed.
@@ -819,7 +819,7 @@ Definition red_beta_redex
            {t : tm ar C A1}
            {u : tm ar C A2}
            (r : (λ f · t) ~>β u)
-  : (u = subTm f (beta_sub t))
+  : (u = f [ beta_sub t ])
     + { t' : tm ar C A1 & (t ~>β t') * (u = λ f · t') }
     + { f' : tm ar (A1 ,, C) A2 & (f ~>β f') * (u = λ f' · t)}.
 Proof.
@@ -849,7 +849,7 @@ Lemma logical_SN_beta_help_base
       (f : tm ar (A1 ,, C) A2)
       (t : tm ar C A1)
       (ps : repeat_app ar C A2 A3)
-      (Hsub : term_is_beta_SN (subTm f (beta_sub t) ·· ps))
+      (Hsub : term_is_beta_SN (f [ beta_sub t ] ·· ps))
       (Hf : term_is_beta_SN f)
       (Ht : term_is_beta_SN t)
   : term_is_beta_SN ((λ f · t) ·· ps).
@@ -899,7 +899,7 @@ Lemma logical_SN_beta_help
       {A1 A2 A3 : ty B}
       (f : tm ar (A1 ,, C) A2)
       (t : tm ar C A1)
-      (Hsub : logical_SN (subTm f (beta_sub t)))
+      (Hsub : logical_SN (f [ beta_sub t ]))
       (Hf : logical_SN f)
       (Ht : logical_SN t)
       (ps : repeat_app ar C A2 A3)
@@ -951,7 +951,7 @@ Lemma logical_SN_beta
       {A1 A2 : ty B}
       (f : tm ar (A1 ,, C) A2)
       (t : tm ar C A1)
-      (Hsub : logical_SN (subTm f (beta_sub t)))
+      (Hsub : logical_SN (f [ beta_sub t ]))
       (Hf : logical_SN f)
       (Ht : logical_SN t)
   : logical_SN (λ f · t).
@@ -969,7 +969,7 @@ Theorem fundamental_thm_relations
         {A : ty B}
         (t : tm ar C2 A)
         (p : logical_SN_sub s)
-  : logical_SN (subTm t s).
+  : logical_SN (t [ s ]).
 Proof.
   revert p.
   revert s.

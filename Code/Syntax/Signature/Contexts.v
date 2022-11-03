@@ -19,13 +19,10 @@ Notation "A ,, Γ" := (Extend A Γ) (at level 80, right associativity) : signatu
 
 (** Note: we represent variables using De Bruijn indices *)
 Inductive var {B : Type} : con B -> ty B -> Type :=
-| Vz : forall (C : con B) (A : ty B),
+| Vz : forall {C : con B} {A : ty B},
     var (A ,, C) A
-| Vs : forall (C : con B) (A1 A2 : ty B),
+| Vs : forall {C : con B} {A1 A2 : ty B},
     var C A2 -> var (A1 ,, C) A2.
-
-Arguments Vz {_} {_} {_}.
-Arguments Vs {_} {_} {_} {_} _.
 
 (** * Decidable equality of variables *)
 

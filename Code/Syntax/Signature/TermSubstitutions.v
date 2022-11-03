@@ -101,6 +101,8 @@ Fixpoint subTm
      | App f t => fun _ s => App (subTm f s) (subTm t s) 
      end.
 
+Notation "t [ s ]" := (subTm t s) (at level 20).
+
 (** Composition of substitutions *)
 Definition compSub
            {B : Type}
@@ -113,5 +115,5 @@ Definition compSub
 Proof.
   induction s2 as [ | ? ? ? ? s2 IHs2 t ].
   - apply ToEmpty.
-  - exact (IHs2 s1 && subTm t s1).
+  - exact (IHs2 s1 && t [ s1 ]).
 Defined.

@@ -407,7 +407,7 @@ Proposition sub_Lemma
             {A : ty B}
             (t : tm ar C2 A)
             (x : sem_Con semB C1)
-  : sem_Tm semB semF semApp (subTm t s) x
+  : sem_Tm semB semF semApp (t [ s ]) x
     =
     sem_Tm semB semF semApp t (sem_Sub semB semF semApp s x).
 Proof.
@@ -466,7 +466,7 @@ Proposition sem_beta
     >=
     sem_Tm
       semB semF semApp
-      (subTm f (beta_sub t))
+      (f [ beta_sub t ])
       x.
 Proof.
   unfold beta_sub.
@@ -507,9 +507,9 @@ Record Interpretation {B F : Type} (X : afs B F) : Type :=
                     (C : con B)
                     (s : sub (arity X) C (vars r))
                     (x : sem_Con semB C),
-        sem_Tm semB semF semApp (subTm (lhs r) s) x
+        sem_Tm semB semF semApp (lhs r [ s ]) x
         >
-        sem_Tm semB semF semApp (subTm (rhs r) s) x
+        sem_Tm semB semF semApp (rhs r [ s ]) x
     }.
 
 Arguments semB {B F X} _ _.

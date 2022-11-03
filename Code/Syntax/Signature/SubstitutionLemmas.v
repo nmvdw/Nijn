@@ -243,7 +243,7 @@ Proposition wkTm_is_subTm
             (t : tm ar C2 A)
             {C1 : con B}
             (w : wk C1 C2)
-  : wkTm t w = subTm t (wkToSub w).
+  : wkTm t w = t [ wkToSub w ].
 Proof.
   revert w.
   revert C1.
@@ -290,7 +290,7 @@ Proposition subTm_id
             {F : Type}
             {ar : F -> ty B}
             (t : tm ar C A)
-  : subTm t (idSub C ar) = t.
+  : t [ idSub C ar ] = t.
 Proof.
   induction t ; simpl.
   - reflexivity.
@@ -334,7 +334,7 @@ Proposition subVar_comp
             {C1 C2 : con B}
             (s1 : sub ar C1 C2)
             (s2 : sub ar C2 C3)
-  : subTm (subVar v s2) s1 = subVar v (compSub s2 s1).
+  : subVar v s2 [ s1 ] = subVar v (compSub s2 s1).
 Proof.
   induction s2.
   - inversion v.
@@ -451,7 +451,7 @@ Proposition wkTmSubTm
             (s2 : sub ar C2 C3)
             {A : ty B}
             (t : tm ar C3 A)
-  : subTm t (compSubWk s2 w1) = wkTm (subTm t s2) w1.
+  : t [ compSubWk s2 w1 ] = wkTm (subTm t s2) w1.
 Proof.
   revert w1 s2.
   revert C1 C2.
@@ -551,7 +551,7 @@ Proposition subTm_wkTm
             (w2 : wk C2 C3)
             {A : ty B}
             (t : tm ar C3 A)
-  : subTm t (compWkSub w2 s1) = subTm (wkTm t w2) s1.
+  : t [ compWkSub w2 s1 ] = wkTm t w2 [ s1 ].
 Proof.
   revert s1 w2.
   revert C1 C2.
@@ -632,7 +632,7 @@ Proposition subTm_comp
             (t : tm ar C3 A)
             (s1 : sub ar C1 C2)
             (s2 : sub ar C2 C3)
-  : subTm (subTm t s2) s1 = subTm t (compSub s2 s1).
+  : t [ s2 ] [ s1 ] = t [ compSub s2 s1 ].
 Proof.
   revert s2 s1.
   revert C1 C2.

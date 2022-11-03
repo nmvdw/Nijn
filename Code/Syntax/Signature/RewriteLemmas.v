@@ -188,7 +188,7 @@ Proof.
     simpl in *.
     unshelve eexists.
     + unshelve eexists.
-      * exact (subTm x' (beta_sub t'2)).
+      * exact (x' [ beta_sub t'2 ]).
       * abstract
           (rewrite <- (Lam_eq p2) ;
            rewrite !wkTm_is_subTm ;
@@ -292,7 +292,7 @@ Definition betaRed_step_sub
            {t1 t2 : tm ar C2 A}
            (s : sub ar C1 C2)
            (p : t1 ~>β t2)
-  : subTm t1 s ~>β subTm t2 s.
+  : t1 [ s ] ~>β t2 [ s ].
 Proof.
   revert s.
   revert C1.
@@ -303,11 +303,11 @@ Proof.
   - apply CStep.
     induction r.
     simpl.
-    pose (Beta (subTm f (keepSub A1 s)) (subTm x s)) as p.
+    pose (Beta (f [ keepSub A1 s ]) (x [ s ])) as p.
     unfold beta_sub in *.
-    assert (subTm (subTm f (keepSub A1 s)) (idSub C1 _ && subTm x s)
+    assert (f [ keepSub A1 s ] [ idSub C1 _ && x [ s ] ]
             =
-            subTm (subTm f (idSub C _ && x)) s)
+            f [ idSub C _ && x ] [ s ])
       as H.
     {
       rewrite subTm_comp.
@@ -335,7 +335,7 @@ Definition betaRed_sub
            {t1 t2 : tm ar C2 A}
            (s : sub ar C1 C2)
            (p : t1 ~>β+ t2)
-  : subTm t1 s ~>β+ subTm t2 s.
+  : t1 [ s ] ~>β+ t2 [ s ].
 Proof.
   revert s.
   revert C1.
@@ -395,7 +395,7 @@ Definition Rew_sub
            {t1 t2 : tm X C2 A}
            (s : sub _ C1 C2)
            (p : rew X t1 t2)
-  : rew X (subTm t1 s) (subTm t2 s).
+  : rew X (t1 [ s ]) (t2 [ s ]).
 Proof.
   revert s.
   revert C1.
@@ -413,9 +413,9 @@ Proof.
         apply AFSBeta.
         pose (Beta (subTm f (keepSub A1 s)) (subTm x s)) as p.
         unfold beta_sub in *.
-        assert (subTm (subTm f (keepSub A1 s)) (idSub C1 (arity X) && subTm x s)
+        assert (f [ keepSub A1 s ] [ idSub C1 (arity X) && x [ s ] ]
                 =
-                subTm (subTm f (idSub C (arity X) && x)) s)
+                f [ idSub C (arity X) && x ] [ s ])
           as H.
         {
           rewrite subTm_comp.
