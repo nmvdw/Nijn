@@ -45,41 +45,25 @@ Section OrderInterpretation.
     induction C ; apply _.
   Qed.
 
-  Fixpoint sem_Var_map
+  (** Interpretation of variables *)
+  Fixpoint sem_Var
            {C : con B}
            {A : ty B}
            (v : var C A)
-    : sem_Con C -> sem_Ty A
+    : sem_Con C ⇒ sem_Ty A
     := match v with
-       | Vz    => fst
-       | Vs v  => fun x => sem_Var_map v (snd x)
+       | Vz => fst_WM _ _
+       | Vs v => sem_Var v ∘ snd_WM _ _
        end.
 
   Global Instance sem_Var_strictMonotone
          {C : con B}
          {A : ty B}
          (v : var C A)
-    : strictMonotone (sem_Var_map v).
+    : strictMonotone (sem_Var v).
   Proof.
     induction v ; apply _.
   Qed.
-
-  Global Instance sem_Var_weakMonotone
-         {C : con B}
-         {A : ty B}
-         (v : var C A)
-    : weakMonotone (sem_Var_map v).
-  Proof.
-    induction v ; apply _.
-  Qed.
-
-  (** Interpretation of variables *)
-  Definition sem_Var
-             {C : con B}
-             {A : ty B}
-             (v : var C A)
-    : sem_Con C ⇒ sem_Ty A
-    := make_monotone (sem_Var_map v) _.
 
   Context {F : Type}
           {ar : F -> ty B}
@@ -96,26 +80,18 @@ Section OrderInterpretation.
     := match t with
        | BaseTm f  => const_WM _ _ (semF f)
        | TmVar v   => sem_Var v
-       | λ f       => lambda_abs (sem_Tm f)
-       | f · t     => comp_WM (pair_WM (sem_Tm f) (sem_Tm t)) (semApp _ _)
+       | λ f       => λWM (sem_Tm f)
+       | f · t     => semApp _ _ ∘ ⟨ sem_Tm f , sem_Tm t ⟩
        end.
-  
+
   Fixpoint sem_Sub
            {C1 C2 : con B}
            (s : sub ar C1 C2)
-    : sem_Con C1 -> sem_Con C2
+    : sem_Con C1 ⇒ sem_Con C2
     := match s with
-       | ToEmpty C => fun _ => tt
-       | s && t => fun x => (sem_Tm t x , sem_Sub s x)
+       | ToEmpty C  => const_WM _ unit_CompatRel tt
+       | s && t     => ⟨ sem_Tm t , sem_Sub s ⟩
        end.
-
-  Global Instance sem_Sub_weakMonotone
-                  {C1 C2 : con B}
-                  (s : sub ar C1 C2)
-    : weakMonotone (sem_Sub s).
-  Proof.
-    induction s ; apply _.
-  Qed.
 End OrderInterpretation.
 
 Definition sem_Ty_el
@@ -364,7 +340,12 @@ Proof.
     reflexivity.
   - induction x as [x1 x2] ; simpl.
     f_equal.
-    rewrite sem_dropSub.
+    symmetry.
+    etransitivity.
+    {
+      apply sem_dropSub.
+    }
+    symmetry.
     apply IHC.
 Qed.
 
@@ -409,8 +390,7 @@ Proof.
     }
     simpl.
     do 2 f_equal.
-    rewrite sem_dropSub.
-    reflexivity.
+    apply sem_dropSub.
   - simpl.
     rewrite IHt1.
     rewrite IHt2.

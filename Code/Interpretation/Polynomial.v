@@ -92,21 +92,17 @@ Section PolyAlgebra.
     - apply IHA₂.
       apply p.
   Qed.
-              
+
   Fixpoint plus_ty_nat
            (A : ty B)
     : sem_Ty p_base A * nat_CompatRel ⇒ sem_Ty p_base A
     := match A with
        | Base _ => plus_as_weakMonotoneMap
        | A₁ ⟶ A₂ =>
-           lambda_abs
-             (comp_WM
-                (pair_WM
-                   (app_WM
-                      (comp_WM (snd_WM _ _) (fst_WM _ _))
-                      (fst_WM _ _))
-                   (comp_WM (snd_WM _ _) (snd_WM _ _)))
-                (plus_ty_nat A₂))
+           λWM
+             (plus_ty_nat A₂
+              ∘ ⟨ ((fst_WM _ _ ∘ snd_WM _ _) ·WM (fst_WM _ _))
+                , (snd_WM _ _ ∘ snd_WM _ _) ⟩)
        end.
 
   Proposition plus_ty_nat_strict_monotone
@@ -129,16 +125,10 @@ Section PolyAlgebra.
     := match A with
        | Base _ => plus_as_weakMonotoneMap
        | A₁ ⟶ A₂ =>
-           lambda_abs
-             (comp_WM
-                (pair_WM
-                   (app_WM
-                      (comp_WM (snd_WM _ _) (fst_WM _ _))
-                      (fst_WM _ _))
-                   (app_WM
-                      (comp_WM (snd_WM _ _) (snd_WM _ _))
-                      (fst_WM _ _)))
-                (plus_ty A₂))
+           λWM
+             (plus_ty A₂
+              ∘ ⟨ (fst_WM _ _ ∘ snd_WM _ _) ·WM (fst_WM _ _)
+                , ((snd_WM _ _ ∘ snd_WM _ _) ·WM (fst_WM _ _)) ⟩)
        end.
 
   Proposition plus_ty_ge_right
@@ -189,14 +179,9 @@ Section PolyAlgebra.
     : sem_Ty p_base A
     := match A with
        | Base _ => 0
-       | A₁ ⟶ A₂ =>
-           make_monotone
-             (fun x => plus_ty_nat
-                         A₂
-                         (sum_of_lower_value_function _
-                          ,
-                          lower_value_function _ x))
-             _
+       | A₁ ⟶ A₂ => plus_ty_nat A₂
+                     ∘ ⟨ const_WM _ _ (sum_of_lower_value_function _)
+                       , lower_value_function _ ⟩
        end.
   
   Definition p_app_fun

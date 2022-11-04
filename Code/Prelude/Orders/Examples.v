@@ -526,6 +526,8 @@ Definition comp_WM
   : X ⇒ Z
   := make_monotone (g o f) _.
 
+Notation "g ∘ f" := (comp_WM f g) (at level 40).
+
 Definition comp_strong_monotone
            {X Y Z : CompatRel}
            (f : X ==> Y)
@@ -631,6 +633,8 @@ Definition pair_WM
   : X ⇒ (Y * Z)
   := @make_monotone X (Y * Z) (fun x => (f x , g x)) _.
 
+Notation "⟨ f , g ⟩" := (pair_WM f g).
+
 Definition pair_strong_monotone
            {X Y Z : CompatRel}
            (f : X ==> Y)
@@ -682,6 +686,8 @@ Definition lambda_abs
             (f : Y * X ⇒ Z)
   : X ⇒ (Y ⇒ Z)
   := make_monotone (fun x : X => lambda_abs_on_X f x) _.
+
+Notation "'λWM' f" := (lambda_abs f) (at level 10).
 
 Global Instance plus_isWeakMonotone
                 {A : CompatRel}
@@ -762,6 +768,8 @@ Definition app_WM
            (x : A ⇒ B)
   : A ⇒ C
   := make_monotone (fun a => f a (x a)) _.
+
+Notation "f '·WM' x" := (app_WM f x) (at level 20, left associativity).
 
 Global Instance strong_app_isWeakMonotone
                 {A B C : CompatRel}
