@@ -483,12 +483,12 @@ Proof.
 Qed.
 
 Definition id_wm
-           (X : CompatRel)
+           {X : CompatRel}
   : X →wm X
   := make_monotone id _.
 
 Definition id_strong_monotone
-           (X : CompatRel)
+           {X : CompatRel}
   : X ==> X
   := make_strong_monotone id _ _.
 

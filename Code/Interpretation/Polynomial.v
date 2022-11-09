@@ -79,7 +79,7 @@ Section PolyAlgebra.
            {A : ty B}
     : ⟦ A ⟧ →wm nat_CompatRel
     := match A with
-       | Base _ => id_wm nat_CompatRel
+       | Base _ => id_wm
        | A₁ ⟶ A₂ => apply_el_wm lvf (min_el_ty A₁)
        end.
 
