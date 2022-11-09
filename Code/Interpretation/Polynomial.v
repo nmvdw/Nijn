@@ -75,7 +75,7 @@ Section PolyAlgebra.
 
   Fixpoint lower_value_function
            (A : ty B)
-    : sem_Ty p_base A ⇒ nat_CompatRel
+    : sem_Ty p_base A →wm nat_CompatRel
     := match A with
        | Base _ => id_WM nat_CompatRel
        | A₁ ⟶ A₂ => apply_el_WM (lower_value_function A₂) (minimal_element_sem_ty A₁)
@@ -95,7 +95,7 @@ Section PolyAlgebra.
 
   Fixpoint plus_ty_nat
            (A : ty B)
-    : sem_Ty p_base A * nat_CompatRel ⇒ sem_Ty p_base A
+    : sem_Ty p_base A * nat_CompatRel →wm sem_Ty p_base A
     := match A with
        | Base _ => plus_as_weakMonotoneMap
        | A₁ ⟶ A₂ =>
@@ -121,7 +121,7 @@ Section PolyAlgebra.
 
   Fixpoint plus_ty
            (A : ty B)
-    : sem_Ty p_base A * sem_Ty p_base A ⇒ sem_Ty p_base A
+    : sem_Ty p_base A * sem_Ty p_base A →wm sem_Ty p_base A
     := match A with
        | Base _ => plus_as_weakMonotoneMap
        | A₁ ⟶ A₂ =>
@@ -230,7 +230,7 @@ Section PolyAlgebra.
   
   Definition p_app
              (A1 A2 : ty B)
-    : sem_Ty p_base (A1 ⟶ A2) * sem_Ty p_base A1 ⇒ sem_Ty p_base A2
+    : sem_Ty p_base (A1 ⟶ A2) * sem_Ty p_base A1 →wm sem_Ty p_base A2
     := @make_monotone
          (sem_Ty p_base (A1 ⟶ A2) * sem_Ty p_base A1)
          (sem_Ty p_base A2)
@@ -239,7 +239,7 @@ Section PolyAlgebra.
 
   Proposition p_app_ge_id
               (A₁ A₂ : ty B)
-              (f : sem_Ty p_base A₁ ⇒ sem_Ty p_base A₂)
+              (f : sem_Ty p_base A₁ →wm sem_Ty p_base A₂)
               (x : sem_Ty p_base A₁)
     : p_app_fun (f , x) >= f x.
   Proof.
@@ -250,7 +250,7 @@ Section PolyAlgebra.
 
   Proposition p_app_strict_l
               (A₁ A₂ : ty B)
-              (f₁ f₂ : sem_Ty p_base A₁ ⇒ sem_Ty p_base A₂)
+              (f₁ f₂ : sem_Ty p_base A₁ →wm sem_Ty p_base A₂)
               (x : sem_Ty p_base A₁)
               (p : f₁ > f₂)
     : p_app_fun (f₁ , x) > p_app_fun (f₂ , x).
@@ -274,7 +274,7 @@ Section PolyAlgebra.
 
   Proposition p_app_strict_r
               (A₁ A₂ : ty B)
-              (f : sem_Ty p_base A₁ ⇒ sem_Ty p_base A₂)
+              (f : sem_Ty p_base A₁ →wm sem_Ty p_base A₂)
               (x₁ x₂ : sem_Ty p_base A₁)
               (p : x₁ > x₂)
     : p_app_fun (f , x₁) > p_app_fun (f , x₂).

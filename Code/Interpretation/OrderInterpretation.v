@@ -19,7 +19,7 @@ Section OrderInterpretation.
     : CompatRel
     := match A with
        | Base b    => semB b
-       | A1 ⟶ A2  => sem_Ty A1 ⇒ sem_Ty A2
+       | A1 ⟶ A2  => sem_Ty A1 →wm sem_Ty A2
        end.
 
   Global Instance sem_Ty_CompatRel
@@ -50,7 +50,7 @@ Section OrderInterpretation.
            {C : con B}
            {A : ty B}
            (v : var C A)
-    : sem_Con C ⇒ sem_Ty A
+    : sem_Con C →wm sem_Ty A
     := match v with
        | Vz => fst_WM _ _
        | Vs v => sem_Var v ∘ snd_WM _ _
@@ -69,14 +69,14 @@ Section OrderInterpretation.
           {ar : F -> ty B}
           (semF : forall (f : F), sem_Ty (ar f))
           (semApp : forall (A1 A2 : ty B),
-              (sem_Ty A1 ⇒ sem_Ty A2) * sem_Ty A1 ⇒ sem_Ty A2).
+              (sem_Ty A1 →wm sem_Ty A2) * sem_Ty A1 →wm sem_Ty A2).
 
   (** Interpretation of terms *)
   Fixpoint sem_Tm
            {C : con B}
            {A : ty B}
            (t : tm ar C A)
-    : sem_Con C ⇒ sem_Ty A
+    : sem_Con C →wm sem_Ty A
     := match t with
        | BaseTm f  => const_WM _ _ (semF f)
        | TmVar v   => sem_Var v
@@ -87,7 +87,7 @@ Section OrderInterpretation.
   Fixpoint sem_Sub
            {C1 C2 : con B}
            (s : sub ar C1 C2)
-    : sem_Con C1 ⇒ sem_Con C2
+    : sem_Con C1 →wm sem_Con C2
     := match s with
        | ToEmpty C  => const_WM _ unit_CompatRel tt
        | s && t     => ⟨ sem_Tm t , sem_Sub s ⟩
@@ -191,7 +191,7 @@ Proposition sem_wkVar
             (semF : forall (f : F), sem_Ty semB (ar f))
             (semApp : forall (A1 A2 : ty B),
                 weakMonotoneMap
-                  ((sem_Ty semB A1 ⇒ sem_Ty semB A2) * sem_Ty semB A1)
+                  ((sem_Ty semB A1 →wm sem_Ty semB A2) * sem_Ty semB A1)
                   (sem_Ty semB A2))
             {C1 C2 : con B}
             (w : wk C1 C2)
@@ -224,7 +224,7 @@ Proposition sem_keepWk
             (semF : forall (f : F), sem_Ty semB (ar f))
             (semApp : forall (A1 A2 : ty B),
                 weakMonotoneMap
-                  ((sem_Ty semB A1 ⇒ sem_Ty semB A2) * sem_Ty semB A1)
+                  ((sem_Ty semB A1 →wm sem_Ty semB A2) * sem_Ty semB A1)
                   (sem_Ty semB A2))
             {C1 C2 : con B}
             (w : wk C1 C2)
@@ -262,7 +262,7 @@ Proposition sem_dropIdWk
             (semF : forall (f : F), sem_Ty semB (ar f))
             (semApp : forall (A1 A2 : ty B),
                 weakMonotoneMap
-                  ((sem_Ty semB A1 ⇒ sem_Ty semB A2) * sem_Ty semB A1)
+                  ((sem_Ty semB A1 →wm sem_Ty semB A2) * sem_Ty semB A1)
                   (sem_Ty semB A2))
             {C : con B}
             {A1 A2 : ty B}
@@ -301,7 +301,7 @@ Proposition sem_dropSub
             (semF : forall (f : F), sem_Ty semB (ar f))
             (semApp : forall (A1 A2 : ty B),
                 weakMonotoneMap
-                  ((sem_Ty semB A1 ⇒ sem_Ty semB A2) * sem_Ty semB A1)
+                  ((sem_Ty semB A1 →wm sem_Ty semB A2) * sem_Ty semB A1)
                   (sem_Ty semB A2))
             {C1 C2 : con B}
             (s : sub ar C1 C2)
@@ -329,7 +329,7 @@ Proposition sem_idSub
             (semF : forall (f : F), sem_Ty semB (ar f))
             (semApp : forall (A1 A2 : ty B),
                 weakMonotoneMap
-                  ((sem_Ty semB A1 ⇒ sem_Ty semB A2) * sem_Ty semB A1)
+                  ((sem_Ty semB A1 →wm sem_Ty semB A2) * sem_Ty semB A1)
                   (sem_Ty semB A2))
             {C : con B}
             (x : sem_Con semB C)
@@ -359,7 +359,7 @@ Proposition sub_Lemma
             (semF : forall (f : F), sem_Ty semB (ar f))
             (semApp : forall (A1 A2 : ty B),
                 weakMonotoneMap
-                  ((sem_Ty semB A1 ⇒ sem_Ty semB A2) * sem_Ty semB A1)
+                  ((sem_Ty semB A1 →wm sem_Ty semB A2) * sem_Ty semB A1)
                   (sem_Ty semB A2))
             {C1 C2 : con B}
             (s : sub ar C1 C2)
@@ -406,10 +406,10 @@ Proposition sem_beta
             (semF : forall (f : F), sem_Ty semB (ar f))
             (semApp : forall (A1 A2 : ty B),
                 weakMonotoneMap
-                  ((sem_Ty semB A1 ⇒ sem_Ty semB A2) * sem_Ty semB A1)
+                  ((sem_Ty semB A1 →wm sem_Ty semB A2) * sem_Ty semB A1)
                   (sem_Ty semB A2))
             (semApp_gt_id : forall (A1 A2 : ty B)
-                                   (f : sem_Ty semB A1 ⇒ sem_Ty semB A2)
+                                   (f : sem_Ty semB A1 →wm sem_Ty semB A2)
                                    (x : sem_Ty semB A1),
                 semApp _ _ (f , x) >= f x)
             {C : con B}
@@ -447,18 +447,18 @@ Record Interpretation {B F : Type} (X : afs B F) : Type :=
       semF : forall (f : F), sem_Ty semB (arity X f) ;
       semApp : forall (A1 A2 : ty B),
         weakMonotoneMap
-          ((sem_Ty semB A1 ⇒ sem_Ty semB A2) * sem_Ty semB A1)
+          ((sem_Ty semB A1 →wm sem_Ty semB A2) * sem_Ty semB A1)
           (sem_Ty semB A2) ;
       sem_App_l : forall (A1 A2 : ty B)
-                         (f1 f2 : sem_Ty semB A1 ⇒ sem_Ty semB A2)
+                         (f1 f2 : sem_Ty semB A1 →wm sem_Ty semB A2)
                          (x : sem_Ty semB A1),
         f1 > f2 -> semApp _ _ (f1 , x) > semApp _ _ (f2 , x) ;
       sem_App_r : forall (A1 A2 : ty B)
-                         (f : sem_Ty semB A1 ⇒ sem_Ty semB A2)
+                         (f : sem_Ty semB A1 →wm sem_Ty semB A2)
                          (x1 x2 : sem_Ty semB A1),
         x1 > x2 -> semApp _ _ (f , x1) > semApp _ _ (f , x2) ;
       semApp_gt_id : forall (A1 A2 : ty B)
-                            (f : sem_Ty semB A1 ⇒ sem_Ty semB A2)
+                            (f : sem_Ty semB A1 →wm sem_Ty semB A2)
                             (x : sem_Ty semB A1),
         semApp _ _ (f , x) >= f x ;
       semR : forall (r : rewriteRules X)
@@ -493,7 +493,7 @@ Definition interpretation_to_lexico
            {C : con B}
            {A : ty B}
            (x : tm (arity X) C A)
-  : (sem_Con (semB I) C ⇒ sem_Ty (semB I) A) * tm (arity X) C A
+  : (sem_Con (semB I) C →wm sem_Ty (semB I) A) * tm (arity X) C A
   := (sem_Tm (semB I) (semF I) (semApp I) x , x).
 
 Import AFSNotation.
@@ -507,7 +507,7 @@ Definition sem_Rewrite_lexico
            (t1 t2 : tm X C A)
            (p : t1 ~> t2)
   : lexico
-      (sem_Con (semB I) C ⇒ sem_Ty (semB I) A)
+      (sem_Con (semB I) C →wm sem_Ty (semB I) A)
       (fun s1 s2 => s1 ~>β+ s2)
       (interpretation_to_lexico I t1)
       (interpretation_to_lexico I t2).
