@@ -526,7 +526,7 @@ Definition comp_wm
   : X →wm Z
   := make_monotone (g o f) _.
 
-Notation "g ∘ f" := (comp_wm f g) (at level 40).
+Notation "g ∘wm f" := (comp_wm f g) (at level 40).
 
 Definition comp_strong_monotone
            {X Y Z : CompatRel}
@@ -553,12 +553,12 @@ Proof.
 Qed.
 
 Definition fst_wm
-           (X Y : CompatRel)
+           {X Y : CompatRel}
   : (X * Y) →wm X
   := make_monotone _ _.
 
 Definition fst_strong_monotone
-           (X Y : CompatRel)
+           {X Y : CompatRel}
   : (X * Y) ==> X
   := make_strong_monotone _ _ _.
 
@@ -580,12 +580,12 @@ Proof.
 Qed.
 
 Definition snd_wm
-           (X Y : CompatRel)
+           {X Y : CompatRel}
   : (X * Y) →wm Y
   := make_monotone _ _.
 
 Definition snd_strong_monotone
-           (X Y : CompatRel)
+           {X Y : CompatRel}
   : (X * Y) ==> Y
   := make_strong_monotone _ _ _.
 
@@ -817,23 +817,20 @@ Definition plus_wm
        _.
 
 Global Instance apply_el_is_weak_monotone
-                {A₁ A₂ A₃ : CompatRel}
-                (f : A₂ →wm A₃)
+                {A₁ A₂ : CompatRel}
                 (x : A₁)
-  : @weakMonotone (A₁ →wm A₂) A₃ (fun h => f (h x)).
+  : @weakMonotone (A₁ →wm A₂) A₂ (fun f => f x).
 Proof.
   intros h₁ h₂ p.
-  apply map_ge.
   apply p.
 Qed.
   
 Definition apply_el_wm
-           {A₁ A₂ A₃ : CompatRel}
-           (f : A₂ →wm A₃)
+           {A₁ A₂ : CompatRel}
            (x : A₁)
-  : (A₁ →wm A₂) →wm A₃
+  : (A₁ →wm A₂) →wm A₂
   := @make_monotone
        (A₁ →wm A₂)
-       A₃
-       (fun h => f (h x))
+       A₂
+       (fun f => f x)
        _.

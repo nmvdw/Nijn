@@ -52,8 +52,8 @@ Section OrderInterpretation.
            (v : var C A)
     : sem_Con C →wm sem_Ty A
     := match v with
-       | Vz => fst_wm _ _
-       | Vs v => sem_Var v ∘ snd_wm _ _
+       | Vz => fst_wm
+       | Vs v => sem_Var v ∘wm snd_wm
        end.
 
   Global Instance sem_Var_strictMonotone
@@ -81,7 +81,7 @@ Section OrderInterpretation.
        | BaseTm f  => const_wm (semF f)
        | TmVar v   => sem_Var v
        | λ f       => λwm (sem_Tm f)
-       | f · t     => semApp _ _ ∘ ⟨ sem_Tm f , sem_Tm t ⟩
+       | f · t     => semApp _ _ ∘wm ⟨ sem_Tm f , sem_Tm t ⟩
        end.
 
   Fixpoint sem_Sub
