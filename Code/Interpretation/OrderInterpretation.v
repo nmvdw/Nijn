@@ -52,8 +52,8 @@ Section OrderInterpretation.
            (v : var C A)
     : sem_Con C →wm sem_Ty A
     := match v with
-       | Vz => fst_WM _ _
-       | Vs v => sem_Var v ∘ snd_WM _ _
+       | Vz => fst_wm _ _
+       | Vs v => sem_Var v ∘ snd_wm _ _
        end.
 
   Global Instance sem_Var_strictMonotone
@@ -78,9 +78,9 @@ Section OrderInterpretation.
            (t : tm ar C A)
     : sem_Con C →wm sem_Ty A
     := match t with
-       | BaseTm f  => const_WM _ _ (semF f)
+       | BaseTm f  => const_wm (semF f)
        | TmVar v   => sem_Var v
-       | λ f       => λWM (sem_Tm f)
+       | λ f       => λwm (sem_Tm f)
        | f · t     => semApp _ _ ∘ ⟨ sem_Tm f , sem_Tm t ⟩
        end.
 
@@ -89,7 +89,7 @@ Section OrderInterpretation.
            (s : sub ar C1 C2)
     : sem_Con C1 →wm sem_Con C2
     := match s with
-       | ToEmpty C  => const_WM _ unit_CompatRel tt
+       | ToEmpty C  => const_wm (tt : unit_CompatRel)
        | s && t     => ⟨ sem_Tm t , sem_Sub s ⟩
        end.
 End OrderInterpretation.
@@ -104,7 +104,7 @@ Definition sem_Ty_el
 Proof.
   induction A as [ | A1 IHA1 A2 IHA2 ].
   - apply els.
-  - exact (const_WM _ _ IHA2).
+  - exact (const_wm IHA2).
 Defined.
 
 Definition sem_Con_el

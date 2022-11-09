@@ -34,9 +34,9 @@ Fixpoint sem_base_poly
       (sem_Con (fun _ => nat_CompatRel) C)
       nat_CompatRel
   := match P with
-     | P_const n     => const_WM _ nat_CompatRel n
-     | P_plus P1 P2  => plus_WM (sem_base_poly P1) (sem_base_poly P2)
-     | P_mult P1 P2  => mult_WM (sem_base_poly P1) (sem_base_poly P2)
+     | P_const n     => const_wm (n : nat_CompatRel)
+     | P_plus P1 P2  => plus_fun_wm (sem_base_poly P1) (sem_base_poly P2)
+     | P_mult P1 P2  => mult_fun_wm (sem_base_poly P1) (sem_base_poly P2)
      | from_poly P   => sem_poly P
      end
 with sem_poly
@@ -50,8 +50,8 @@ with sem_poly
   := match P with 
      | P_base P     => sem_base_poly P
      | P_var v      => sem_Var (fun _ => nat_CompatRel) v
-     | P_app P1 P2  => app_WM (sem_poly P1) (sem_poly P2)
-     | P_lam P      => lambda_abs (sem_poly P)
+     | P_app P1 P2  => sem_poly P1 ·wm sem_poly P2
+     | P_lam P      => λwm (sem_poly P)
      end.
 
 Section PolyAlgebra.
@@ -65,27 +65,27 @@ Section PolyAlgebra.
   Definition p_fun_sym (f : F) : sem_Ty p_base (arity X f)
     := sem_poly (J f) tt.
   
-  Fixpoint minimal_element_sem_ty
+  Fixpoint min_el_ty
            (A : ty B)
     : minimal_element (sem_Ty p_base A)
     := match A with
        | Base _ => nat_minimal_element
-       | A1 ⟶ A2 => min_el_fun_space _ (minimal_element_sem_ty A2)
+       | A₁ ⟶ A₂ => min_el_fun_space (min_el_ty A₂)
        end.
 
-  Fixpoint lower_value_function
-           (A : ty B)
+  Fixpoint lvf
+           {A : ty B}
     : sem_Ty p_base A →wm nat_CompatRel
     := match A with
-       | Base _ => id_WM nat_CompatRel
-       | A₁ ⟶ A₂ => apply_el_WM (lower_value_function A₂) (minimal_element_sem_ty A₁)
+       | Base _ => id_wm nat_CompatRel
+       | A₁ ⟶ A₂ => apply_el_wm lvf (min_el_ty A₁)
        end.
 
-  Proposition lower_value_function_strict_monotonic
+  Proposition lvf_strict_monotonic
               {A : ty B}
               {x x' : sem_Ty p_base A}
               (p : x > x')
-    : lower_value_function A x > lower_value_function A x'.
+    : lvf x > lvf x'.
   Proof.
     induction A as [ b | A₁ IHA₁ A₂ IHA₂ ] ; cbn.
     - exact p.
@@ -94,23 +94,25 @@ Section PolyAlgebra.
   Qed.
 
   Fixpoint plus_ty_nat
-           (A : ty B)
+           {A : ty B}
     : sem_Ty p_base A * nat_CompatRel →wm sem_Ty p_base A
     := match A with
-       | Base _ => plus_as_weakMonotoneMap
+       | Base _ => plus_wm
        | A₁ ⟶ A₂ =>
-           λWM
-             (plus_ty_nat A₂
-              ∘ ⟨ ((fst_WM _ _ ∘ snd_WM _ _) ·WM (fst_WM _ _))
-                , (snd_WM _ _ ∘ snd_WM _ _) ⟩)
+           let f := fst_wm _ _ ∘ snd_wm _ _ in
+           let x := fst_wm _ _ in
+           let n := snd_wm _ _ ∘ snd_wm _ _ in
+           λwm (plus_ty_nat ∘ ⟨ f ·wm x , n ⟩)
        end.
+
+  Notation "f '+c' n" := (plus_ty_nat (f , n)) (at level 50).
 
   Proposition plus_ty_nat_strict_monotone
               {A : ty B}
               (x : sem_Ty p_base A)
               {y y' : nat_CompatRel}
               (p : y > y')
-    : plus_ty_nat A (x , y) > plus_ty_nat A (x , y').
+    : plus_ty_nat (x , y) > plus_ty_nat (x , y').
   Proof.
     induction A as [ b | A₁ IHA₁ A₂ IHA₂ ] ; cbn.
     - cbn in p.
@@ -120,22 +122,24 @@ Section PolyAlgebra.
   Qed.
 
   Fixpoint plus_ty
-           (A : ty B)
+           {A : ty B}
     : sem_Ty p_base A * sem_Ty p_base A →wm sem_Ty p_base A
     := match A with
-       | Base _ => plus_as_weakMonotoneMap
+       | Base _ => plus_wm
        | A₁ ⟶ A₂ =>
-           λWM
-             (plus_ty A₂
-              ∘ ⟨ (fst_WM _ _ ∘ snd_WM _ _) ·WM (fst_WM _ _)
-                , ((snd_WM _ _ ∘ snd_WM _ _) ·WM (fst_WM _ _)) ⟩)
+           let f := fst_wm _ _ ∘ snd_wm _ _ in
+           let g := snd_wm _ _ ∘ snd_wm _ _ in
+           let x := fst_wm _ _ in
+           λwm (plus_ty ∘ ⟨ f ·wm x , g ·wm x ⟩)
        end.
 
+  Notation "f '+f' g" := (plus_ty (f , g)) (at level 50).
+  
   Proposition plus_ty_ge_right
               {A : ty B}
               (x y y' : sem_Ty p_base A)
               (p : y >= y')
-    : plus_ty A (x , y) >= y'.
+    : plus_ty (x , y) >= y'.
   Proof.
     induction A as [ b | A₁ IHA₁ A₂ IHA₂ ] ; cbn.
     - cbn in p.
@@ -150,7 +154,7 @@ Section PolyAlgebra.
               {x x' y y' : sem_Ty p_base A}
               (p : x > x')
               (q : y >= y')
-    : plus_ty A (x , y) > plus_ty A (x' , y').
+    : plus_ty (x , y) > plus_ty (x' , y').
   Proof.
     induction A as [ b | A₁ IHA₁ A₂ IHA₂ ] ; cbn.
     - cbn in p, q.
@@ -166,45 +170,35 @@ Section PolyAlgebra.
               {x x' y y' : sem_Ty p_base A}
               (p : x > x')
               (q : y > y')
-    : plus_ty A (x , y) > plus_ty A (x' , y').
+    : plus_ty (x , y) > plus_ty (x' , y').
   Proof.
     apply plus_ty_strict_weak_monotonic.
     - exact p.
     - apply compat.
       exact q.
   Qed.
-             
-  Fixpoint sum_of_lower_value_function
-           (A : ty B)
+
+  Fixpoint sum_lvf
+           {A : ty B}
     : sem_Ty p_base A
     := match A with
        | Base _ => 0
-       | A₁ ⟶ A₂ => plus_ty_nat A₂
-                     ∘ ⟨ const_WM _ _ (sum_of_lower_value_function _)
-                       , lower_value_function _ ⟩
+       | A₁ ⟶ A₂ => plus_ty_nat ∘ ⟨ const_wm sum_lvf , lvf ⟩
        end.
   
   Definition p_app_fun
-             {A1 A2 : ty B}
-    : sem_Ty p_base (A1 ⟶ A2) * sem_Ty p_base A1 -> sem_Ty p_base A2
+             {A₁ A₂ : ty B}
+    : sem_Ty p_base (A₁ ⟶ A₂) * sem_Ty p_base A₁ -> sem_Ty p_base A₂
     := fun z =>
          let f := fst z in
          let x := snd z in
-         plus_ty
-           _
-           (plus_ty_nat
-              _
-              (sum_of_lower_value_function A2
-               ,
-               lower_value_function _ f + lower_value_function _ x)
-            ,
-            f x).
+         (sum_lvf +c (lvf f + lvf x)) +f f x.
 
   Global Instance weakMonotone_p_app_fun
-                  (A1 A2 : ty B)
+                  (A₁ A₂ : ty B)
     : @weakMonotone
-        (sem_Ty p_base (A1 ⟶ A2) * sem_Ty p_base A1)
-        (sem_Ty p_base A2)
+        (sem_Ty p_base (A₁ ⟶ A₂) * sem_Ty p_base A₁)
+        (sem_Ty p_base A₂)
         p_app_fun.
   Proof.
     intros x₁ x₂ p.
@@ -216,9 +210,9 @@ Section PolyAlgebra.
       split.
       * apply ge_refl.
       * apply plus_ge.
-        ** apply (lower_value_function A2).
+        ** apply lvf.
            apply p.
-        ** apply (lower_value_function A1).
+        ** apply lvf.
            apply p.
     - cbn.
       cbn in p.
@@ -229,11 +223,11 @@ Section PolyAlgebra.
   Qed.
   
   Definition p_app
-             (A1 A2 : ty B)
-    : sem_Ty p_base (A1 ⟶ A2) * sem_Ty p_base A1 →wm sem_Ty p_base A2
+             (A₁ A₂ : ty B)
+    : sem_Ty p_base (A₁ ⟶ A₂) * sem_Ty p_base A₁ →wm sem_Ty p_base A₂
     := @make_monotone
-         (sem_Ty p_base (A1 ⟶ A2) * sem_Ty p_base A1)
-         (sem_Ty p_base A2)
+         (sem_Ty p_base (A₁ ⟶ A₂) * sem_Ty p_base A₁)
+         (sem_Ty p_base A₂)
          p_app_fun
          _.
 
@@ -259,15 +253,15 @@ Section PolyAlgebra.
     apply plus_ty_strict_monotonic.
     - apply plus_ty_nat_strict_monotone.
       cbn.
-      enough (lower_value_function A₂ (f₁ (minimal_element_sem_ty A₁))
+      enough (lvf (f₁ (min_el_ty A₁))
               >
-              lower_value_function A₂ (f₂ (minimal_element_sem_ty A₁)))
+              lvf (f₂ (min_el_ty A₁)))
         as H.
       {
         cbn in H.
         nia.
       }
-      apply lower_value_function_strict_monotonic.
+      apply lvf_strict_monotonic.
       apply p.
     - apply p.
   Qed.
@@ -282,15 +276,15 @@ Section PolyAlgebra.
     unfold p_app_fun ; cbn.
     apply plus_ty_strict_weak_monotonic.
     - apply plus_ty_nat_strict_monotone.
-      enough (lower_value_function A₁ x₁
+      enough (lvf x₁
               >
-              lower_value_function A₁ x₂)
+              lvf x₂)
         as H.
       {
         cbn ; cbn in H.
         nia.
       }
-      apply lower_value_function_strict_monotonic.
+      apply lvf_strict_monotonic.
       exact p.
     - apply map_ge.
       apply compat.
