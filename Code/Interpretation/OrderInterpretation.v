@@ -505,10 +505,10 @@ Definition sem_Rewrite_lexico
            {C : con B}
            {A : ty B}
            (t1 t2 : tm X C A)
-           (p : t1 ~> t2)
+           (p : t1 ∼> t2)
   : lexico
       (sem_Con (semB I) C →wm sem_Ty (semB I) A)
-      (fun s1 s2 => s1 ~>β+ s2)
+      (fun s1 s2 => s1 ∼>β+ s2)
       (interpretation_to_lexico I t1)
       (interpretation_to_lexico I t2).
 Proof.

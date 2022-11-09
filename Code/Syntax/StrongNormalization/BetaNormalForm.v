@@ -16,7 +16,7 @@ Definition beta_nf
            {A : ty B}
            (t : tm ar C A)
   : Prop
-  := nf (fun (t1 t2 : tm ar C A) => t1 ~>β t2) t.
+  := nf (fun (t1 t2 : tm ar C A) => t1 ∼>β t2) t.
 
 (** Relation between the two notions *)
 Proposition beta_nf_step
@@ -27,7 +27,7 @@ Proposition beta_nf_step
             {A : ty B}
             {t : tm ar C A}
             (Ht : beta_nf t)
-  : nf (fun (t1 t2 : tm ar C A) => t1 ~>β+ t2) t.
+  : nf (fun (t1 t2 : tm ar C A) => t1 ∼>β+ t2) t.
 Proof.
   intros t' r.
   induction r.
@@ -47,7 +47,7 @@ Lemma baseTm_no_red_help
       (f : F)
       (p1 : ar f = A)
       (p2 : transport (tm ar C) p1 (BaseTm f) = t1)
-  : t1 ~>β t2 -> False.
+  : t1 ∼>β t2 -> False.
 Proof.
   intro q.
   revert p2.
@@ -72,7 +72,7 @@ Lemma baseTm_no_red
       {C : con B}
       (f : F)
       (t : tm ar C (ar f))
-  : BaseTm f ~>β t -> False.
+  : BaseTm f ∼>β t -> False.
 Proof.
   exact (baseTm_no_red_help (BaseTm f) t f eq_refl eq_refl).
 Qed.
@@ -112,8 +112,8 @@ Proposition beta_red_lam
             {A1 A2 : ty B}
             {f : tm ar (A1 ,, C) A2}
             {g : tm ar C (A1 ⟶ A2)}
-            (r : λ f ~>β g)
-  : { g' : tm ar (A1 ,, C) A2 & (f ~>β g') * (g = λ g') }.
+            (r : λ f ∼>β g)
+  : { g' : tm ar (A1 ,, C) A2 & (f ∼>β g') * (g = λ g') }.
 Proof.
   dependent destruction r.
   - exists f2.
@@ -164,9 +164,9 @@ Proposition beta_red_app
             {f : tm ar C (A1 ⟶ A2)}
             {t : tm ar C A1}
             {s : tm ar C A2}
-            (r : f · t ~>β s)
-  : { f' : tm ar C (A1 ⟶ A2) & (f ~>β f') * (s = f' · t) }
-    + { t' : tm ar C A1 & (t ~>β t') * (s = f · t') }
+            (r : f · t ∼>β s)
+  : { f' : tm ar C (A1 ⟶ A2) & (f ∼>β f') * (s = f' · t) }
+    + { t' : tm ar C A1 & (t ∼>β t') * (s = f · t') }
     + { s' : tm ar C A2 & baseBetaStep _ _ (f · t) s' * (s = s') }.
 Proof.
   dependent destruction r.
@@ -463,7 +463,7 @@ Definition term_is_beta_SN
            {A : ty B}
            (t : tm ar C A)
   : Prop
-  := isWf (fun (t1 t2 : tm ar C _) => t1 ~>β+ t2) t.
+  := isWf (fun (t1 t2 : tm ar C _) => t1 ∼>β+ t2) t.
 
 Definition beta_nf_isSN
            {B : Type}
@@ -536,7 +536,7 @@ Proposition red_to_beta_SN
             {A : ty B}
             {t1 t2 : tm ar C A}
             (Ht : term_is_beta_SN t1)
-            (r : t1 ~>β+ t2)
+            (r : t1 ∼>β+ t2)
   : term_is_beta_SN t2.
 Proof.
   revert t2 r.
@@ -556,7 +556,7 @@ Proposition single_step_SN
             {C : con B}
             {A : ty B}
             (t : tm ar C A)
-            (H : forall (t' : tm ar C A), t ~>β t' -> term_is_beta_SN t')
+            (H : forall (t' : tm ar C A), t ∼>β t' -> term_is_beta_SN t')
   : term_is_beta_SN t.
 Proof.
   apply acc.

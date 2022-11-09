@@ -61,7 +61,7 @@ Proposition beta_red_logical_SN
             {A : ty B}
             {t1 t2 : tm ar C A}
             (Ht1 : logical_SN t1)
-            (r : t1 ~>β t2)
+            (r : t1 ∼>β t2)
   : logical_SN t2.
 Proof.
   revert C t1 t2 Ht1 r.
@@ -224,7 +224,7 @@ Lemma neutral_beta
       {A : ty B}
       {t t' : tm ar C A}
       (Ht : is_neutral t)
-      (r : t ~>β t')
+      (r : t ∼>β t')
   : is_neutral t'.
 Proof.
   induction r.
@@ -521,7 +521,7 @@ Inductive sub_red
                           (s : sub ar C1 C2)
                           {A : ty B}
                           {t1 t2 : tm ar C1 A}
-                          (r : t1 ~>β t2),
+                          (r : t1 ∼>β t2),
     sub_red (s && t1) (s && t2)
 | ExtendSub_right : forall {C1 C2 : con B}
                            (s1 s2 : sub ar C1 C2)
@@ -529,7 +529,7 @@ Inductive sub_red
                            {t : tm ar C1 A},
     sub_red s1 s2 -> sub_red (s1 && t) (s2 && t).
 
-Notation "s1 ~>βs s2" := (sub_red s1 s2) (at level 70).
+Notation "s1 ∼>βs s2" := (sub_red s1 s2) (at level 70).
 
 (** The reduction relation on some standard constructions *)
 Definition dropSub_red
@@ -539,8 +539,8 @@ Definition dropSub_red
            (A : ty B)
            {C1 C2 : con B}
            {s1 s2 : sub ar C1 C2}
-           (r : s1 ~>βs s2)
-  : dropSub A s1 ~>βs dropSub A s2.
+           (r : s1 ∼>βs s2)
+  : dropSub A s1 ∼>βs dropSub A s2.
 Proof.
   induction r ; simpl.
   - constructor.
@@ -557,8 +557,8 @@ Definition keepSub_red
            (A : ty B)
            {C1 C2 : con B}
            {s1 s2 : sub ar C1 C2}
-           (r : s1 ~>βs s2)
-  : keepSub A s1 ~>βs keepSub A s2.
+           (r : s1 ∼>βs s2)
+  : keepSub A s1 ∼>βs keepSub A s2.
 Proof.
   unfold keepSub.
   constructor.
@@ -573,8 +573,8 @@ Definition beta_sub_red
            {C : con B}
            {A : ty B}
            {t1 t2 : tm ar C A}
-           (r : t1 ~>β t2)
-  : beta_sub t1 ~>βs beta_sub t2.
+           (r : t1 ∼>β t2)
+  : beta_sub t1 ∼>βs beta_sub t2.
 Proof.
   unfold beta_sub.
   constructor.
@@ -588,10 +588,10 @@ Proposition subVar_red_or_eq
             {ar : F -> ty B}
             {C1 C2 : con B}
             {s1 s2 : sub ar C1 C2}
-            (r : s1 ~>βs s2)
+            (r : s1 ∼>βs s2)
             {A : ty B}
             (v : var C2 A)
-  : subVar v s1 ~>β* subVar v s2.
+  : subVar v s1 ∼>β* subVar v s2.
 Proof.
   induction v.
   - dependent destruction r ; simpl ; cbn.
@@ -612,10 +612,10 @@ Proposition subTm_red_or_eq
             {ar : F -> ty B}
             {C1 C2 : con B}
             {s1 s2 : sub ar C1 C2}
-            (r : s1 ~>βs s2)
+            (r : s1 ∼>βs s2)
             {A : ty B}
             (t : tm ar C2 A)
-  : t [ s1 ] ~>β* t [ s2 ].
+  : t [ s1 ] ∼>β* t [ s2 ].
 Proof.
   revert C1 s1 s2 r.
   induction t as [ b | ? ? v | ? ? ? f IHf | ? ? ? f IHf t IHt ]
@@ -657,8 +657,8 @@ Proposition sub_beta_red_or_eq
             {A1 A2 : ty B}
             (f : tm ar (A1 ,, C) A2)
             {t1 t2 : tm ar C A1}
-            (r : t1 ~>β t2)
-  : f [ beta_sub t1 ] ~>β* f [ beta_sub t2 ].
+            (r : t1 ∼>β t2)
+  : f [ beta_sub t1 ] ∼>β* f [ beta_sub t2 ].
 Proof.
   exact (subTm_red_or_eq (beta_sub_red r) f).
 Qed.
@@ -676,7 +676,7 @@ Inductive repeat_app_red
                         (Ht1 : logical_SN t1)
                         (Ht2 : logical_SN t2)
                         (ps : repeat_app ar C A1 (A2 ⟶ A3)),
-    t1 ~>β t2
+    t1 ∼>β t2
     ->
     repeat_app_red (add_term t1 Ht1 ps) (add_term t2 Ht2 ps)
 | add_term_rest : forall {A1 A2 A3 : ty B}
@@ -687,7 +687,7 @@ Inductive repeat_app_red
     ->
     repeat_app_red (add_term t Ht ps) (add_term t Ht qs).
 
-Notation "ps ~>βr qs" := (repeat_app_red ps qs) (at level 70).
+Notation "ps ∼>βr qs" := (repeat_app_red ps qs) (at level 70).
 
 (** Rewriting in a repeated application *)
 Definition repeat_app_left
@@ -698,8 +698,8 @@ Definition repeat_app_left
            {A1 A2 : ty B}
            (ps : repeat_app ar C A1 A2)
            {t1 t2 : tm ar C A1}
-           (r : t1 ~>β+ t2)
-  : t1 ·· ps ~>β+ t2 ·· ps.
+           (r : t1 ∼>β+ t2)
+  : t1 ·· ps ∼>β+ t2 ·· ps.
 Proof.
   induction ps as [ | ? ? ? ? ? ps IHps ] ; simpl.
   - exact r.
@@ -716,8 +716,8 @@ Definition repeat_app_right
            {A1 A2 : ty B}
            (ps qs : repeat_app ar C A1 A2)
            {t : tm ar C A1}
-           (r : ps ~>βr qs)
-  : t ·· ps ~>β t ·· qs.
+           (r : ps ∼>βr qs)
+  : t ·· ps ∼>β t ·· qs.
 Proof.
   induction r as [ ? ? ? ? ? ? ? ? b | ? ? ? ? ? ? ? r IHr ] ; simpl.
   - apply App_r.
@@ -733,7 +733,7 @@ Definition repeat_app_red_Wf
            (ar : F -> ty B)
            (C : con B)
            (A1 A2 : ty B)
-  : Wf (fun (ps1 ps2 : repeat_app ar C A1 A2) => ps1 ~>βr ps2).
+  : Wf (fun (ps1 ps2 : repeat_app ar C A1 A2) => ps1 ∼>βr ps2).
 Proof.
   intro ps.
   induction ps as [ | ? ? ? t Ht ps IHps ].
@@ -766,9 +766,9 @@ Definition red_repeat_app
            {ps : repeat_app ar C A1 A2}
            {u : tm ar C A2}
            (Ht : ~(is_Lambda t))
-           (r : t ·· ps ~>β u)
-  : { t' : tm ar C A1 & (t ~>β t') * (u = t' ·· ps)}
-    + { ps' : repeat_app ar C A1 A2 & (ps ~>βr ps') * (u = t ·· ps')}.
+           (r : t ·· ps ∼>β u)
+  : { t' : tm ar C A1 & (t ∼>β t') * (u = t' ·· ps)}
+    + { ps' : repeat_app ar C A1 A2 & (ps ∼>βr ps') * (u = t ·· ps')}.
 Proof.
   induction ps.
   - simpl in *.
@@ -818,10 +818,10 @@ Definition red_beta_redex
            {f : tm ar (A1 ,, C) A2}
            {t : tm ar C A1}
            {u : tm ar C A2}
-           (r : (λ f · t) ~>β u)
+           (r : (λ f · t) ∼>β u)
   : (u = f [ beta_sub t ])
-    + { t' : tm ar C A1 & (t ~>β t') * (u = λ f · t') }
-    + { f' : tm ar (A1 ,, C) A2 & (f ~>β f') * (u = λ f' · t)}.
+    + { t' : tm ar C A1 & (t ∼>β t') * (u = λ f · t') }
+    + { f' : tm ar (A1 ,, C) A2 & (f ∼>β f') * (u = λ f' · t)}.
 Proof.
   dependent destruction r.
   - dependent destruction r.

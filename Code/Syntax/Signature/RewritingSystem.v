@@ -76,7 +76,7 @@ Definition betaStep
   : tm ar C A -> tm ar C A -> Type
   := compatibilityClosure baseBetaStep C A.
 
-Notation "t1 '~>β' t2" := (betaStep t1 t2) (at level 70).
+Notation "t1 '∼>β' t2" := (betaStep t1 t2) (at level 70).
 
 Definition betaRed
            {B : Type}
@@ -85,9 +85,9 @@ Definition betaRed
            {C : con B}
            {A : ty B}
   : tm ar C A -> tm ar C A -> Type
-  := transitiveClosure (fun t1 t2 => t1 ~>β t2).
+  := transitiveClosure (fun t1 t2 => t1 ∼>β t2).
 
-Notation "t1 '~>β+' t2" := (betaRed t1 t2) (at level 70).
+Notation "t1 '∼>β+' t2" := (betaRed t1 t2) (at level 70).
 
 (** Formers for beta reduction *)
 Definition betaRed_step
@@ -97,8 +97,8 @@ Definition betaRed_step
            {C : con B}
            {A : ty B}
            {t1 t2 : tm ar C A}
-           (p : t1 ~>β t2)
-  : t1 ~>β+ t2
+           (p : t1 ∼>β t2)
+  : t1 ∼>β+ t2
   := TStep p.
 
 Definition beta_Trans
@@ -108,9 +108,9 @@ Definition beta_Trans
            {C : con B}
            {A : ty B}
            {t1 t2 t3 : tm ar C A}
-           (p : t1 ~>β+ t2)
-           (q : t2 ~>β+ t3)
-  : t1 ~>β+ t3
+           (p : t1 ∼>β+ t2)
+           (q : t2 ∼>β+ t3)
+  : t1 ∼>β+ t3
   := Trans p q.
 
 Definition beta_rewrite_transport
@@ -121,8 +121,8 @@ Definition beta_rewrite_transport
            {A1 A2 : ty B}
            (p : A1 = A2)
            {x1 x2 : tm ar C A1}
-           (r : x1 ~>β x2)
-  : transport (tm ar C) p x1 ~>β transport (tm ar C) p x2
+           (r : x1 ∼>β x2)
+  : transport (tm ar C) p x1 ∼>β transport (tm ar C) p x2
   := match p with
      | eq_refl => r
      end.
@@ -135,9 +135,9 @@ Definition beta_App_l_help
            {A1 A2 A3 : ty B}
            {f1 f2 : tm ar C A3}
            (x : tm ar C A1)
-           (p : f1 ~>β+ f2)
+           (p : f1 ∼>β+ f2)
            (q : A3 = (A1 ⟶ A2))
-  : ((transport (tm ar C) q f1) · x) ~>β+ ((transport (tm ar C) q f2) · x).
+  : ((transport (tm ar C) q f1) · x) ∼>β+ ((transport (tm ar C) q f2) · x).
 Proof.
   induction p.
   - apply TStep.
@@ -155,8 +155,8 @@ Definition beta_App_l
            {A1 A2 : ty B}
            {f1 f2 : tm ar C (A1 ⟶ A2)}
            (x : tm ar C A1)
-           (p : f1 ~>β+ f2)
-  : (f1 · x) ~>β+ (f2 · x)
+           (p : f1 ∼>β+ f2)
+  : (f1 · x) ∼>β+ (f2 · x)
   := beta_App_l_help x p eq_refl.
 
 Definition beta_App_r
@@ -167,8 +167,8 @@ Definition beta_App_r
            {A1 A2 : ty B}
            (f : tm ar C (A1 ⟶ A2))
            {x1 x2 : tm ar C A1}
-           (p : x1 ~>β+ x2)
-  : (f · x1) ~>β+ (f · x2).
+           (p : x1 ∼>β+ x2)
+  : (f · x1) ∼>β+ (f · x2).
 Proof.
   induction p.
   - apply TStep.
@@ -184,8 +184,8 @@ Definition beta_Lam
            {C : con B}
            {A1 A2 : ty B}
            {f1 f2 : tm ar (A1 ,, C) A2}
-           (p : f1 ~>β+ f2)
-  : (λ f1) ~>β+ (λ f2).
+           (p : f1 ∼>β+ f2)
+  : (λ f1) ∼>β+ (λ f2).
 Proof.
   induction p.
   - apply TStep.
@@ -202,7 +202,7 @@ Definition beta_betaRed
            {A1 A2 : ty B}
            (f : tm ar (A1 ,, C) A2)
            (x : tm ar C A1)
-  : ((λ f) · x) ~>β+ (subTm f (beta_sub x)).
+  : ((λ f) · x) ∼>β+ (subTm f (beta_sub x)).
 Proof.
   apply TStep.
   apply CStep.
@@ -217,9 +217,9 @@ Definition betaRed_nonneg
            {C : con B}
            {A : ty B}
   : tm ar C A -> tm ar C A -> Type
-  := reflexiveClosure (fun t1 t2 => t1 ~>β+ t2).
+  := reflexiveClosure (fun t1 t2 => t1 ∼>β+ t2).
 
-Notation "t1 '~>β*' t2" := (betaRed_nonneg t1 t2) (at level 70).
+Notation "t1 '∼>β*' t2" := (betaRed_nonneg t1 t2) (at level 70).
 
 Definition betaRed_nonneg_refl
            {B : Type}
@@ -228,7 +228,7 @@ Definition betaRed_nonneg_refl
            {C : con B}
            {A : ty B}
            (t : tm ar C A)
-  : t ~>β* t.
+  : t ∼>β* t.
 Proof.
   right.
   reflexivity.
@@ -241,8 +241,8 @@ Definition betaRed_nonneg_step
            {C : con B}
            {A : ty B}
            {t1 t2 : tm ar C A}
-           (p : t1 ~>β t2)
-  : t1 ~>β* t2.
+           (p : t1 ∼>β t2)
+  : t1 ∼>β* t2.
 Proof.
   left.
   apply betaRed_step.
@@ -256,8 +256,8 @@ Definition betaRed_nonneg_steps
            {C : con B}
            {A : ty B}
            {t1 t2 : tm ar C A}
-           (p : t1 ~>β+ t2)
-  : t1 ~>β* t2.
+           (p : t1 ∼>β+ t2)
+  : t1 ∼>β* t2.
 Proof.
   left.
   exact p.
@@ -271,9 +271,9 @@ Definition beta_nonneg_Trans
            {C : con B}
            {A : ty B}
            {t1 t2 t3 : tm ar C A}
-           (p : t1 ~>β* t2)
-           (q : t2 ~>β* t3)
-  : t1 ~>β* t3.
+           (p : t1 ∼>β* t2)
+           (q : t2 ∼>β* t3)
+  : t1 ∼>β* t3.
 Proof.
   destruct p as [r1 | p], q as [r2 | q].
   - left.
@@ -297,8 +297,8 @@ Definition beta_nonneg_App_l
            {A1 A2 : ty B}
            {f1 f2 : tm ar C (A1 ⟶ A2)}
            (x : tm ar C A1)
-           (p : f1 ~>β* f2)
-  : (f1 · x) ~>β* (f2 · x).
+           (p : f1 ∼>β* f2)
+  : (f1 · x) ∼>β* (f2 · x).
 Proof.
   destruct p as [r | p].
   - left.
@@ -317,8 +317,8 @@ Definition beta_nonneg_App_r
            {A1 A2 : ty B}
            (f : tm ar C (A1 ⟶ A2))
            {x1 x2 : tm ar C A1}
-           (p : x1 ~>β* x2)
-  : (f · x1) ~>β* (f · x2).
+           (p : x1 ∼>β* x2)
+  : (f · x1) ∼>β* (f · x2).
 Proof.
   destruct p as [r | p].
   - left.
@@ -336,8 +336,8 @@ Definition beta_nonneg_Lam
            {C : con B}
            {A1 A2 : ty B}
            {f1 f2 : tm ar (A1 ,, C) A2}
-           (p : f1 ~>β* f2)
-  : (λ f1) ~>β* (λ f2).
+           (p : f1 ∼>β* f2)
+  : (λ f1) ∼>β* (λ f2).
 Proof.
   destruct p as [r | p].
   - left.
@@ -356,7 +356,7 @@ Definition beta_nonneg_betaRed
            {A1 A2 : ty B}
            (f : tm ar (A1 ,, C) A2)
            (x : tm ar C A1)
-  : ((λ f) · x) ~>β* (subTm f (beta_sub x)).
+  : ((λ f) · x) ∼>β* (subTm f (beta_sub x)).
 Proof.
   left.
   apply beta_betaRed.
