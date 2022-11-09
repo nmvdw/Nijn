@@ -62,12 +62,14 @@ Section PolyAlgebra.
   Definition p_base : B -> CompatRel
     := fun (_ : B) => nat_CompatRel.
 
+  Notation "⟦ A ⟧" := (sem_Ty p_base A).
+
   Definition p_fun_sym (f : F) : sem_Ty p_base (arity X f)
     := sem_poly (J f) tt.
   
   Fixpoint min_el_ty
            (A : ty B)
-    : minimal_element (sem_Ty p_base A)
+    : minimal_element ⟦ A ⟧
     := match A with
        | Base _ => nat_minimal_element
        | A₁ ⟶ A₂ => min_el_fun_space (min_el_ty A₂)
@@ -75,7 +77,7 @@ Section PolyAlgebra.
 
   Fixpoint lvf
            {A : ty B}
-    : sem_Ty p_base A →wm nat_CompatRel
+    : ⟦ A ⟧ →wm nat_CompatRel
     := match A with
        | Base _ => id_wm nat_CompatRel
        | A₁ ⟶ A₂ => apply_el_wm lvf (min_el_ty A₁)
@@ -83,7 +85,7 @@ Section PolyAlgebra.
 
   Proposition lvf_strict_monotonic
               {A : ty B}
-              {x x' : sem_Ty p_base A}
+              {x x' : ⟦ A ⟧}
               (p : x > x')
     : lvf x > lvf x'.
   Proof.
@@ -95,7 +97,7 @@ Section PolyAlgebra.
 
   Fixpoint plus_ty_nat
            {A : ty B}
-    : sem_Ty p_base A * nat_CompatRel →wm sem_Ty p_base A
+    : ⟦ A ⟧ * nat_CompatRel →wm ⟦ A ⟧
     := match A with
        | Base _ => plus_wm
        | A₁ ⟶ A₂ =>
@@ -109,7 +111,7 @@ Section PolyAlgebra.
 
   Proposition plus_ty_nat_strict_monotone
               {A : ty B}
-              (x : sem_Ty p_base A)
+              (x : ⟦ A ⟧)
               {y y' : nat_CompatRel}
               (p : y > y')
     : plus_ty_nat (x , y) > plus_ty_nat (x , y').
@@ -123,7 +125,7 @@ Section PolyAlgebra.
 
   Fixpoint plus_ty
            {A : ty B}
-    : sem_Ty p_base A * sem_Ty p_base A →wm sem_Ty p_base A
+    : ⟦ A ⟧ * ⟦ A ⟧ →wm ⟦ A ⟧
     := match A with
        | Base _ => plus_wm
        | A₁ ⟶ A₂ =>
@@ -137,7 +139,7 @@ Section PolyAlgebra.
   
   Proposition plus_ty_ge_right
               {A : ty B}
-              (x y y' : sem_Ty p_base A)
+              (x y y' : ⟦ A ⟧)
               (p : y >= y')
     : plus_ty (x , y) >= y'.
   Proof.
@@ -151,7 +153,7 @@ Section PolyAlgebra.
 
   Proposition plus_ty_strict_weak_monotonic
               {A : ty B}
-              {x x' y y' : sem_Ty p_base A}
+              {x x' y y' : ⟦ A ⟧}
               (p : x > x')
               (q : y >= y')
     : plus_ty (x , y) > plus_ty (x' , y').
@@ -167,7 +169,7 @@ Section PolyAlgebra.
 
   Proposition plus_ty_strict_monotonic
               {A : ty B}
-              {x x' y y' : sem_Ty p_base A}
+              {x x' y y' : ⟦ A ⟧}
               (p : x > x')
               (q : y > y')
     : plus_ty (x , y) > plus_ty (x' , y').
@@ -180,7 +182,7 @@ Section PolyAlgebra.
 
   Fixpoint sum_lvf
            {A : ty B}
-    : sem_Ty p_base A
+    : ⟦ A ⟧
     := match A with
        | Base _ => 0
        | A₁ ⟶ A₂ => plus_ty_nat ∘ ⟨ const_wm sum_lvf , lvf ⟩
@@ -188,7 +190,7 @@ Section PolyAlgebra.
   
   Definition p_app_fun
              {A₁ A₂ : ty B}
-    : sem_Ty p_base (A₁ ⟶ A₂) * sem_Ty p_base A₁ -> sem_Ty p_base A₂
+    : ⟦ A₁ ⟶ A₂ ⟧ * ⟦ A₁ ⟧ -> ⟦ A₂ ⟧
     := fun z =>
          let f := fst z in
          let x := snd z in
@@ -197,8 +199,8 @@ Section PolyAlgebra.
   Global Instance weakMonotone_p_app_fun
                   (A₁ A₂ : ty B)
     : @weakMonotone
-        (sem_Ty p_base (A₁ ⟶ A₂) * sem_Ty p_base A₁)
-        (sem_Ty p_base A₂)
+        (⟦ A₁ ⟶ A₂ ⟧ * ⟦ A₁ ⟧)
+        ⟦ A₂ ⟧
         p_app_fun.
   Proof.
     intros x₁ x₂ p.
@@ -224,17 +226,17 @@ Section PolyAlgebra.
   
   Definition p_app
              (A₁ A₂ : ty B)
-    : sem_Ty p_base (A₁ ⟶ A₂) * sem_Ty p_base A₁ →wm sem_Ty p_base A₂
+    : ⟦ A₁ ⟶ A₂ ⟧ * ⟦ A₁ ⟧ →wm ⟦ A₂ ⟧
     := @make_monotone
-         (sem_Ty p_base (A₁ ⟶ A₂) * sem_Ty p_base A₁)
-         (sem_Ty p_base A₂)
+         (⟦ A₁ ⟶ A₂ ⟧ * ⟦ A₁ ⟧)
+         ⟦ A₂ ⟧
          p_app_fun
          _.
 
   Proposition p_app_ge_id
               (A₁ A₂ : ty B)
-              (f : sem_Ty p_base A₁ →wm sem_Ty p_base A₂)
-              (x : sem_Ty p_base A₁)
+              (f : ⟦ A₁ ⟧ →wm ⟦ A₂ ⟧)
+              (x : ⟦ A₁ ⟧)
     : p_app_fun (f , x) >= f x.
   Proof.
     unfold p_app_fun ; cbn.
@@ -244,8 +246,8 @@ Section PolyAlgebra.
 
   Proposition p_app_strict_l
               (A₁ A₂ : ty B)
-              (f₁ f₂ : sem_Ty p_base A₁ →wm sem_Ty p_base A₂)
-              (x : sem_Ty p_base A₁)
+              (f₁ f₂ : ⟦ A₁ ⟧ →wm ⟦ A₂ ⟧)
+              (x : ⟦ A₁ ⟧)
               (p : f₁ > f₂)
     : p_app_fun (f₁ , x) > p_app_fun (f₂ , x).
   Proof.
@@ -268,8 +270,8 @@ Section PolyAlgebra.
 
   Proposition p_app_strict_r
               (A₁ A₂ : ty B)
-              (f : sem_Ty p_base A₁ →wm sem_Ty p_base A₂)
-              (x₁ x₂ : sem_Ty p_base A₁)
+              (f : ⟦ A₁ ⟧ →wm ⟦ A₂ ⟧)
+              (x₁ x₂ : ⟦ A₁ ⟧)
               (p : x₁ > x₂)
     : p_app_fun (f , x₁) > p_app_fun (f , x₂).
   Proof.
