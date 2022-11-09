@@ -419,7 +419,7 @@ Proposition sem_beta
             (x : sem_Con semB C)
   : sem_Tm
       semB semF semApp
-      ((λ f) · t)
+      (λ f · t)
       x
     >=
     sem_Tm
