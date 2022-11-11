@@ -5,7 +5,7 @@ Require Import String.
 Require Import Coq.Program.Equality.
 Require Import Lia.
 
-(** Useful lemma *)
+(** Useful lemma in addition *)
 Proposition plus_ge
             {n1 n2 m1 m2 : nat}
             (p : n1 >= n2)
@@ -53,6 +53,8 @@ Fixpoint list_option
      end.
 
 (** * Decidable propositions *)
+
+(** A proposition is called decidable if we can either find an element of it or if we can refute it. As such, decidable propositions are those for which the law of excluded middle holds. *)
 Inductive dec (A : Prop) : Type :=
 | Yes : A -> dec A
 | No : (A -> False) -> dec A.
@@ -69,6 +71,7 @@ Class decEq (A : Type) :=
 
 Notation "! p" := (eq_sym p) (at level 80).
 
+(** We use the so-called `transport` function at numerous occassions. Our usage is more technical though. *)
 Definition transport
            {A : Type}
            (Y : A -> Type)
@@ -79,7 +82,6 @@ Definition transport
      | eq_refl => fun z => z
      end.
 
-(* begin hide *)
 Lemma transport_sym_p
       {A : Type}
       (B : A -> Type)
@@ -92,7 +94,6 @@ Proof.
   cbn.
   reflexivity.
 Qed.
-(* end hide *)
 
 (** If a type has decidable equality, then all proofs of equality are equal *)
 Definition hedberg_map
@@ -186,6 +187,8 @@ Proof.
   exact q.
 Defined.
 
+(** * Examples of types with decidable equality *)
+
 (** The unit type has decidable equality *)
 Definition dec_eq_unit
            (x y : unit)
@@ -252,7 +255,6 @@ Section SumDecEq.
           `{decEq A}
           `{decEq B}.
 
-  (* begin hide *)
   Definition inl_inj
              {x y : A}
              (p : (inl x : A + B) = inl y)
@@ -288,7 +290,6 @@ Section SumDecEq.
   Proof.
     discriminate.
   Qed.
-  (* end hide *)
   
   Definition dec_eq_sum
              (x y : A + B)
@@ -312,9 +313,7 @@ Section SumDecEq.
     := {| dec_eq := dec_eq_sum |}.
 End SumDecEq.
 
-
 (** The natural numbers have decidable equality *)
-(* begin hide *)
 Definition help_fam
            (n : nat)
   : Prop
@@ -331,7 +330,6 @@ Proof.
   inversion p.
   reflexivity.
 Qed.
-(* end hide *)
 
 Fixpoint dec_eq_nat
          (n : nat)
@@ -371,6 +369,8 @@ Global Instance decEq_string : decEq string
   := {| dec_eq := dec_eq_string |}.
 
 (** * Finite types *)
+
+(** Next we define the notion of finite types, and for that, we use the enumerated types (also known as Kuratowski finite types. These are types for which we can write down a list that contains all the elements of that particular type. *)
 Inductive isMember {A : Type} : A -> list A -> Type :=
 | Here : forall (a : A) (xs : list A), isMember a (a :: xs)
 | There : forall {a : A} (x : A) {xs : list A},
@@ -492,7 +492,7 @@ Proof.
   reflexivity.
 Defined.
 
-(** THe booleans are finite *)
+(** The booleans are finite *)
 Global Instance isFinite_bool : isFinite bool.
 Proof.
   simple refine {| els := true :: false :: nil ; allIsMember := _ |}.
@@ -676,61 +676,209 @@ Global Instance decEq_members
   := {| dec_eq := dec_eq_members l |}.
 
 (** * If we have a finite type and a decidable proposition on it, then we can decide whether that proposition holds for every element of that type. *)
-Definition decide_finite_list
-           {A : Type}
-           (P : A -> Prop)
-           (HP : forall (a : A), dec (P a))
-           (l : list A)
-  : dec (forall (a : A), In a l -> P a).
+Lemma all_nil
+      {A : Type}
+      (P : A -> Prop)
+      (HP : forall (a : A), dec (P a))
+      (a : A)
+      (Ha : In a nil)
+  : P a.
 Proof.
-  induction l as [ | x xs IHl ].
-  - refine (Yes _).
-    intros a q ; simpl in *.
-    contradiction.
-  - destruct (HP x) as [p | p].
-    + destruct IHl as [q | q].
-      * refine (Yes _) ; simpl.
-        intros a Ha.
-        destruct Ha.
-        ** subst.
-           assumption.
-        ** apply q.
-           exact H.
-      * refine (No _).
-        intros n.
-        apply q.
-        intros w Hw.
-        apply n.
-        right.
-        assumption.
-    + refine (No _) ; simpl.
-      intro n.
-      apply p.
-      apply n.
-      left.
-      reflexivity.
-Defined.
+  cbn in *.
+  contradiction.
+Qed.
 
-Definition decide_finite
+Lemma all_no_head
+      {A : Type}
+      (P : A -> Prop)
+      (HP : forall (a : A), dec (P a))
+      (x : A)
+      (xs : list A)
+      (Hx : ~(P x))
+  : ~(forall (a : A), In a (x :: xs) -> P a).
+Proof.
+  intro H.
+  apply Hx.
+  apply H.
+  cbn.
+  left.
+  reflexivity.
+Qed.
+
+Lemma all_no_tail
+      {A : Type}
+      (P : A -> Prop)
+      (HP : forall (a : A), dec (P a))
+      (x : A)
+      (xs : list A)
+      (Hxs : ~(forall (a : A), In a xs -> P a))
+  : ~(forall (a : A), In a (x :: xs) -> P a).
+Proof.
+  intros H.
+  apply Hxs.
+  intros a Ha.
+  apply H.
+  cbn.
+  right.
+  exact Ha.
+Qed.
+
+Lemma all_yes
+      {A : Type}
+      (P : A -> Prop)
+      (HP : forall (a : A), dec (P a))
+      (x : A)
+      (xs : list A)
+      (Hx : P x)
+      (Hxs : forall (a : A), In a xs -> P a)
+  : forall (a : A), In a (x :: xs) -> P a.
+Proof.
+  intros a Ha.
+  destruct Ha.
+  - subst.
+    exact Hx.
+  - apply Hxs.
+    exact H.
+Qed.
+
+Fixpoint decide_forall_finite_list
+         {A : Type}
+         (P : A -> Prop)
+         (HP : forall (a : A), dec (P a))
+         (l : list A)
+  : dec (forall (a : A), In a l -> P a)
+  := match l with
+     | nil => Yes (all_nil P HP)
+     | x :: xs =>
+       match HP x with
+       | No p => No (all_no_head P HP x xs p)
+       | Yes p =>
+         match decide_forall_finite_list P HP xs with
+         | No q => No (all_no_tail P HP x xs q)
+         | Yes q => Yes (all_yes P HP x xs p q)
+         end
+       end
+     end.
+
+Definition decide_forall_finite
            {A : Type}
            (P : A -> Prop)
            (HP : forall (a : A), dec (P a))
            `{isFinite A}
-  : dec (forall (a : A), P a).
+  : dec (forall (a : A), P a)
+  := match decide_forall_finite_list P HP els with
+     | Yes p => Yes (fun a => p _ (allIsMember _))
+     | No p => No (fun n => p (fun a Ha => n a))
+     end.
+
+Lemma all_no_exists
+      {A : Type}
+      (P : A -> Prop)
+      (HP : forall (a : A), dec (P a))
+  : ~(exists (a : A), In a nil /\ P a).
 Proof.
-  destruct (decide_finite_list P HP els) as [p | p].
-  - refine (Yes _).
-    intro a.
-    apply p.
-    apply allIsMember.
-  - refine (No _).
+  intro H.
+  destruct H as [ a [ Ha1 Ha2 ]].
+  cbn in *.
+  contradiction.
+Qed.
+
+Lemma head_exists
+      {A : Type}
+      (P : A -> Prop)
+      (HP : forall (a : A), dec (P a))
+      (x : A)
+      (xs : list A)
+      (Hx : P x)
+  : exists (a : A), In a (x :: xs) /\ P a.
+Proof.
+  exists x.
+  split ; cbn.
+  - left.
+    reflexivity.
+  - exact Hx.
+Qed.
+
+Lemma tail_exists
+      {A : Type}
+      (P : A -> Prop)
+      (HP : forall (a : A), dec (P a))
+      (x : A)
+      (xs : list A)
+      (Hxs : exists (a : A), In a xs /\ P a)
+  : exists (a : A), In a (x :: xs) /\ P a.
+Proof.
+  destruct Hxs as [ a [ Ha1 Ha2 ]].
+  exists a.
+  split ; cbn.
+  - right.
+    exact Ha1.
+  - exact Ha2.
+Qed.
+
+Lemma no_exists
+      {A : Type}
+      (P : A -> Prop)
+      (HP : forall (a : A), dec (P a))
+      (x : A)
+      (xs : list A)
+      (Hx : ~(P x))
+      (Hxs : ~(exists (a : A), In a xs /\ P a))
+  : ~(exists (a : A), In a (x :: xs) /\ P a).
+Proof.
+  intros n.
+  destruct n as [ a [ Ha1 Ha2 ]] ; cbn in *.
+  destruct Ha1 as [ p | p ].
+  - apply Hx.
+    subst.
+    exact Ha2.
+  - apply Hxs.
+    exists a.
+    split ; assumption.
+Qed.
+
+Fixpoint decide_exists_finite_list
+         {A : Type}
+         (P : A -> Prop)
+         (HP : forall (a : A), dec (P a))
+         (l : list A)
+  : dec (exists (a : A), In a l /\ P a)
+  := match l with
+     | nil => No (all_no_exists P HP)
+     | x :: xs =>
+       match HP x with
+       | Yes p => Yes (head_exists P HP x xs p)
+       | No p =>
+         match decide_exists_finite_list P HP xs with
+         | No q => No (no_exists P HP x xs p q)
+         | Yes q => Yes (tail_exists P HP x xs q)
+         end
+       end
+     end.
+
+Definition decide_exists_finite
+           {A : Type}
+           (P : A -> Prop)
+           (HP : forall (a : A), dec (P a))
+           `{isFinite A}
+  : dec (exists (a : A), P a).
+Proof.
+  destruct (decide_exists_finite_list P HP els) as [ p | p ].
+  - apply Yes.
+    destruct p as [ a Ha ].
+    exists a.
+    apply Ha.
+  - apply No.
     intro n.
     apply p.
-    intros a ?.
-    apply n.
+    destruct n as [ a Ha ].
+    exists a.
+    split.
+    + apply allIsMember.
+    + exact Ha.
 Defined.
 
-(** ** Decidable membership of lists *)
+(** * Decidable membership of lists *)
 Definition decideIn
            {A : Type}
            `{decEq A}

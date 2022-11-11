@@ -76,7 +76,7 @@ Definition betaStep
   : tm ar C A -> tm ar C A -> Type
   := compatibilityClosure baseBetaStep C A.
 
-Notation "t1 '∼>β' t2" := (betaStep t1 t2) (at level 70).
+Notation "t1 '∼>β' t2" := (betaStep t1 t2) (at level 70). (* \sim is used *)
 
 Definition betaRed
            {B : Type}
@@ -87,7 +87,7 @@ Definition betaRed
   : tm ar C A -> tm ar C A -> Type
   := transitiveClosure (fun t1 t2 => t1 ∼>β t2).
 
-Notation "t1 '∼>β+' t2" := (betaRed t1 t2) (at level 70).
+Notation "t1 '∼>β+' t2" := (betaRed t1 t2) (at level 70). (* \sim is used *)
 
 (** Formers for beta reduction *)
 Definition betaRed_step
@@ -209,7 +209,7 @@ Proof.
   apply Beta.
 Defined.
 
-(** ** A non-negative number of rewriting steps *)
+(** ** Any number of rewriting steps *)
 Definition betaRed_nonneg
            {B : Type}
            {F : Type}
@@ -219,7 +219,7 @@ Definition betaRed_nonneg
   : tm ar C A -> tm ar C A -> Type
   := reflexiveClosure (fun t1 t2 => t1 ∼>β+ t2).
 
-Notation "t1 '∼>β*' t2" := (betaRed_nonneg t1 t2) (at level 70).
+Notation "t1 '∼>β*' t2" := (betaRed_nonneg t1 t2) (at level 70). (* \sim is used *)
 
 Definition betaRed_nonneg_refl
            {B : Type}

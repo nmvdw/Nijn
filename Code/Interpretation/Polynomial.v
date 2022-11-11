@@ -5,7 +5,9 @@ Require Import Syntax.StrongNormalization.SN.
 Require Import Interpretation.OrderInterpretation.
 
 Require Import Lia.
-            
+
+(** * The notation of polynomials *)
+(** Note that we define both base polynomials and arbitrary polynomials and that we can convert between base polynomials and polynomials of a base type. Since base polynomials do not keep track of the type, we can freely add and multiply them without worrying about whether their types are actually the same. *)
 Inductive base_poly {B : Type} : con B -> Type :=
 | P_const : forall {C : con B}, nat -> base_poly C
 | P_plus : forall {C : con B}, base_poly C -> base_poly C -> base_poly C
@@ -26,30 +28,7 @@ with poly {B : Type} : con B -> ty B -> Type :=
             poly (A₁ ,, C) A₂
             -> poly C (A₁ ⟶ A₂).
 
-Fixpoint sem_base_poly
-         {B : Type}
-         {C : con B}
-         (P : base_poly C)
-  : sem_Con (fun _ => nat_CompatRel) C →wm nat_CompatRel
-  := match P with
-     | P_const n     => const_wm (n : nat_CompatRel)
-     | P_plus P1 P2  => plus_fun_wm (sem_base_poly P1) (sem_base_poly P2)
-     | P_mult P1 P2  => mult_fun_wm (sem_base_poly P1) (sem_base_poly P2)
-     | from_poly P   => sem_poly P
-     end
-with sem_poly
-      {B : Type}
-      {C : con B}
-      {A : ty B}
-      (P : poly C A)
-  : sem_Con (fun _ => nat_CompatRel) C →wm sem_Ty (fun _ => nat_CompatRel) A
-  := match P with 
-     | P_base P     => sem_base_poly P
-     | P_var v      => sem_Var (fun _ => nat_CompatRel) v
-     | P_app P1 P2  => sem_poly P1 ·wm sem_poly P2
-     | P_lam P      => λwm (sem_poly P)
-     end.
-
+(** * Polynomial interpretation *)
 Section PolyAlgebra.
   Context {B : Type} {F : Type}
           (X : afs B F)
@@ -57,20 +36,48 @@ Section PolyAlgebra.
 
   Definition p_base : B -> CompatRel
     := fun (_ : B) => nat_CompatRel.
-
+  
+  Notation "⟦ C ⟧con" := (sem_Con p_base C).
   Notation "⟦ A ⟧ty" := (sem_Ty p_base A).
 
-  Definition p_fun_sym (f : F) : sem_Ty p_base (arity X f)
-    := sem_poly (J f) tt.
-  
+  (** ** Semantics of polynomials *)
+  Fixpoint sem_base_poly
+           {C : con B}
+           (P : base_poly C)
+    : ⟦ C ⟧con →wm nat_CompatRel
+    := match P with
+       | P_const n     => const_wm (n : nat_CompatRel)
+       | P_plus P1 P2  => plus_fun_wm (sem_base_poly P1) (sem_base_poly P2)
+       | P_mult P1 P2  => mult_fun_wm (sem_base_poly P1) (sem_base_poly P2)
+       | from_poly P   => sem_poly P
+       end
+   with sem_poly
+        {C : con B}
+        {A : ty B}
+        (P : poly C A)
+    : ⟦ C ⟧con →wm ⟦ A ⟧ty
+    := match P with 
+       | P_base P     => sem_base_poly P
+       | P_var v      => sem_Var _ v
+       | P_app P1 P2  => sem_poly P1 ·wm sem_poly P2
+       | P_lam P      => λwm (sem_poly P)
+       end.
+
+  Notation "⟦ P ⟧poly" := (sem_poly P).
+
+  Definition p_fun_sym (f : F) : ⟦ arity X f ⟧ty
+    := ⟦ J f ⟧poly tt.
+
+  (** ** Minimal element of types *)
   Fixpoint min_el_ty
            (A : ty B)
     : minimal_element ⟦ A ⟧ty
     := match A with
        | Base _ => nat_minimal_element
-       | A₁ ⟶ A₂ => min_el_fun_space (min_el_ty A₂)
+       | A1 ⟶ A2 => min_el_fun_space (min_el_ty A2)
        end.
 
+  (** ** Lower value functions *)
   Fixpoint lvf
            {A : ty B}
     : ⟦ A ⟧ty →wm nat_CompatRel
@@ -91,12 +98,13 @@ Section PolyAlgebra.
       apply p.
   Qed.
 
+  (** ** Addition with natural numbers *)
   Fixpoint plus_ty_nat
            {A : ty B}
     : ⟦ A ⟧ty * nat_CompatRel →wm ⟦ A ⟧ty
     := match A with
        | Base _ => plus_wm
-       | A₁ ⟶ A₂ =>
+       | A1 ⟶ A2 =>
            let f := fst_wm ∘wm snd_wm in
            let x := fst_wm in
            let n := snd_wm ∘wm snd_wm in
@@ -110,7 +118,7 @@ Section PolyAlgebra.
               (x : ⟦ A ⟧ty)
               {y y' : nat_CompatRel}
               (p : y > y')
-    : plus_ty_nat (x , y) > plus_ty_nat (x , y').
+    : x +c y > x +c y'.
   Proof.
     induction A as [ b | A₁ IHA₁ A₂ IHA₂ ] ; cbn.
     - cbn in p.
@@ -119,12 +127,13 @@ Section PolyAlgebra.
       apply IHA₂.
   Qed.
 
+  (** ** Addition on the interpretation of types *)
   Fixpoint plus_ty
            {A : ty B}
     : ⟦ A ⟧ty * ⟦ A ⟧ty →wm ⟦ A ⟧ty
     := match A with
        | Base _ => plus_wm
-       | A₁ ⟶ A₂ =>
+       | A1 ⟶ A2 =>
            let f := fst_wm ∘wm snd_wm in
            let g := snd_wm ∘wm snd_wm in
            let x := fst_wm in
@@ -137,7 +146,7 @@ Section PolyAlgebra.
               {A : ty B}
               (x y y' : ⟦ A ⟧ty)
               (p : y >= y')
-    : plus_ty (x , y) >= y'.
+    : x +f y >= y'.
   Proof.
     induction A as [ b | A₁ IHA₁ A₂ IHA₂ ] ; cbn.
     - cbn in p.
@@ -152,7 +161,7 @@ Section PolyAlgebra.
               {x x' y y' : ⟦ A ⟧ty}
               (p : x > x')
               (q : y >= y')
-    : plus_ty (x , y) > plus_ty (x' , y').
+    : x +f y > x' +f y'.
   Proof.
     induction A as [ b | A₁ IHA₁ A₂ IHA₂ ] ; cbn.
     - cbn in p, q.
@@ -168,7 +177,7 @@ Section PolyAlgebra.
               {x x' y y' : ⟦ A ⟧ty}
               (p : x > x')
               (q : y > y')
-    : plus_ty (x , y) > plus_ty (x' , y').
+    : x +f y > x' +f y'.
   Proof.
     apply plus_ty_strict_weak_monotonic.
     - exact p.
@@ -176,21 +185,23 @@ Section PolyAlgebra.
       exact q.
   Qed.
 
+  (** ** Sum of the lower value functions *)
   Fixpoint sum_lvf
            (A : ty B)
     : ⟦ A ⟧ty
     := match A with
        | Base _ => 0
-       | A₁ ⟶ A₂ => plus_ty_nat ∘wm ⟨ const_wm (sum_lvf A₂) , lvf ⟩
+       | A1 ⟶ A2 => plus_ty_nat ∘wm ⟨ const_wm (sum_lvf A2) , lvf ⟩
        end.
-  
+
+  (** ** Interpretation of application *)
   Definition p_app_fun
-             {A₁ A₂ : ty B}
-    : ⟦ A₁ ⟶ A₂ ⟧ty * ⟦ A₁ ⟧ty -> ⟦ A₂ ⟧ty
+             {A1 A2 : ty B}
+    : ⟦ A1 ⟶ A2 ⟧ty * ⟦ A1 ⟧ty -> ⟦ A2 ⟧ty
     := fun z =>
          let f := fst z in
          let x := snd z in
-         (sum_lvf A₂ +c (lvf f + lvf x)) +f f x.
+         (sum_lvf A2 +c (lvf f + lvf x)) +f f x.
 
   Global Instance weakMonotone_p_app_fun
                   (A₁ A₂ : ty B)
@@ -289,9 +300,9 @@ Section PolyAlgebra.
       exact p.
   Qed.
 
-  Notation "⟦ C ⟧con" := (sem_Con p_base C).
   Notation "⟦ t ⟧tm" := (sem_Tm p_base p_fun_sym p_app t).
 
+  (** ** Compatibility requirement *)
   Definition poly_WMalgebra_rewrite_rules
              (H : forall (r : rewriteRules X)
                          (x : ⟦ vars r ⟧con),
@@ -305,7 +316,8 @@ Section PolyAlgebra.
     rewrite !sub_Lemma.
     apply H.
   Qed.
-  
+
+  (** ** Interpretation from polynomials *)
   Definition poly_WMalgebra
              (H : forall (r : rewriteRules X)
                          (x : ⟦ vars r ⟧con),

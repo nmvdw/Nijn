@@ -44,7 +44,7 @@ Proof.
   exact (fiber_isWf Hf fx Hfx x eq_refl).
 Qed.
 
-(** Normal forms of a relation *)
+(** * Normal forms of a relation *)
 Definition nf
            {A : Type}
            (R : A -> A -> Type)
@@ -101,6 +101,7 @@ Proof.
   exact (no_infinite_chain_help R HX (f 0) f eq_refl).
 Qed.
 
+(** The converse holds if we assume double negation elimination *)
 Section Classical.
   Context {X : Type}
           (R : X -> X -> Type)

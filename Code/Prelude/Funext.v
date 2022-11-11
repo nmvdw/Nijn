@@ -18,9 +18,5 @@ Qed.
 
 (** * UIP *)
 
-(* UIP follows from proof irrelevance *)
-Definition UIP : forall {A : Type} {a1 a2 : A} (p q : a1 = a2), p = q.
-Proof.
-  intros.
-  apply proof_irrelevance.
-Qed.
+(** UIP says that all proofs of `a1 = a2` are equal. *)
+Axiom UIP : forall {A : Type} {a1 a2 : A} (p q : a1 = a2), p = q.

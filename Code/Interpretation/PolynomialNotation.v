@@ -4,6 +4,11 @@ Require Import Interpretation.Polynomial.
 Declare Scope poly_scope.
 Open Scope poly_scope.
 
+(** * Overloaded notations for polynomials *)
+
+(** We introduce notation for polynomials so that using them becomes more convenient. When using oolynomials, one often regularly needs to perform addition/multiplication on polynomials of different types, and the goal here is to have a uniform notation for all of these operations *)
+
+(** ** Notation for addition *)
 Class addClass (A B C : Type) :=
   addFun : A -> B -> C.
 
@@ -21,6 +26,7 @@ Global Instance add_poly_base {B : Type} (C : con B) (b : B)
   : addClass (poly C (Base b)) (base_poly C) (base_poly C)
   := fun P1 P2 => from_poly P1 + P2.
 
+(** ** Notation for multiplication *)
 Class multClass (A B C : Type) :=
   multFun : A -> B -> C.
 
@@ -38,6 +44,7 @@ Global Instance mult_poly_base {B : Type} (C : con B) (b : B)
   : multClass (poly C (Base b)) (base_poly C) (base_poly C)
   := fun P1 P2 => from_poly P1 * P2.
 
+(** ** Notation for application *)
 Class appClass (A B C : Type) :=
   appFun : A -> B -> C.
 

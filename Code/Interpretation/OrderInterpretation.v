@@ -7,18 +7,18 @@ Require Import Syntax.StrongNormalization.SN.
 Require Import Syntax.StrongNormalization.BetaReductionSN.
 Require Import Coq.Program.Equality.
 
-(** Below we discuss the lemmas which are needed to get an interpretation of an AFS *)
+(** * Interpretations of algebraic functional systems  *)
 Section OrderInterpretation.
   Context {B : Type}
           (semB : B -> CompatRel)
           `{forall (b : B), isCompatRel (semB b)}.
 
-  (** Interpretation of types *)
+  (** ** Interpretation of types *)
   Fixpoint sem_Ty
            (A : ty B)
     : CompatRel
     := match A with
-       | Base b    => semB b
+       | Base b   => semB b
        | A1 ⟶ A2  => sem_Ty A1 →wm sem_Ty A2
        end.
 
@@ -28,8 +28,17 @@ Section OrderInterpretation.
   Proof.
     induction A ; apply _.
   Qed.
+
+  Fixpoint sem_Ty_el
+           (els : forall (b : B), semB b)
+           (A : ty B)
+    : sem_Ty A
+    := match A with
+       | Base b    => (els b : sem_Ty (Base b))
+       | A1 ⟶ A2  => const_wm (sem_Ty_el els A2)
+       end.
   
-  (** Interpretation of contexts *)  
+  (** ** Interpretation of contexts *)  
   Fixpoint sem_Con
            (C : con B)
     : CompatRel
@@ -45,7 +54,16 @@ Section OrderInterpretation.
     induction C ; apply _.
   Qed.
 
-  (** Interpretation of variables *)
+  Fixpoint sem_Con_el
+             (els : forall (b : B), semB b)
+             (C : con B)
+    : sem_Con C
+    := match C with
+       | ∙ => tt
+       | A ,, C => (sem_Ty_el els A , sem_Con_el els C)
+       end.
+
+  (** ** Interpretation of variables *)
   Fixpoint sem_Var
            {C : con B}
            {A : ty B}
@@ -69,9 +87,9 @@ Section OrderInterpretation.
           {ar : F -> ty B}
           (semF : forall (f : F), sem_Ty (ar f))
           (semApp : forall (A1 A2 : ty B),
-              (sem_Ty A1 →wm sem_Ty A2) * sem_Ty A1 →wm sem_Ty A2).
+                      (sem_Ty A1 →wm sem_Ty A2) * sem_Ty A1 →wm sem_Ty A2).
 
-  (** Interpretation of terms *)
+  (** ** Interpretation of terms *)
   Fixpoint sem_Tm
            {C : con B}
            {A : ty B}
@@ -84,6 +102,7 @@ Section OrderInterpretation.
        | f · t     => semApp _ _ ∘wm ⟨ sem_Tm f , sem_Tm t ⟩
        end.
 
+  (** ** Interpretation of substitutions *)
   Fixpoint sem_Sub
            {C1 C2 : con B}
            (s : sub ar C1 C2)
@@ -92,80 +111,41 @@ Section OrderInterpretation.
        | ToEmpty C  => const_wm (tt : unit_CompatRel)
        | s && t     => ⟨ sem_Tm t , sem_Sub s ⟩
        end.
+
+  (** ** Interpretation of weakenings *)
+  Definition sem_Wk
+             {C1 C2 : con B}
+             (w : wk C1 C2)
+    : sem_Con C1 -> sem_Con C2.
+  Proof.
+    induction w as [ | ? ? ? w IHw | ? ? ? w IHw ].
+    - exact (fun _ => tt).
+    - exact (fun x => (fst x , IHw (snd x))).
+    - exact (fun x => IHw (snd x)).
+  Defined.
+
+  Global Instance sem_Wk_weakMonotone
+                  {C1 C2 : con B}
+                  (w : wk C1 C2)
+    : weakMonotone (sem_Wk w).
+  Proof.
+    induction w ; apply _.
+  Qed.
+
+  Global Instance sem_Wk_strictMonotone
+                  {C1 C2 : con B}
+                  (w : wk C1 C2)
+    : strictMonotone (sem_Wk w).
+  Proof.
+    induction w.
+    - intro ; cbn in *.
+      contradiction.
+    - apply _.
+    - apply _.
+  Qed.
 End OrderInterpretation.
 
-Definition sem_Ty_el
-           {B : Type}
-           (semB : B -> CompatRel)
-           `{forall (b : B), isCompatRel (semB b)}
-           (els : forall (b : B), semB b)
-           (A : ty B)
-  : sem_Ty semB A.
-Proof.
-  induction A as [ | A1 IHA1 A2 IHA2 ].
-  - apply els.
-  - exact (const_wm IHA2).
-Defined.
-
-Definition sem_Con_el
-           {B : Type}
-           (semB : B -> CompatRel)
-           `{forall (b : B), isCompatRel (semB b)}           
-           (els : forall (b : B), semB b)
-           (C : con B)
-  : sem_Con semB C.
-Proof.
-  induction C as [ | A C IHC ].
-  - exact tt.
-  - split.
-    + apply sem_Ty_el.
-      * apply _.
-      * exact els.
-    + apply IHC.
-Defined.
-
-(** Interpretation of weakenings *)
-Definition sem_Wk
-           {B : Type}
-           (semB : B -> CompatRel)
-           `{forall (b : B), isCompatRel (semB b)}
-           {C1 C2 : con B}
-           (w : wk C1 C2)
-  : sem_Con semB C1 -> sem_Con semB C2.
-Proof.
-  induction w as [ | ? ? ? w IHw | ? ? ? w IHw ].
-  - exact (fun _ => tt).
-  - exact (fun x => (fst x , IHw (snd x))).
-  - exact (fun x => IHw (snd x)).
-Defined.
-
-Global Instance sem_Wk_weakMonotone
-       {B : Type}
-       (semB : B -> CompatRel)
-       `{forall (b : B), isCompatRel (semB b)}
-       {C1 C2 : con B}
-       (w : wk C1 C2)
-  : weakMonotone (sem_Wk semB w).
-Proof.
-  induction w ; apply _.
-Qed.
-
-Global Instance sem_Wk_strictMonotone
-       {B : Type}
-       (semB : B -> CompatRel)
-       `{forall (b : B), isCompatRel (semB b)}
-       {C1 C2 : con B}
-       (w : wk C1 C2)
-  : strictMonotone (sem_Wk semB w).
-Proof.
-  induction w.
-  - intro ; cbn in *.
-    contradiction.
-  - apply _.
-  - apply _.
-Qed.
-
-(** Interpretation of substitutions *)
+(** ** Lemmas on the interpretation of substitution *)
 Proposition sem_idWk
             {B : Type}
             (semB : B -> CompatRel)
@@ -190,9 +170,9 @@ Proposition sem_wkVar
             {ar : F -> ty B}
             (semF : forall (f : F), sem_Ty semB (ar f))
             (semApp : forall (A1 A2 : ty B),
-                weakMonotoneMap
-                  ((sem_Ty semB A1 →wm sem_Ty semB A2) * sem_Ty semB A1)
-                  (sem_Ty semB A2))
+                        (sem_Ty semB A1 →wm sem_Ty semB A2) * sem_Ty semB A1
+                        →wm
+                        sem_Ty semB A2)
             {C1 C2 : con B}
             (w : wk C1 C2)
             {A : ty B}
@@ -223,9 +203,9 @@ Proposition sem_keepWk
             {ar : F -> ty B}
             (semF : forall (f : F), sem_Ty semB (ar f))
             (semApp : forall (A1 A2 : ty B),
-                weakMonotoneMap
-                  ((sem_Ty semB A1 →wm sem_Ty semB A2) * sem_Ty semB A1)
-                  (sem_Ty semB A2))
+                        (sem_Ty semB A1 →wm sem_Ty semB A2) * sem_Ty semB A1
+                        →wm
+                        sem_Ty semB A2)
             {C1 C2 : con B}
             (w : wk C1 C2)
             {A1 A2 : ty B}
@@ -261,9 +241,9 @@ Proposition sem_dropIdWk
             {ar : F -> ty B}
             (semF : forall (f : F), sem_Ty semB (ar f))
             (semApp : forall (A1 A2 : ty B),
-                weakMonotoneMap
-                  ((sem_Ty semB A1 →wm sem_Ty semB A2) * sem_Ty semB A1)
-                  (sem_Ty semB A2))
+                        (sem_Ty semB A1 →wm sem_Ty semB A2) * sem_Ty semB A1
+                        →wm
+                        sem_Ty semB A2)
             {C : con B}
             {A1 A2 : ty B}
             (t : tm ar C A1)
@@ -300,9 +280,9 @@ Proposition sem_dropSub
             {ar : F -> ty B}
             (semF : forall (f : F), sem_Ty semB (ar f))
             (semApp : forall (A1 A2 : ty B),
-                weakMonotoneMap
-                  ((sem_Ty semB A1 →wm sem_Ty semB A2) * sem_Ty semB A1)
-                  (sem_Ty semB A2))
+                        (sem_Ty semB A1 →wm sem_Ty semB A2) * sem_Ty semB A1
+                        →wm
+                        sem_Ty semB A2)
             {C1 C2 : con B}
             (s : sub ar C1 C2)
             {A : ty B}
@@ -328,9 +308,9 @@ Proposition sem_idSub
             {ar : F -> ty B}
             (semF : forall (f : F), sem_Ty semB (ar f))
             (semApp : forall (A1 A2 : ty B),
-                weakMonotoneMap
-                  ((sem_Ty semB A1 →wm sem_Ty semB A2) * sem_Ty semB A1)
-                  (sem_Ty semB A2))
+                        (sem_Ty semB A1 →wm sem_Ty semB A2) * sem_Ty semB A1
+                        →wm
+                        sem_Ty semB A2)
             {C : con B}
             (x : sem_Con semB C)
   : x = sem_Sub semB semF semApp (idSub C ar) x.
@@ -349,7 +329,7 @@ Proof.
     apply IHC.
 Qed.
 
-(** The substitution lemma *)
+(** ** The substitution lemma *)
 Proposition sub_Lemma
             {B : Type}
             (semB : B -> CompatRel)
@@ -358,9 +338,9 @@ Proposition sub_Lemma
             {ar : F -> ty B}
             (semF : forall (f : F), sem_Ty semB (ar f))
             (semApp : forall (A1 A2 : ty B),
-                weakMonotoneMap
-                  ((sem_Ty semB A1 →wm sem_Ty semB A2) * sem_Ty semB A1)
-                  (sem_Ty semB A2))
+                        (sem_Ty semB A1 →wm sem_Ty semB A2) * sem_Ty semB A1
+                        →wm
+                        sem_Ty semB A2)
             {C1 C2 : con B}
             (s : sub ar C1 C2)
             {A : ty B}
@@ -405,9 +385,9 @@ Proposition sem_beta
             {ar : F -> ty B}
             (semF : forall (f : F), sem_Ty semB (ar f))
             (semApp : forall (A1 A2 : ty B),
-                weakMonotoneMap
-                  ((sem_Ty semB A1 →wm sem_Ty semB A2) * sem_Ty semB A1)
-                  (sem_Ty semB A2))
+                        (sem_Ty semB A1 →wm sem_Ty semB A2) * sem_Ty semB A1
+                        →wm
+                        sem_Ty semB A2)
             (semApp_gt_id : forall (A1 A2 : ty B)
                                    (f : sem_Ty semB A1 →wm sem_Ty semB A2)
                                    (x : sem_Ty semB A1),
@@ -437,6 +417,7 @@ Proof.
     apply sem_idSub.
 Qed.
 
+(** * The notion of interpretation *)
 Record Interpretation {B F : Type} (X : afs B F) : Type :=
   make_Interpretation
     {
@@ -446,9 +427,9 @@ Record Interpretation {B F : Type} (X : afs B F) : Type :=
       semB_Wf : forall (b : B), Wf (fun (x y : semB b) => x > y) ;
       semF : forall (f : F), sem_Ty semB (arity X f) ;
       semApp : forall (A1 A2 : ty B),
-        weakMonotoneMap
-          ((sem_Ty semB A1 →wm sem_Ty semB A2) * sem_Ty semB A1)
-          (sem_Ty semB A2) ;
+                        (sem_Ty semB A1 →wm sem_Ty semB A2) * sem_Ty semB A1
+                        →wm
+                        sem_Ty semB A2 ;
       sem_App_l : forall (A1 A2 : ty B)
                          (f1 f2 : sem_Ty semB A1 →wm sem_Ty semB A2)
                          (x : sem_Ty semB A1),
@@ -486,6 +467,7 @@ Proof.
   apply semB_isCompatRel.
 Defined.           
 
+(** * Strong normalization from interpretations *)
 Definition interpretation_to_lexico
            {B F : Type}
            {X : afs B F}

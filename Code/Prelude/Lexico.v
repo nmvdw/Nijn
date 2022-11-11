@@ -19,7 +19,7 @@ Section Lexico.
   (** Transitivity for the lexicographic order *)
   Proposition lexico_trans
               (RYtrans : forall (y1 y2 y3 : Y),
-                  RY y1 y2 -> RY y2 y3 -> RY y1 y3)
+                           RY y1 y2 -> RY y2 y3 -> RY y1 y3)
               {x y z : X * Y}
               (p : lexico x y)
               (q : lexico y z)
