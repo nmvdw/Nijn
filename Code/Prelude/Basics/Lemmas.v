@@ -1,5 +1,24 @@
 Require Import Lia.
+Require Import List.
 
+Definition isNil {A : Type} (l : list A) : Prop :=
+  match l with
+  | nil => True
+  | _ => False
+  end.
+
+Proposition isNil_no_member
+            {A : Type}
+            (l : list A)
+            (Hl : isNil l)
+            (x : A)
+  : ~(In x l).
+Proof.
+  induction l ; cbn in *.
+  - exact (fun z => z).
+  - contradiction.
+Qed.
+  
 (** Useful lemma in addition *)
 Proposition plus_ge
             {n1 n2 m1 m2 : nat}

@@ -4,7 +4,7 @@ Require Export Nijn.Syntax.
 
 Require Export Nijn.Interpretation.OrderInterpretation.
 
-Require Export Nijn.TerminationTechniques.PolynomialMethod.
+Require Export Nijn.TerminationTechniques.
 
 Require Export Lia.
 Require Export PeanoNat.

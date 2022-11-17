@@ -42,6 +42,13 @@ TerminationTechniques/PolynomialMethod/PolynomialTactics.v
 TerminationTechniques/PolynomialMethod/PolynomialNotation.v
 TerminationTechniques/PolynomialMethod.v
 
+TerminationTechniques/NoRules/NoRulesSN.v
+TerminationTechniques/NoRules.v
+
+TerminationTechniques/Certificate.v
+
+TerminationTechniques.v
+
 Nijn.v
 
 Examples/Map.v

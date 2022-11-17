@@ -1,6 +1,7 @@
 Require Import Nijn.Prelude.
 Require Import Nijn.Syntax.
 Require Import Nijn.Interpretation.OrderInterpretation.
+Require Import Nijn.TerminationTechniques.RuleRemoval.RuleSelector.
 
 Require Import Lia.
 
@@ -301,20 +302,32 @@ Section PolyAlgebra.
   Notation "⟦ t ⟧tm" := (sem_Tm p_base p_fun_sym p_app t).
 
   (** ** Compatibility requirement *)
-  Definition poly_WMalgebra_rewrite_rules
-             (H : forall (r : rewriteRules X)
-                         (x : ⟦ vars r ⟧con),
-                  ⟦ lhs r ⟧tm x > ⟦ rhs r ⟧tm x)
+  Definition poly_WMalgebra_rewrite_rule
              (r : rewriteRules X)
+             (Hr : forall (x : ⟦ vars r ⟧con),
+                     ⟦ lhs r ⟧tm x > ⟦ rhs r ⟧tm x)
              (C : con B)
              (s : sub (arity X) C (vars r))
              (x : ⟦ C ⟧con)
     : ⟦ lhs r [ s ] ⟧tm x > ⟦ rhs r [ s ] ⟧tm x.
   Proof.
     rewrite !sub_Lemma.
-    apply H.
+    apply Hr.
   Qed.
 
+  Definition poly_WMalgebra_rewrite_rule_ge
+             (r : rewriteRules X)
+             (Hr : forall (x : ⟦ vars r ⟧con),
+                     ⟦ lhs r ⟧tm x >= ⟦ rhs r ⟧tm x)
+             (C : con B)
+             (s : sub (arity X) C (vars r))
+             (x : ⟦ C ⟧con)
+    : ⟦ lhs r [ s ] ⟧tm x >= ⟦ rhs r [ s ] ⟧tm x.
+  Proof.
+    rewrite !sub_Lemma.
+    apply Hr.
+  Qed.
+  
   (** ** Interpretation from polynomials *)
   Definition poly_InterpretationData
     : InterpretationData X.
@@ -350,6 +363,38 @@ Section PolyAlgebra.
   Proof.
     simple refine (make_Interpretation _ _ _ _ _).
     - exact poly_InterpretationData.
-    - exact (poly_WMalgebra_rewrite_rules H).
+    - abstract
+        (intros ;
+         apply poly_WMalgebra_rewrite_rule ;
+         apply H).
+  Defined.
+
+  Definition poly_SelectorInterpretation
+             `{decEq B}
+             `{decEq F}
+             (P : selector X)
+             (H_gt : forall (r : rewriteRules X)
+                            (x : ⟦ vars r ⟧con),
+                       selector_members X P r
+                       -> ⟦ lhs r ⟧tm x > ⟦ rhs r ⟧tm x)
+             (H_ge : forall (r : rewriteRules X)
+                            (x : ⟦ vars r ⟧con),
+                       ~(selector_members X P r)
+                       -> ⟦ lhs r ⟧tm x >= ⟦ rhs r ⟧tm x)
+    : SelectorInterpretation X P.
+  Proof.
+    refine {| s_inter := poly_InterpretationData ;
+             semR_gt := _ ;
+             semR_ge := _|}.
+    - abstract
+        (intros r C s x Hr ;
+         apply poly_WMalgebra_rewrite_rule ;
+         intro ;
+         apply (H_gt r _ Hr)).
+    - abstract
+        (intros r C s x Hr ;
+         apply poly_WMalgebra_rewrite_rule_ge ;
+         intro ;
+         apply (H_ge r _ Hr)).
   Defined.
 End PolyAlgebra.
