@@ -38,14 +38,14 @@ Definition Map {C} f xs : tm map_ar C _
   := BaseTm TMap · f · xs.
 
 (** The rewrite rules *)
-Definition map_nil : rewriteRule map_ar
+Definition map_nil
   := make_rewrite
        (_ ,, ∙) _
        (let f := TmVar Vz in
         Map f Nil)
        Nil.
 
-Definition map_cons : rewriteRule map_ar
+Definition map_cons
   := make_rewrite
        (_ ,, _ ,, _ ,, ∙) _
        (let f := TmVar Vz in
@@ -58,7 +58,7 @@ Definition map_cons : rewriteRule map_ar
         Cons (f · x) (Map f xs)).
 
 (** The AFS *)
-Definition map_afs : afs base_types fun_symbols
+Definition map_afs
   := make_afs
        map_ar
        (map_nil :: map_cons :: nil).
