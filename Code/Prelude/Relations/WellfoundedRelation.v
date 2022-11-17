@@ -1,3 +1,5 @@
+Require Import Nijn.Prelude.Checks.
+
 (** * Well-founded types *)
 
 (** To formulate well-foundedness constructively, we make use of inductive subsets. *)

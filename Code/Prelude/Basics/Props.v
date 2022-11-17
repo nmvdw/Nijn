@@ -1,6 +1,8 @@
 Require Import Prelude.Funext.
+Require Import Prelude.Basics.Decidable.
 Require Import Coq.Program.Equality.
 Require Import Lia.
+Require Import List.
 
 (** * Propositional types *)
 
@@ -76,3 +78,16 @@ Global Instance nat_ge_isaprop
        (n m : nat)
   : isaprop (n >= m)
   := _.
+
+Global Instance In_isaprop
+                {A : Type}
+                `{decEq A}
+                (x : A)
+                (ys : list A)
+  : isaprop (In x ys).
+Proof.
+  induction ys as [ | y ys IHys ].
+  - cbn.
+    apply _.
+  - cbn.
+Admitted.

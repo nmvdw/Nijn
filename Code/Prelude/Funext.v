@@ -1,3 +1,4 @@
+Require Import Nijn.Prelude.Checks.
 Require Export ProofIrrelevance.
 Require Import Coq.Logic.FunctionalExtensionality.
 
@@ -19,4 +20,8 @@ Qed.
 (** * UIP *)
 
 (** UIP says that all proofs of `a1 = a2` are equal. *)
-Axiom UIP : forall {A : Type} {a1 a2 : A} (p q : a1 = a2), p = q.
+Proposition UIP : forall {A : Type} {a1 a2 : A} (p q : a1 = a2), p = q.
+Proof.
+  intros.
+  apply proof_irrelevance.
+Qed.

@@ -1,11 +1,9 @@
-Require Import Prelude.Funext.
-Require Import Prelude.Basics.
-Require Import Prelude.Props.
-Require Import Prelude.WellfoundedRelation.
-Require Import Prelude.Orders.CompatibleRelation.
-Require Import Prelude.Orders.MonotonicMaps.
+Require Import Nijn.Prelude.Checks.
+Require Import Nijn.Prelude.Basics.Lemmas.
+Require Import Nijn.Prelude.Relations.WellfoundedRelation.
+Require Import Nijn.Prelude.Orders.CompatibleRelation.
+Require Import Nijn.Prelude.Orders.MonotonicMaps.
 Require Import Lia.
-Require Import Coq.Program.Equality.
 
 Declare Scope compat.
 Open Scope compat.

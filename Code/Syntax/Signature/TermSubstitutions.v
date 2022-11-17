@@ -1,7 +1,7 @@
-Require Import Syntax.Signature.Types.
-Require Import Syntax.Signature.Contexts.
-Require Import Syntax.Signature.Terms.
-Require Import Syntax.Signature.TermWeakenings.
+Require Import Nijn.Syntax.Signature.Types.
+Require Import Nijn.Syntax.Signature.Contexts.
+Require Import Nijn.Syntax.Signature.Terms.
+Require Import Nijn.Syntax.Signature.TermWeakenings.
 
 (** * Substitutions *)
 

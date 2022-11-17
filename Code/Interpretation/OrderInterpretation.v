@@ -1,10 +1,6 @@
-Require Import Prelude.Funext.
-Require Import Prelude.WellfoundedRelation.
-Require Import Prelude.Orders.
-Require Import Prelude.Lexico.
-Require Import Syntax.Signature.
-Require Import Syntax.StrongNormalization.SN.
-Require Import Syntax.StrongNormalization.BetaReductionSN.
+Require Import Nijn.Prelude.
+Require Import Nijn.Syntax.
+Require Import Nijn.TerminationTechniques.RuleRemoval.RuleSelector.
 Require Import Coq.Program.Equality.
 
 (** * Interpretations of algebraic functional systems  *)
@@ -418,8 +414,8 @@ Proof.
 Qed.
 
 (** * The notion of interpretation *)
-Record Interpretation {B F : Type} (X : afs B F) : Type :=
-  make_Interpretation
+Record InterpretationData {B F : Type} (X : afs B F) : Type :=
+  make_InterpretationData
     {
       semB : B -> CompatRel ;
       semB_isCompatRel : forall (b : B), isCompatRel (semB b) ;
@@ -441,32 +437,84 @@ Record Interpretation {B F : Type} (X : afs B F) : Type :=
       semApp_gt_id : forall (A1 A2 : ty B)
                             (f : sem_Ty semB A1 →wm sem_Ty semB A2)
                             (x : sem_Ty semB A1),
-        semApp _ _ (f , x) >= f x ;
-      semR : forall (r : rewriteRules X)
-                    (C : con B)
-                    (s : sub (arity X) C (vars r))
-                    (x : sem_Con semB C),
-        sem_Tm semB semF semApp (lhs r [ s ]) x
-        >
-        sem_Tm semB semF semApp (rhs r [ s ]) x
+        semApp _ _ (f , x) >= f x
     }.
 
 Arguments semB {B F X} _ _.
 Arguments semF {B F X} _ _.
 Arguments semApp {B F X} _ _.
 Arguments els {B F X} _ _.
-Arguments make_Interpretation {_ _} _ _.
+Arguments make_InterpretationData {_ _} _ _.
 
 Global Instance interpretation_isCompatRel
                 {B F : Type}
                 {X : afs B F}
-                (I : Interpretation X)
+                (I : InterpretationData X)
                 (b : B)
   : isCompatRel (semB I b).
 Proof.
   apply semB_isCompatRel.
-Defined.           
+Defined.
 
+Record Interpretation {B F : Type} (X : afs B F) : Type :=
+  make_Interpretation
+    {
+      inter :> InterpretationData X ;
+      semR : forall (r : rewriteRules X)
+                    (C : con B)
+                    (s : sub (arity X) C (vars r))
+                    (x : sem_Con (semB inter) C),
+        sem_Tm (semB _) (semF _) (semApp _) (lhs r [ s ]) x
+        >
+        sem_Tm (semB _) (semF _) (semApp _) (rhs r [ s ]) x
+    }.
+
+Record SelectorInterpretation
+       {B F : Type}
+       `{decEq B} `{decEq F}
+       (X : afs B F)
+       (P : selector X)
+  : Type
+  := make_SelectorInterpretation
+       {
+         s_inter :> InterpretationData X ;
+         semR_gt : forall (r : rewriteRules X)
+                          (C : con B)
+                          (s : sub (arity X) C (vars r))
+                          (x : sem_Con (semB s_inter) C),
+                     selector_members X P r
+                     ->
+                     sem_Tm (semB _) (semF _) (semApp _) (lhs r [ s ]) x
+                     >
+                     sem_Tm (semB _) (semF _) (semApp _) (rhs r [ s ]) x ;
+         semR_ge : forall (r : rewriteRules X)
+                          (C : con B)
+                          (s : sub (arity X) C (vars r))
+                          (x : sem_Con (semB s_inter) C),
+                     ~(selector_members X P r)
+                     ->
+                     sem_Tm (semB _) (semF _) (semApp _) (lhs r [ s ]) x
+                     >=
+                     sem_Tm (semB _) (semF _) (semApp _) (rhs r [ s ]) x
+    }.
+
+Definition sem_Ty_Wf
+           {B F : Type}
+           {X : afs B F}
+           (I : InterpretationData X)
+           (A : ty B)
+  : @Wf (sem_Ty (semB I) A) (fun x y => x > y).
+Proof.
+  induction A as [ b | A₁ IHA₁ A₂ IHA₂ ].
+  - apply semB_Wf.
+  - cbn.
+    apply fun_Wf.
+    + apply sem_Ty_el.
+      * apply _.
+      * apply els.
+    + apply IHA₂.
+Defined.
+  
 (** * Strong normalization from interpretations *)
 Definition interpretation_to_lexico
            {B F : Type}
@@ -582,4 +630,120 @@ Proof.
         ** exact (sem_Ty_el _ (els I) _).
         ** apply IHA2.
   - apply BetaRed_SN.
+Qed.
+
+(** Strong reduction pairs *)
+Definition interpretation_to_term_order
+           {B F : Type}
+           {X : afs B F}
+           (I : InterpretationData X)
+  : term_order (arity X).
+Proof.
+  simple refine (make_term_order _ _ _).
+  - intros C A t₁ t₂.
+    exact (sem_Tm (semB I) (semF I) (semApp I) t₁
+           >
+           sem_Tm (semB I) (semF I) (semApp I) t₂).
+  - intros C A t₁ t₂.
+    exact (sem_Tm (semB I) (semF I) (semApp I) t₁
+           >=
+           sem_Tm (semB I) (semF I) (semApp I) t₂).
+Defined.
+
+Global Instance interpretation_to_term_isCompatRel
+                {B F : Type}
+                {X : afs B F}
+                (I : InterpretationData X)
+                (C : con B)
+                (A : ty B)
+  : isCompatRel (term_CompatRel (arity X) C A (interpretation_to_term_order I)).
+Proof.
+  unshelve esplit.
+  - intros x y z p q w ; cbn in *.
+    exact (gt_trans (p _) (q w)).
+  - intros x y z p q w ; cbn in *.
+    exact (ge_trans (p _) (q w)).
+  - intros x w ; cbn in *.
+    apply ge_refl.
+  - intros x y p w.
+    apply compat.
+    apply p.
+  - intros x y z p q w.
+    apply (ge_gt (p w) (q w)).
+  - intros x y z p q w.
+    apply (gt_ge (p w) (q w)).
+Qed.
+
+Global Instance interpretation_is_strong_reduction_pair
+                {B F : Type}
+                {X : afs B F}
+                (I : InterpretationData X)
+  : is_strong_reduction_pair (arity X) (interpretation_to_term_order I).
+Proof.
+  unshelve esplit.
+  - intros.
+    cbn.
+    simple refine (fiber_Wf _ _ _).
+    + exact (sem_Con (semB I) C →wm sem_Ty (semB I) A).
+    + exact (fun f g => f > g).
+    + apply (fun_Wf
+               (sem_Con (semB I) C)
+               (sem_Ty (semB I) A) (sem_Con_el _ (els I) C)).
+      apply sem_Ty_Wf.
+    + exact (sem_Tm (semB I) (semF I) (semApp I)).
+    + intros t₁ t₂ p x.
+      exact (p x).
+  - intros ; cbn ; apply _.
+  - intros C₁ C₂ s A t₁ t₂ p x ; cbn.
+    rewrite !sub_Lemma.
+    apply p.
+  - intros C₁ C₂ s A t₁ t₂ p x ; cbn.
+    rewrite !sub_Lemma.
+    apply p.
+  - intros C A₁ A₂ f₁ f₂ t p x ; cbn.
+    apply sem_App_l.
+    apply p.
+  - intros C A₁ A₂ f t₁ t₂ p x ; cbn.
+    apply sem_App_r.
+    apply p.
+  - intros C A₁ A₂ f₁ f₂ t₁ t₂ p₁ p₂ x ; cbn.
+    apply map_ge.
+    split.
+    + apply p₁.
+    + apply p₂.
+  - intros C A₁ A₂ f₁ f₂ p x y ; cbn.
+    apply p.
+  - intros C A₁ A₂ f₁ f₂ p x y ; cbn.
+    apply p.
+  - intros C A₁ A₂ f t x ; cbn.
+    apply sem_beta.
+    intros.
+    apply semApp_gt_id.
+Qed.
+
+Definition interpretation_to_strong_reduction_pair
+           {B F : Type}
+           {X : afs B F}
+           (I : InterpretationData X)
+  : strong_reduction_pair (arity X)
+  := make_srp _ (interpretation_to_term_order I) _.
+
+Definition interpretation_respects_selector
+           {B F : Type}
+           `{decEq B}
+           `{decEq F}
+           {X : afs B F}
+           (P : selector X)
+           (I : SelectorInterpretation X P)
+  : respects_selector X (interpretation_to_strong_reduction_pair I) P.
+Proof.
+  split.
+  - intros r Hr x.
+    pose (semR_gt X P I r (vars r) (idSub _ _) x Hr) as p.
+    rewrite !subTm_id in p.
+    exact p.
+  - intros r Hr x.
+    pose (semR_ge X P I r (vars r) (idSub _ _) x Hr) as p.
+    rewrite !subTm_id in p.
+    exact p.
 Qed.

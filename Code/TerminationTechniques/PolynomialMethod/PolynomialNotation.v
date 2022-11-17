@@ -1,5 +1,5 @@
-Require Import Syntax.Signature.
-Require Import Interpretation.Polynomial.
+Require Import Nijn.Syntax.Signature.
+Require Import Nijn.TerminationTechniques.PolynomialMethod.Polynomial.
 
 Declare Scope poly_scope.
 Open Scope poly_scope.

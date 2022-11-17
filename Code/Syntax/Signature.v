@@ -1,10 +1,10 @@
-Require Import Prelude.Basics.
-Require Export Syntax.Signature.Types.
-Require Export Syntax.Signature.Contexts.
-Require Export Syntax.Signature.Terms.
-Require Export Syntax.Signature.TermWeakenings.
-Require Export Syntax.Signature.TermSubstitutions.
-Require Export Syntax.Signature.RewritingSystem.
+Require Import Nijn.Prelude.
+Require Export Nijn.Syntax.Signature.Types.
+Require Export Nijn.Syntax.Signature.Contexts.
+Require Export Nijn.Syntax.Signature.Terms.
+Require Export Nijn.Syntax.Signature.TermWeakenings.
+Require Export Nijn.Syntax.Signature.TermSubstitutions.
+Require Export Nijn.Syntax.Signature.RewritingSystem.
 
 (** * The notion of Algebraic Functional System *)
 Record rewriteRule {B : Type} {F : Type} (ar : F -> ty B) :=
@@ -21,6 +21,54 @@ Arguments vars_of {_ _ _} _.
 Arguments tar_of {_ _ _} _.
 Arguments lhs_of {_ _ _} _.
 Arguments rhs_of {_ _ _} _.
+
+Definition dec_eq_rewriteRule
+           {B : Type}
+           `{decEq B}
+           {F : Type}
+           `{decEq F}
+           {ar : F -> ty B}
+           (r₁ r₂ : rewriteRule ar)
+  : dec (r₁ = r₂).
+Proof.
+  destruct r₁ as [ v₁ t₁ l₁ r₁ ].
+  destruct r₂ as [ v₂ t₂ l₂ r₂ ].
+  destruct (dec_eq v₁ v₂) as [ p₁ | p₁ ].
+  - destruct (dec_eq t₁ t₂) as [ p₂ | p₂ ].
+    + subst.
+      destruct (dec_eq l₁ l₂) as [ p₃ | p₃ ].
+      * destruct (dec_eq r₁ r₂) as [ p₄ | p₄ ].
+        ** subst.
+           refine (Yes _).
+           reflexivity.
+        ** refine (No _).
+           intro n.
+           inversion n.
+           apply p₄.
+           apply (path_in_sigma_uip _ (path_in_sigma_uip _ H3)).
+      * refine (No _).
+        intro n.
+        inversion n.
+        apply p₃.
+        apply (path_in_sigma_uip _ (path_in_sigma_uip _ H2)).
+    + refine (No _).
+      intro n.
+      inversion n.
+      contradiction.
+  - refine (No _).
+    intro n.
+    inversion n.
+    contradiction.
+Defined.
+
+Global Instance decEq_rewriteRule
+                {B : Type}
+                `{decEq B}
+                {F : Type}
+                `{decEq F}
+                (ar : F -> ty B)
+  : decEq (rewriteRule ar)
+  := {| dec_eq := dec_eq_rewriteRule |}.
 
 Record afs (B : Type) (F : Type) :=
   make_afs
@@ -112,3 +160,17 @@ Module AFSNotation.
 
   Notation "t1 ∼> t2" := (rew _ t1 t2) (at level 70). (* \sim is used *)
 End AFSNotation.
+
+Import AFSNotation.
+
+Definition rew_rewrite_rule
+           {B : Type}
+           {F : Type}
+           (X : afs B F)
+           (r : rewriteRules X)
+           {C : con B}
+           (s : sub (arity X) C (vars r))
+  : lhs r [ s ] ∼> rhs r [ s ].
+Proof.
+  apply rew_baseStep.
+Defined.

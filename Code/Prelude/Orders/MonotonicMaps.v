@@ -1,10 +1,7 @@
-Require Import Prelude.Funext.
-Require Import Prelude.Basics.
-Require Import Prelude.Props.
-Require Import Prelude.WellfoundedRelation.
-Require Import Prelude.Orders.CompatibleRelation.
-Require Import Lia.
-Require Import Coq.Program.Equality.
+Require Import Nijn.Prelude.Checks.
+Require Import Nijn.Prelude.Funext.
+Require Import Nijn.Prelude.Relations.WellfoundedRelation.
+Require Import Nijn.Prelude.Orders.CompatibleRelation.
 
 (** * Monotone maps *)
 
@@ -13,30 +10,10 @@ Class strictMonotone {X Y : CompatRel} (f : X -> Y) :=
   map_gt : forall (x y : X),
     x > y -> f x > f y.
 
-Global Instance strictMonotone_isaprop
-       {X Y : CompatRel}
-       `{isCompatRel Y}
-       (f : X -> Y)
-  : isaprop (strictMonotone f).
-Proof.
-  unfold strictMonotone.
-  apply _.
-Qed.
-
 (** Second of all, we can look at weak monotone maps, which preserve the other order *)
 Class weakMonotone {X Y : CompatRel} (f : X -> Y) :=
   map_ge : forall (x y : X),
     x >= y -> f x >= f y.
-
-Global Instance weakMonotone_isaprop
-       {X Y : CompatRel}
-       `{isCompatRel Y}
-       (f : X -> Y)
-  : isaprop (weakMonotone f).
-Proof.
-  unfold weakMonotone.
-  apply _.
-Qed.
 
 (** The weakly monotone maps between two compatible relations forms again a compatible relation *)
 Record weakMonotoneMap (X Y : CompatRel) :=
@@ -91,7 +68,7 @@ Proof.
   rewrite p.
   intros Hf Hg.
   f_equal.
-  apply all_eq.
+  apply proof_irrelevance.
 Qed.
 
 Definition eq_weakMonotoneMap
@@ -119,7 +96,7 @@ Proof.
   revert Hf1 Hf2 Hg1 Hg2.
   rewrite p.
   intros Hf1 Hf2 Hg1 Hg2.
-  f_equal ; apply all_eq.
+  f_equal ; apply proof_irrelevance.
 Qed.
 
 Definition eq_strongMonotoneMap

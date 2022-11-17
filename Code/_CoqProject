@@ -1,17 +1,20 @@
 COQC = coqc
 COQDEP = coqdep
--R . "nijn"
+-Q . "Nijn"
 
+Prelude/Checks.v
 Prelude/Funext.v
-Prelude/Basics.v
-Prelude/Props.v
-Prelude/WellfoundedRelation.v
+Prelude/Basics/Lemmas.v
+Prelude/Basics/Decidable.v
+Prelude/Basics/Finite.v
+Prelude/Basics/Positions.v
+Prelude/Relations/WellfoundedRelation.v
 Prelude/Orders/CompatibleRelation.v
 Prelude/Orders/MonotonicMaps.v
 Prelude/Orders/Examples.v
-Prelude/Orders.v
-Prelude/Lexico.v
-Prelude/TransitiveClosure.v
+Prelude/Relations/Lexico.v
+Prelude/Relations/TransitiveClosure.v
+Prelude.v
 
 Syntax/Signature/Types.v
 Syntax/Signature/Contexts.v
@@ -22,15 +25,22 @@ Syntax/Signature/RewritingSystem.v
 Syntax/Signature.v
 Syntax/Signature/SubstitutionLemmas.v
 Syntax/Signature/RewriteLemmas.v
-
+Syntax/StrongReductionPair.v
 Syntax/StrongNormalization/SN.v
 Syntax/StrongNormalization/BetaNormalForm.v
 Syntax/StrongNormalization/BetaReductionSN.v
+Syntax.v
+
+TerminationTechniques/RuleRemoval/RuleSelector.v
+TerminationTechniques/RuleRemoval/RuleRemovalTheorem.v
+TerminationTechniques/RuleRemoval.v
 
 Interpretation/OrderInterpretation.v
-Interpretation/Polynomial.v
-Interpretation/PolynomialTactics.v
-Interpretation/PolynomialNotation.v
+
+TerminationTechniques/PolynomialMethod/Polynomial.v
+TerminationTechniques/PolynomialMethod/PolynomialTactics.v
+TerminationTechniques/PolynomialMethod/PolynomialNotation.v
+TerminationTechniques/PolynomialMethod.v
 
 Nijn.v
 

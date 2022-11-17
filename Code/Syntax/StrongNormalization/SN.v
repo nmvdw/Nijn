@@ -1,6 +1,6 @@
-Require Import Prelude.WellfoundedRelation.
-Require Import Syntax.Signature.
-Require Import Syntax.Signature.RewriteLemmas.
+Require Import Nijn.Prelude.
+Require Import Nijn.Syntax.Signature.
+Require Import Nijn.Syntax.Signature.RewriteLemmas.
 
 Import AFSNotation.
 

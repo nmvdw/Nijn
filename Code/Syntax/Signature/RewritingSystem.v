@@ -1,10 +1,9 @@
-Require Import Prelude.Basics.
-Require Import Prelude.TransitiveClosure.
-Require Import Syntax.Signature.Types.
-Require Import Syntax.Signature.Contexts.
-Require Import Syntax.Signature.Terms.
-Require Import Syntax.Signature.TermWeakenings.
-Require Import Syntax.Signature.TermSubstitutions.
+Require Import Nijn.Prelude.
+Require Import Nijn.Syntax.Signature.Types.
+Require Import Nijn.Syntax.Signature.Contexts.
+Require Import Nijn.Syntax.Signature.Terms.
+Require Import Nijn.Syntax.Signature.TermWeakenings.
+Require Import Nijn.Syntax.Signature.TermSubstitutions.
 
 (** * Rewriting systems *)
 
@@ -381,7 +380,7 @@ Inductive baseRewStep
     baseBetaStep _ _ t1 t2 -> baseRewStep lhs rhs _ _ t1 t2
 | AFSRew : forall (r : R)
                   (s : sub ar C (Rcon r)),
-    baseRewStep lhs rhs _ _ (subTm (lhs r) s) (subTm (rhs r) s).
+    baseRewStep lhs rhs _ _ (lhs r [ s ]) (rhs r [ s ]).
 
 Arguments AFSBeta {_ _ _ _ _ _} _ _ {_ _ _ _} _.
 Arguments AFSRew {_ _ _ _ _ _} _ _ {_} _ _.
@@ -445,7 +444,6 @@ Definition rew_Trans
            (q : rew lhs rhs t2 t3)
   : rew lhs rhs t1 t3
   := Trans p q.
-
 
 Definition rewrite_transport
            {B : Type}

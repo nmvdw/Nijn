@@ -1,7 +1,6 @@
-Require Import Prelude.Funext.
-Require Import Prelude.Basics.
-Require Import Syntax.Signature.
-Require Import Syntax.Signature.SubstitutionLemmas.
+Require Import Nijn.Prelude.
+Require Import Nijn.Syntax.Signature.
+Require Import Nijn.Syntax.Signature.SubstitutionLemmas.
 Require Import Coq.Program.Equality.
 
 (** * Lemmas on the rewriting relation *)

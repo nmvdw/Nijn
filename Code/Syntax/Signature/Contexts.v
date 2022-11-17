@@ -1,5 +1,5 @@
-Require Import Prelude.Basics.
-Require Import Types.
+Require Import Nijn.Prelude.
+Require Import Nijn.Syntax.Signature.Types.
 Require Import Coq.Program.Equality.
 Require Import List.
 
@@ -14,6 +14,83 @@ Arguments Extend {_} _ _.
 
 Notation "∙" := Empty : signature.
 Notation "A ,, Γ" := (Extend A Γ) (at level 80, right associativity) : signature.
+
+Lemma not_empty_extend
+      {B : Type}
+      {A : ty B}
+      {C : con B}
+  : ~(∙ = (A ,, C)).
+Proof.
+  discriminate.
+Qed.
+
+Lemma not_extend_empty
+      {B : Type}
+      {A : ty B}
+      {C : con B}
+  : ~((A ,, C) = ∙).
+Proof.
+  discriminate.
+Qed.
+
+Lemma not_eq_extend_type
+      {B : Type}
+      {A₁ A₂ : ty B}
+      {C₁ C₂ : con B}
+      (p : ~(A₁ = A₂))
+  : ~((A₁ ,, C₁) = (A₂ ,, C₂)).
+Proof.
+  intro q.
+  inversion q.
+  contradiction.
+Qed.
+
+Lemma not_eq_extend_con
+      {B : Type}
+      {A₁ A₂ : ty B}
+      {C₁ C₂ : con B}
+      (p : ~(C₁ = C₂))
+  : ~((A₁ ,, C₁) = (A₂ ,, C₂)).
+Proof.
+  intro q.
+  inversion q.
+  contradiction.
+Qed.
+
+Lemma eq_extend
+      {B : Type}
+      {A₁ A₂ : ty B}
+      {C₁ C₂ : con B}
+      (p : A₁ = A₂)
+      (q : C₁ = C₂)
+  : (A₁ ,, C₁) = (A₂ ,, C₂).
+Proof.
+  subst.
+  reflexivity.
+Qed.
+
+Fixpoint dec_eq_con
+         {B : Type}
+         `{decEq B}
+         (C₁ C₂ : con B)
+  : dec (C₁ = C₂)
+  := match C₁ , C₂ with
+     | ∙ , ∙ => Yes eq_refl
+     | ∙ , _ ,, _ => No not_empty_extend
+     | _ ,, _ , ∙ => No not_extend_empty
+     | A₁ ,, C₁ , A₂ ,, C₂ =>
+       match dec_eq A₁ A₂ with
+       | No p => No (not_eq_extend_type p)
+       | Yes p =>
+         match dec_eq_con C₁ C₂ with
+         | Yes q => Yes (eq_extend p q)
+         | No q => No (not_eq_extend_con q)
+         end
+       end
+     end.
+
+Global Instance decEq_con {B : Type} `{decEq B} : decEq (con B) :=
+  {| dec_eq := dec_eq_con |}.
 
 (** * Variables *)
 

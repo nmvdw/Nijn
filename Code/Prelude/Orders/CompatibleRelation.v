@@ -1,9 +1,6 @@
-Require Import Prelude.Funext.
-Require Import Prelude.Basics.
-Require Import Prelude.Props.
-Require Import Prelude.WellfoundedRelation.
-Require Import Lia.
-Require Import Coq.Program.Equality.
+Require Import Nijn.Prelude.Checks.
+Require Import Nijn.Prelude.Basics.Decidable.
+Require Import Nijn.Prelude.Relations.WellfoundedRelation.
 
 Declare Scope qr.
 Open Scope qr.
@@ -25,17 +22,8 @@ Class isQuasiRel ( X : QuasiRel ) :=
     ge_qr_refl : forall (x : X),
       x >= x;
     ge_qr_trans : forall { x y z : X },
-      x >= y -> y >= z -> x >= z ;
-    ge_qr_prop : forall (x y : X),
-      isaprop (x >= y)
+      x >= y -> y >= z -> x >= z
   }.
-
-Global Instance ge_qr_isaprop
-       (X : QuasiRel)
-       `{isQuasiRel X}
-       (x y : X)
-  : isaprop (x >= y)
-  := ge_qr_prop x y.
 
 Close Scope qr.
 
@@ -74,26 +62,8 @@ Class isCompatRel (X : CompatRel) :=
     ge_gt : forall {x y z : X},
       x >= y -> y > z -> x > z ;
     gt_ge : forall {x y z : X},
-      x > y -> y >= z -> x > z ;
-    gt_prop : forall (x y : X),
-      isaprop (x > y) ;
-    ge_prop : forall (x y : X),
-      isaprop (x >= y)
+      x > y -> y >= z -> x > z
   }.
-
-Global Instance gt_isaprop
-       (X : CompatRel)
-       `{isCompatRel X}
-       (x y : X)
-  : isaprop (x > y)
-  := gt_prop x y.
-
-Global Instance ge_isaprop
-       (X : CompatRel)
-       `{isCompatRel X}
-       (x y : X)
-  : isaprop (x >= y)
-  := ge_prop x y.
 
 (** * Lemmata for compatible relations *)
 Proposition eq_gt

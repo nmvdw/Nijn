@@ -1,12 +1,9 @@
-Require Import Prelude.Funext.
-Require Import Prelude.Basics.
-Require Import Prelude.WellfoundedRelation.
-Require Import Prelude.TransitiveClosure.
-Require Import Syntax.Signature.
-Require Import Syntax.Signature.SubstitutionLemmas.
-Require Import Syntax.Signature.RewriteLemmas.
-Require Import Syntax.StrongNormalization.SN.
-Require Import Syntax.StrongNormalization.BetaNormalForm.
+Require Import Nijn.Prelude.
+Require Import Nijn.Syntax.Signature.
+Require Import Nijn.Syntax.Signature.SubstitutionLemmas.
+Require Import Nijn.Syntax.Signature.RewriteLemmas.
+Require Import Nijn.Syntax.StrongNormalization.SN.
+Require Import Nijn.Syntax.StrongNormalization.BetaNormalForm.
 Require Import Coq.Program.Equality.
 
 Local Open Scope type.

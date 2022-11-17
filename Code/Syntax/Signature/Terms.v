@@ -1,6 +1,6 @@
-Require Import Prelude.Basics.
-Require Import Syntax.Signature.Types.
-Require Import Syntax.Signature.Contexts.
+Require Import Nijn.Prelude.
+Require Import Nijn.Syntax.Signature.Types.
+Require Import Nijn.Syntax.Signature.Contexts.
 Require Import Coq.Program.Equality.
 
 Open Scope signature.

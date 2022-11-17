@@ -1,8 +1,6 @@
-Require Import Prelude.Basics.
-Require Import Prelude.Funext.
-Require Import Prelude.WellfoundedRelation.
-Require Import Syntax.Signature.
-Require Import Syntax.Signature.RewriteLemmas.
+Require Import Nijn.Prelude.
+Require Import Nijn.Syntax.Signature.
+Require Import Nijn.Syntax.Signature.RewriteLemmas.
 Require Import Coq.Program.Equality.
 
 Local Open Scope type.

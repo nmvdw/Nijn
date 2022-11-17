@@ -1,12 +1,11 @@
+Require Import Nijn.Prelude.
+Require Import Nijn.Syntax.
+Require Import Nijn.Interpretation.OrderInterpretation.
+Require Import Nijn.TerminationTechniques.PolynomialMethod.Polynomial.
 Require Import Lia.
 Require Import PeanoNat.
 Import Nat.
 Require Import List.
-Require Import Prelude.Basics.
-Require Import Prelude.Orders.
-Require Import Syntax.Signature.
-Require Import Interpretation.OrderInterpretation.
-Require Import Interpretation.Polynomial.
 
 Open Scope nat.
 
@@ -83,6 +82,6 @@ Ltac destruct_WM :=
 (** This tactic tries to prove strong normalization using the polynomial method. Its argument is a polynomial for every function symbol of the system. It applies the theorems, and after that, it used the tactics we discussed before. So, it first generates the goals and then it destructs the context. After that it tries to generate as many assumptions as possible, and then `nia` is used. *)
 Ltac solve_poly pols :=
   apply afs_is_SN_from_Interpretation ;
-  apply (poly_WMalgebra _ pols) ;
+  apply (poly_Interpretation _ pols) ;
   generate_goals ;
   (destruct_con ; destruct_WM ; nia).

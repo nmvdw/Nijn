@@ -1,5 +1,6 @@
-Require Import WellfoundedRelation.
-Require Import CompatibleRelation.
+Require Import Nijn.Prelude.Checks.
+Require Import Nijn.Prelude.Relations.WellfoundedRelation.
+Require Import Nijn.Prelude.Orders.CompatibleRelation.
 
 (** * The lexicographic order *)
 

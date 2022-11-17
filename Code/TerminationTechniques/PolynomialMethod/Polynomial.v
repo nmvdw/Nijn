@@ -1,8 +1,6 @@
-Require Import Prelude.Basics.
-Require Import Prelude.Orders.
-Require Import Syntax.Signature.
-Require Import Syntax.StrongNormalization.SN.
-Require Import Interpretation.OrderInterpretation.
+Require Import Nijn.Prelude.
+Require Import Nijn.Syntax.
+Require Import Nijn.Interpretation.OrderInterpretation.
 
 Require Import Lia.
 
@@ -318,13 +316,10 @@ Section PolyAlgebra.
   Qed.
 
   (** ** Interpretation from polynomials *)
-  Definition poly_WMalgebra
-             (H : forall (r : rewriteRules X)
-                         (x : ⟦ vars r ⟧con),
-                  ⟦ lhs r ⟧tm x > ⟦ rhs r ⟧tm x)
-    : Interpretation X.
+  Definition poly_InterpretationData
+    : InterpretationData X.
   Proof.
-    simple refine (make_Interpretation
+    simple refine (make_InterpretationData
                      X
                      p_base
                      _
@@ -334,11 +329,27 @@ Section PolyAlgebra.
                      p_app
                      _
                      _
-                     _
                      _).
     - exact p_app_strict_l.
     - exact p_app_strict_r.
     - exact p_app_ge_id.
+  Defined.
+
+  Definition poly_strong_reduction_pair
+    : strong_reduction_pair (arity X).
+  Proof.
+    apply interpretation_to_strong_reduction_pair.
+    exact poly_InterpretationData.
+  Defined.
+
+  Definition poly_Interpretation
+             (H : forall (r : rewriteRules X)
+                         (x : ⟦ vars r ⟧con),
+                  ⟦ lhs r ⟧tm x > ⟦ rhs r ⟧tm x)
+    : Interpretation X.
+  Proof.
+    simple refine (make_Interpretation _ _ _ _ _).
+    - exact poly_InterpretationData.
     - exact (poly_WMalgebra_rewrite_rules H).
   Defined.
 End PolyAlgebra.

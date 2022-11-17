@@ -1,15 +1,25 @@
-Require Import Nijn.
+Require Import Nijn.Nijn.
 
 Open Scope poly_scope.
 
 (** The base types *)
 Inductive base_types := TBtype | TList.
 
+Global Instance decEq_base_types : decEq base_types.
+Proof.
+  decEq_finite.
+Defined.
+
 Definition Btype : ty base_types := Base TBtype.
 Definition List : ty base_types := Base TList.
 
 (** The function symbols and their arities *)
 Inductive fun_symbols := TNil | TCons | TMap.
+
+Global Instance decEq_fun_symbols : decEq fun_symbols.
+Proof.
+  decEq_finite.
+Defined.
 
 Definition map_ar f : ty base_types
   := match f with

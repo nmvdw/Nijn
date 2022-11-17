@@ -1,4 +1,5 @@
-Require Import WellfoundedRelation.
+Require Import Nijn.Prelude.Checks.
+Require Import Nijn.Prelude.Relations.WellfoundedRelation.
 
 (** * Transitive closures *)
 
