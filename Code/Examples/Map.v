@@ -23,7 +23,7 @@ Proof.
   decEq_finite.
 Defined.
 
-Definition map_ar f : ty base_types
+Definition map_ar f
   := match f with
      | TNil => List
      | TCons => Btype ⟶ List ⟶ List
