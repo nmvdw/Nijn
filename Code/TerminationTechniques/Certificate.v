@@ -7,7 +7,7 @@ Require Import Nijn.TerminationTechniques.NoRules.
 
 Local Open Scope compat.
 
-Inductive split_certificate
+Inductive rule_removal_certificate
           {B F : Type}
           `{decEq B} `{decEq F}
           (X : afs B F)
@@ -31,14 +31,14 @@ Inductive split_certificate
        sem_Tm p_base (p_fun_sym X J) p_app (lhs r) x
        >=
        sem_Tm p_base (p_fun_sym X J) p_app (rhs r) x)
-    -> split_certificate X P.
+    -> rule_removal_certificate X P.
 
-Theorem split_certificate_to_srp
-        {B F : Type}
-        `{decEq B} `{decEq F}
-        {X : afs B F}
-        {P : selector X}
-        (C : split_certificate X P)
+Definition rr_certificate_to_srp
+           {B F : Type}
+           `{decEq B} `{decEq F}
+           {X : afs B F}
+           {P : selector X}
+           (C : rule_removal_certificate X P)
   : strong_reduction_pair (arity X).
 Proof.
   induction C as [ J ].
@@ -47,13 +47,13 @@ Proof.
   exact J.
 Defined.
 
-Theorem split_certificate_respects_srp
+Theorem rr_certificate_respects_srp
         {B F : Type}
         `{decEq B} `{decEq F}
         {X : afs B F}
         {P : selector X}
-        (C : split_certificate X P)
-  : respects_selector X (split_certificate_to_srp C) P.
+        (C : rule_removal_certificate X P)
+  : respects_selector X (rr_certificate_to_srp C) P.
 Proof.
   induction C as [ J H_gt H_ge ].
   refine (interpretation_respects_selector
@@ -79,7 +79,7 @@ Inductive certificate
          certificate X
 | RuleRemovalSN :
   forall (P : selector X),
-    split_certificate X P
+    rule_removal_certificate X P
     -> certificate (remove_afs X P)
     -> certificate X.
 
@@ -97,6 +97,6 @@ Proof.
   - apply afs_is_SN_from_Interpretation.
     exact (poly_Interpretation _ J HJ).
   - simple refine (rule_removal P _ _ IHC).
-    + exact (split_certificate_to_srp srp).
-    + apply split_certificate_respects_srp.
+    + exact (rr_certificate_to_srp srp).
+    + apply rr_certificate_respects_srp.
 Defined.
