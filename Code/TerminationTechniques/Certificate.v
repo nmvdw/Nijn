@@ -87,7 +87,7 @@ Theorem certificate_to_isSN
         {B F : Type}
         `{decEq B}
         `{decEq F}
-        (X : afs B F)
+        {X : afs B F}
         (C : certificate X)
   : isSN X.
 Proof.
