@@ -208,7 +208,7 @@ Proof.
   apply Beta.
 Defined.
 
-(** ** Any number of rewriting steps *)
+(** ** Any number of beta rewriting steps *)
 Definition betaRed_nonneg
            {B : Type}
            {F : Type}
@@ -261,7 +261,6 @@ Proof.
   left.
   exact p.
 Qed.
-
 
 Definition beta_nonneg_Trans
            {B : Type}

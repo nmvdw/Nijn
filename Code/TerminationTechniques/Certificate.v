@@ -7,6 +7,15 @@ Require Import Nijn.TerminationTechniques.NoRules.
 
 Local Open Scope compat.
 
+(** * Certificates *)
+
+(** A certificate is a representation of a proof of strong normalization. As such, the core specification is that from a certificate, one must get a proof of strong normalization. Our certificates allow the following steps:
+ - If there are no rewrite rules, then the system is strongly normalizing
+ - The polynomial method
+ - Rule removal
+ Note that for rule removal, we also need another notion of certificate, which we call a rule removal certificate. From this notion of certificate, one must obtain a strong reduction pair that respects the rule selection. For this kind of certificate, we allow the following steps:
+ - The polynomial method
+ *)
 Inductive rule_removal_certificate
           {B F : Type}
           `{decEq B} `{decEq F}

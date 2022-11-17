@@ -373,6 +373,7 @@ Proof.
     reflexivity.
 Qed.
 
+(** Interpretation of beta reduction *)
 Proposition sem_beta
             {B : Type}
             (semB : B -> CompatRel)
@@ -469,6 +470,7 @@ Record Interpretation {B F : Type} (X : afs B F) : Type :=
         sem_Tm (semB _) (semF _) (semApp _) (rhs r [ s ]) x
     }.
 
+(** If we are using rule removal, then we need an interpretation that interprets some rule using the strict relation and other rules using the weaker one. The notion of [SelectorInterpretation] does this for us. *)
 Record SelectorInterpretation
        {B F : Type}
        `{decEq B} `{decEq F}
@@ -632,7 +634,7 @@ Proof.
   - apply BetaRed_SN.
 Qed.
 
-(** Strong reduction pairs *)
+(** ** Strong reduction pairs *)
 Definition interpretation_to_term_order
            {B F : Type}
            {X : afs B F}

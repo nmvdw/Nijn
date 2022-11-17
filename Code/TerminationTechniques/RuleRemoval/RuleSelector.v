@@ -4,6 +4,11 @@ Require Import Coq.Program.Equality.
 Require Import Lia.
 Require Import List.
 
+(** * Rule selecting *)
+
+(** When one uses rule removal, one needs to select the rules that will be removed. In this file, we define such predicates and we give several combinators for them.
+
+Note that we use a predicate on the positions rather than a predicate on all possible rewrite rules. This way we don't need to compare rewrite rules when applying rule removal. *)
 Section RuleSelector.
   Context {B F : Type}
           (X : afs B F).
@@ -53,6 +58,7 @@ End RuleSelector.
 
 Arguments dec_pred {B F X} _ i.
 
+(** If we have decidable equality on the base types and function symbols, then every rule selector gives rise to a decidable predicate on the rewrite rules. *)
 Definition selector_members
            {B F : Type}
            `{decEq B}
@@ -74,7 +80,8 @@ Definition dec_selector_members
 Proof.
   apply (dec_pred P).
 Defined.
-             
+
+(** ** Filter and removing rules from an AFS using a rule selector *)
 Definition filter_rewrite_rules
            {B F : Type}
            (X : afs B F)
@@ -109,6 +116,9 @@ Definition remove_afs
 
 Local Open Scope srp.
 
+(** ** Rule selectors and strong reduction pairs *)
+
+(** In the theorem for rule removal, two conditions need to be satisfied. These are expressed in the definition [respects_selector]. *)
 Definition respects_selector
            {B F : Type}
            `{decEq B}

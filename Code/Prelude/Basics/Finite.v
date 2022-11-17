@@ -5,7 +5,7 @@ Require Import List.
 
 (** * Finite types *)
 
-(** Next we define the notion of finite types, and for that, we use the enumerated types (also known as Kuratowski finite types. These are types for which we can write down a list that contains all the elements of that particular type. *)
+(** Next we define the notion of finite types, and for that, we use the enumerated types (also known as Kuratowski finite types. These are types for which we can write down a list that contains all the elements of that particular type. We start by defining a proof relevant membership relation. *)
 Inductive isMember {A : Type} : A -> list A -> Type :=
 | Here : forall (a : A) (xs : list A), isMember a (a :: xs)
 | There : forall {a : A} (x : A) {xs : list A},
@@ -13,6 +13,7 @@ Inductive isMember {A : Type} : A -> list A -> Type :=
 
 Notation "a ∈ l" := (isMember a l) (at level 60).
 
+(** The predicate `isMember` can be related to `In` if we have decidable equality *)
 Definition here_eq
            {A : Type}
            {a1 a2 : A}
@@ -67,6 +68,7 @@ Proof.
     apply IHp.
 Qed.
 
+(** Properties of [isMember] *)
 Definition isMember_append_left
            {A : Type}
            {a : A}
@@ -111,11 +113,14 @@ Proof.
     exact IHp.
 Defined.
 
+(** The definition of finite types *)
 Class isFinite (A : Type) :=
   {
     els : list A ;
     allIsMember : forall (a : A), In a els
   }.
+
+(** * Examples of finite types *)
 
 (** The unit type is finite *)
 Global Instance isFinite_unit : isFinite unit.
@@ -312,7 +317,7 @@ Global Instance decEq_members
   : decEq (members l)
   := {| dec_eq := dec_eq_members l |}.
 
-(** * If we have a finite type and a decidable proposition on it, then we can decide whether that proposition holds for every element of that type. *)
+(** * If we have a finite type and a decidable proposition on it, then we can decide whether that proposition holds for every element of that type and whether it holds for some element. *)
 Lemma all_nil
       {A : Type}
       (P : A -> Prop)

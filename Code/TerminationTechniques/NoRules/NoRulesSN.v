@@ -4,6 +4,9 @@ Require Import Nijn.Interpretation.OrderInterpretation.
 Require Import Nijn.TerminationTechniques.PolynomialMethod.
 Require Import List.
 
+(** * Strong normalization for the trivial AFS *)
+
+(** The AFS without any rewrite rules is strongly normalizing. We prove that using the polynomial method. All function symbols are interpreted as the polynomial that is constantly 0. This is sufficient to conclude strong normalization, because there are no rewrite rules*)
 Fixpoint zero_poly
          {B : Type}
          (A : ty B)

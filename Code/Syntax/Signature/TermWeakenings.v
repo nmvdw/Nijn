@@ -12,7 +12,7 @@ Inductive wk {B : Type} : con B -> con B -> Type :=
 | Drop : forall {C1 C2 : con B} (A : ty B),
     wk C1 C2 -> wk (A ,, C1) C2.
 
-(** * Operations on weakenings *)
+(** ** Operations on weakenings *)
 
 (** Identity weakening *)
 Fixpoint idWk

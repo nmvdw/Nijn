@@ -5,8 +5,9 @@ Require Import Nijn.TerminationTechniques.RuleRemoval.RuleSelector.
 
 Require Import Lia.
 
-(** * The notation of polynomials *)
-(** Note that we define both base polynomials and arbitrary polynomials and that we can convert between base polynomials and polynomials of a base type. Since base polynomials do not keep track of the type, we can freely add and multiply them without worrying about whether their types are actually the same. *)
+(** * The polynomial method *)
+
+(** We start by defining polynomials. To do that, we define both base polynomials and arbitrary polynomials and that we can convert between base polynomials and polynomials of a base type. Since base polynomials do not keep track of the type, we can freely add and multiply them without worrying about whether their types are actually the same. *)
 Inductive base_poly {B : Type} : con B -> Type :=
 | P_const : forall {C : con B}, nat -> base_poly C
 | P_plus : forall {C : con B}, base_poly C -> base_poly C -> base_poly C
@@ -27,7 +28,7 @@ with poly {B : Type} : con B -> ty B -> Type :=
             poly (A₁ ,, C) A₂
             -> poly C (A₁ ⟶ A₂).
 
-(** * Polynomial interpretation *)
+(** ** Polynomial interpretation *)
 Section PolyAlgebra.
   Context {B : Type} {F : Type}
           (X : afs B F)
@@ -348,13 +349,6 @@ Section PolyAlgebra.
     - exact p_app_ge_id.
   Defined.
 
-  Definition poly_strong_reduction_pair
-    : strong_reduction_pair (arity X).
-  Proof.
-    apply interpretation_to_strong_reduction_pair.
-    exact poly_InterpretationData.
-  Defined.
-
   Definition poly_Interpretation
              (H : forall (r : rewriteRules X)
                          (x : ⟦ vars r ⟧con),
@@ -367,6 +361,14 @@ Section PolyAlgebra.
         (intros ;
          apply poly_WMalgebra_rewrite_rule ;
          apply H).
+  Defined.
+
+  (** ** Strong reduction pairs from polynomials *)
+  Definition poly_strong_reduction_pair
+    : strong_reduction_pair (arity X).
+  Proof.
+    apply interpretation_to_strong_reduction_pair.
+    exact poly_InterpretationData.
   Defined.
 
   Definition poly_SelectorInterpretation

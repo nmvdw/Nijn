@@ -44,7 +44,7 @@ Definition unit_minimal_element
   : minimal_element unit_CompatRel
   := is_minimal_to_strict_minimal unit_strict_minimal_element.
 
-(** Compatible relations are well-founded *)
+(** Product of compatible relations *)
 Definition prod_CompatRel
            (X Y : CompatRel)
   : CompatRel
@@ -143,9 +143,7 @@ Proof.
     + apply is_minimal.
 Defined.
 
-(**
- 
- *)
+(** Compatible relations of tuples *)
 Definition tuple_CompatRel
           (X : CompatRel)
           (Y : QuasiRel)
@@ -342,9 +340,7 @@ Definition nat_minimal_element
   : minimal_element nat_CompatRel
   := is_minimal_to_strict_minimal nat_strict_minimal_element.
 
-(**
- Function space of weakly monotonic maps
- *)
+(** Function spaces of weakly monotonic maps *)
 Definition fun_CompatRel
            (X Y : CompatRel)
   : CompatRel
@@ -387,9 +383,7 @@ Proof.
     apply p.
 Qed.
 
-(**
- Function space of strongly monotonic maps
- *)
+(** Function space of strongly monotonic maps *)
 Definition strong_fun_CompatRel
            (X Y : CompatRel)
   : CompatRel
@@ -397,12 +391,12 @@ Definition strong_fun_CompatRel
         gt f g := forall (x : X), f x > g x ;
         ge f g := forall (x : X), f x >= g x  |}.
 
-Notation "X ==> Y" := (strong_fun_CompatRel X Y) (at level 99).
+Notation "X →s Y" := (strong_fun_CompatRel X Y) (at level 99).
 
 Global Instance strong_fun_isCompatRel
        (X Y : CompatRel)
        `{isCompatRel Y}
-  : isCompatRel (X ==> Y).
+  : isCompatRel (X →s Y).
 Proof.
   unshelve esplit ; cbn ; try (intros ; apply _).
   - intros f g h p q x.
@@ -487,7 +481,7 @@ Definition id_wm
 
 Definition id_strong_monotone
            {X : CompatRel}
-  : X ==> X
+  : X →s X
   := make_strong_monotone id _ _.
 
 (** The composition *)
@@ -528,9 +522,9 @@ Notation "g ∘wm f" := (comp_wm f g) (at level 40).
 
 Definition comp_strong_monotone
            {X Y Z : CompatRel}
-           (f : X ==> Y)
-           (g : Y ==> Z)
-  : X ==> Z
+           (f : X →s Y)
+           (g : Y →s Z)
+  : X →s Z
   := make_strong_monotone (g o f) _ _.
 
 (** The first projection *)
@@ -557,7 +551,7 @@ Definition fst_wm
 
 Definition fst_strong_monotone
            {X Y : CompatRel}
-  : (X * Y) ==> X
+  : (X * Y) →s X
   := make_strong_monotone _ _ _.
 
 (** The second projection *)
@@ -584,7 +578,7 @@ Definition snd_wm
 
 Definition snd_strong_monotone
            {X Y : CompatRel}
-  : (X * Y) ==> Y
+  : (X * Y) →s Y
   := make_strong_monotone _ _ _.
 
 (** The pairing of weakly monotone maps *)
@@ -635,9 +629,9 @@ Notation "⟨ f , g ⟩" := (pair_wm f g).
 
 Definition pair_strong_monotone
            {X Y Z : CompatRel}
-           (f : X ==> Y)
-           (g : X ==> Z)
-  : X ==> (Y * Z)
+           (f : X →s Y)
+           (g : X →s Z)
+  : X →s (Y * Z)
   := @make_strong_monotone X (Y * Z) (fun x => (f x , g x)) _ _.
 
 (** Lambda abstraction *)
@@ -687,6 +681,7 @@ Definition lambda_abs
 
 Notation "'λwm' f" := (lambda_abs f) (at level 10).
 
+(** Addition *)
 Global Instance plus_isWeakMonotone
                 {A : CompatRel}
                 (f g : A -> nat_CompatRel)
@@ -700,6 +695,14 @@ Proof.
   cbn in *.
   nia.
 Qed.
+
+Definition plus_wm
+  : nat_CompatRel * nat_CompatRel →wm nat_CompatRel
+  := @make_monotone
+       (nat_CompatRel * nat_CompatRel)
+       nat_CompatRel
+       (fun x => fst x + snd x)
+       _.
 
 Global Instance plus_isStrictMonotone
                 {A : CompatRel}
@@ -723,10 +726,11 @@ Definition plus_fun_wm
 
 Definition plus_strong_monotone
            {A : CompatRel}
-           (f g : A ==> nat_CompatRel)
-  : A ==> nat_CompatRel
+           (f g : A →s nat_CompatRel)
+  : A →s nat_CompatRel
   := make_strong_monotone (fun a => (f a + g a : nat_CompatRel)) _ _.
 
+(** Multiplication *)
 Global Instance mult_isWeakMonotone
                 {A : CompatRel}
                 (f g : weakMonotoneMap A nat_CompatRel)
@@ -758,7 +762,8 @@ Proof.
             _).
   exact (is_weak_monotone _ _ (f a2) _ _ (is_weak_monotone _ _ x _ _ p)).
 Qed.
-  
+
+(** Application *)  
 Definition app_wm
            {A B C : CompatRel}
            `{isCompatRel C}
@@ -772,8 +777,8 @@ Notation "f '·wm' x" := (app_wm f x) (at level 20, left associativity).
 Global Instance strong_app_isWeakMonotone
                 {A B C : CompatRel}
                 `{isCompatRel C}
-                (f : A ==> (B ==> C))
-                (x : A ==> B)
+                (f : A →s (B →s C))
+                (x : A →s B)
   : weakMonotone (fun a : A => f a (x a)).
 Proof.
   intros a1 a2 p.
@@ -786,8 +791,8 @@ Qed.
 Global Instance strong_app_isStrictMonotone
                 {A B C : CompatRel}
                 `{isCompatRel C}
-                (f : A ==> (B ==> C))
-                (x : A ==> B)
+                (f : A →s (B →s C))
+                (x : A →s B)
   : strictMonotone (fun a : A => f a (x a)).
 Proof.
   intros a1 a2 p.
@@ -800,20 +805,12 @@ Qed.
 Definition app_strong_monotone
            {A B C : CompatRel}
            `{isCompatRel C}
-           (f : A ==> (B ==> C))
-           (x : A ==> B)
-  : A ==> C
+           (f : A →s (B →s C))
+           (x : A →s B)
+  : A →s C
   := make_strong_monotone (fun a => f a (x a)) _ _.
 
-(** We also need the following monotone maps *)
-Definition plus_wm
-  : nat_CompatRel * nat_CompatRel →wm nat_CompatRel
-  := @make_monotone
-       (nat_CompatRel * nat_CompatRel)
-       nat_CompatRel
-       (fun x => fst x + snd x)
-       _.
-
+(** Application to a fixed element *)
 Global Instance apply_el_is_weak_monotone
                 {A₁ A₂ : CompatRel}
                 (x : A₁)

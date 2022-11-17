@@ -4,28 +4,21 @@ Require Import Lia.
 Require Import List.
 Require Import Coq.Program.Equality.
 
+(** * Positions in lists *)
+
+(** For every list there is a type of positions. Each of these positions points to a concrete place in that list. *)
 Inductive pos {A : Type} : list A -> Type :=
 | Hd : forall (x : A) (xs : list A), pos (x :: xs)
 | Tl : forall {x : A} {xs : list A}, pos xs -> pos (x :: xs).
 
+(** Given a position, we can pick the element at that place. *)
 Fixpoint listAt {A : Type} {l : list A} (i : pos l) : A :=
   match i with
   | Hd x xs => x
   | Tl i => listAt i
   end.
 
-Definition isMember_to_pos
-           {A : Type}
-           {a : A} {l : list A}
-           (H : a ∈ l)
-  : pos l.
-Proof.
-  induction H.
-  - apply Hd.
-  - apply Tl.
-    assumption.
-Defined.
-
+(** We can map the natural numbers to positions *)
 Program Fixpoint nat_to_pos
                  {A : Type}
                  {l : list A}
@@ -48,6 +41,22 @@ Next Obligation.
   lia.
 Qed.
 
+(** From a member of the list, we obtain a position *)
+Definition isMember_to_pos
+           {A : Type}
+           {a : A} {l : list A}
+           (H : a ∈ l)
+  : pos l.
+Proof.
+  induction H.
+  - apply Hd.
+  - apply Tl.
+    assumption.
+Defined.
+
+(** ** Filtering and removing elements from the list *)
+
+(** If we have a decidable predicate on the positions, then we can remove the positions for which that predicate holds and we can remove the positions for which that predicate does not hold. *)
 Definition pos_tl
            {A : Type}
            {x : A}
@@ -103,6 +112,7 @@ Fixpoint remove_list
        end
      end.
 
+(** Membership after removing *)
 Proposition In_remove_list
             {A : Type}
             {l : list A}
@@ -164,6 +174,7 @@ Proof.
   exact Hr.
 Qed.
 
+(** ** Decidable equality of positions *)
 Fixpoint pos_to_nat
          {A : Type}
          {l : list A}

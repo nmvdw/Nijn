@@ -6,7 +6,7 @@ Declare Scope qr.
 Open Scope qr.
 Delimit Scope qr with qr.
 
-(** * Quasi-order *)
+(** * Quasi-orders *)
 Record QuasiRel :=
   {
     carrier_qr :> Type ;
@@ -47,8 +47,7 @@ Arguments ge {_} _ _.
 Notation "x > y" := (gt x y) : compat.
 Notation "x >= y" := (ge x y) : compat.
 
-(** These are the axioms that should hold for compatible relations.
-    Note that we do not require the relations to be well-founded, but that condition is formulated separately. *)
+(** These are the axioms that should hold for compatible relations. Note that we do not require the relations to be well-founded, but that condition is formulated separately. *)
 Class isCompatRel (X : CompatRel) :=
   {
     gt_trans : forall {x y z : carrier X},
@@ -65,7 +64,7 @@ Class isCompatRel (X : CompatRel) :=
       x > y -> y >= z -> x > z
   }.
 
-(** * Lemmata for compatible relations *)
+(** ** Lemmata for compatible relations *)
 Proposition eq_gt
             {X : CompatRel}
             {x y z : X}
@@ -121,6 +120,7 @@ Proof.
   apply ge_refl.
 Qed.
 
+(** ** Minimal elements in a compatible relation *)
 Definition is_minimal_element
            {X : CompatRel}
            (x : X)

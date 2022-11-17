@@ -45,12 +45,12 @@ Proof.
            intro n.
            inversion n.
            apply p₄.
-           apply (path_in_sigma_uip _ (path_in_sigma_uip _ H3)).
+           apply (from_path_in_sigma _ (from_path_in_sigma _ H3)).
       * refine (No _).
         intro n.
         inversion n.
         apply p₃.
-        apply (path_in_sigma_uip _ (path_in_sigma_uip _ H2)).
+        apply (from_path_in_sigma _ (from_path_in_sigma _ H2)).
     + refine (No _).
       intro n.
       inversion n.

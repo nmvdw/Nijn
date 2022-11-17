@@ -15,6 +15,7 @@ Arguments Extend {_} _ _.
 Notation "∙" := Empty : signature.
 Notation "A ,, Γ" := (Extend A Γ) (at level 80, right associativity) : signature.
 
+(** ** Decidable equality of contexts *)
 Lemma not_empty_extend
       {B : Type}
       {A : ty B}
@@ -69,6 +70,7 @@ Proof.
   reflexivity.
 Qed.
 
+(** The function that decides equality *)
 Fixpoint dec_eq_con
          {B : Type}
          `{decEq B}
@@ -101,7 +103,7 @@ Inductive var {B : Type} : con B -> ty B -> Type :=
 | Vs : forall {C : con B} {A1 A2 : ty B},
     var C A2 -> var (A1 ,, C) A2.
 
-(** * Decidable equality of variables *)
+(** ** Decidable equality of variables *)
 
 (** We decide equality of variables by mapping them to the natural numbers and then deciding equality of the natural numbers. *)
 Fixpoint var_to_nat
@@ -184,7 +186,7 @@ Proof.
   dependent induction v.
   - simpl.
     destruct (dec_eq_Ty A A) ; try contradiction.
-    rewrite (hedberg e eq_refl).
+    rewrite (UIP e eq_refl).
     simpl.
     left.
     reflexivity.

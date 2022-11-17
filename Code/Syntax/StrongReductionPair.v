@@ -3,6 +3,9 @@ Require Import Nijn.Syntax.Signature.
 
 Declare Scope srp.
 
+(** * Strong reduction pairs *)
+
+(** A strong reduction pair provides two relations on the terms. These relations are respected by the term formers and substitution *)
 Section StrongReductionPair.
   Context {B F : Type}
           (ar : F -> ty B).

@@ -16,7 +16,10 @@ Definition Btype := Base TBtype.
 Definition List := Base TList.
 
 (** The function symbols and their arities *)
-Inductive fun_symbols := TNil | TCons | TMap.
+Inductive fun_symbols :=
+| TNil
+| TCons
+| TMap.
 
 Global Instance decEq_fun_symbols : decEq fun_symbols.
 Proof.

@@ -1,6 +1,9 @@
 Require Import Lia.
 Require Import List.
 
+(** * Basic lemmas and functions *)
+
+(** ** Empty lists and membership*)
 Definition isNil {A : Type} (l : list A) : Prop :=
   match l with
   | nil => True
@@ -19,7 +22,7 @@ Proof.
   - contradiction.
 Qed.
   
-(** Useful lemma in addition *)
+(** ** Lemma about addition *)
 Proposition plus_ge
             {n1 n2 m1 m2 : nat}
             (p : n1 >= n2)
@@ -29,7 +32,7 @@ Proof.
   lia.
 Qed.
 
-(** * Basics functions *)
+(** ** Basics functions *)
 
 Arguments id {_} _/.
 

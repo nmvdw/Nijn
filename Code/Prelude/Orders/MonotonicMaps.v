@@ -15,7 +15,7 @@ Class weakMonotone {X Y : CompatRel} (f : X -> Y) :=
   map_ge : forall (x y : X),
     x >= y -> f x >= f y.
 
-(** The weakly monotone maps between two compatible relations forms again a compatible relation *)
+(** Now we define the type of weakly and strongly monotone maps between compatible relations *)
 Record weakMonotoneMap (X Y : CompatRel) :=
   make_monotone
     {
@@ -53,7 +53,9 @@ Global Instance strongMonotone_to_weakMonotone
   : weakMonotone f
   := strong_is_weak _ _ f.
 
-(** * Equality of monotone maps *)
+(** ** Equality of monotone maps *)
+
+(** Using function extensionality and proof irrelevance, we can show that monotone maps are equal if they are pointwise equal. *)
 Definition eq_weakMonotoneMap_help
            {X Y : CompatRel}
            `{isCompatRel Y}

@@ -5,6 +5,9 @@ Require Import List.
 
 Import AFSNotation.
 
+(** * Rule removal *)
+
+(** In this file, we prove the rule removal theorem. The main idea is as follows: we make a mapping from terms to pairs of terms. We use the lexico graphic ordering on the product: on the first coordinate we use the relation coming from the strong reduction pair while on the second coordinate we use the rewrite relation. We can make a mapping from terms to pairs of terms that respects the order. The assumptions of rule removal allow us to prove the lexicographic ordering is well-founded. As such, the inverse image of the map is well-founded, and thus we conclude that the rewrite relation of the original AFS is well-founded as well. *)
 Section RuleRemoval.
   Context {B F : Type}
           `{decEq B}

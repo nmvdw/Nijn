@@ -14,7 +14,7 @@ Arguments ToEmpty {B F ar} C.
 Arguments ExtendSub {B F ar C1 C2 A}.
 Notation "s && t" := (ExtendSub s t).
 
-(** * Operations on substitutions *)
+(** ** Operations on substitutions *)
 
 (** Dropping a variable *)
 Fixpoint dropSub
@@ -67,7 +67,7 @@ Fixpoint wkToSub
      | Drop A w => dropSub A (wkToSub w)
      end.
 
-(** * Action of substitution on terms *)
+(** ** Action of substitution on terms *)
 Definition subVar
            {B : Type}
            {C1 C2 : con B}

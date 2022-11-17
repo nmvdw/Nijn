@@ -13,7 +13,7 @@ Arguments Base {_} _.
 Arguments Fun {_} _ _.
 Notation "A ⟶ B" := (Fun A B) (at level 70, right associativity) : signature.
 
-(** * Decidable equality of types *)
+(** ** Decidable equality of types *)
 
 (** Lemmata on equality of the constructors *)
 Proposition Base_nequal

@@ -1,4 +1,5 @@
 Require Import Nijn.Prelude.Checks.
+Require Import Nijn.Prelude.Funext.
 Require Import Bool.
 
 (** * Decidable propositions *)
@@ -11,7 +12,7 @@ Inductive dec (A : Prop) : Type :=
 Arguments Yes {_} _.
 Arguments No {_} _.
 
-(** Examples of decidable propositions *)
+(** * Examples of decidable propositions *)
 Definition dec_True : dec True := Yes I.
 
 Definition dec_False : dec False := No (fun z => z).
@@ -83,61 +84,6 @@ Proof.
 Qed.
 
 (** If a type has decidable equality, then all proofs of equality are equal *)
-Definition hedberg_map
-           {A : Type}
-           `{decEq A}
-           {a1 a2 : A}
-           (p : a1 = a2)
-  : a1 = a2
-  := match dec_eq a1 a2 with
-     | Yes q => q
-     | No _ => p
-     end.
-
-Lemma hedberg_const
-      {A : Type}
-      `{decEq A}
-      {a1 a2 : A}
-      (p1 p2 : a1 = a2)
-  : hedberg_map p1 = hedberg_map p2.
-Proof.
-  unfold hedberg_map.
-  destruct (dec_eq a1 a2) as [r | r].
-  - reflexivity.
-  - contradiction.
-Qed.
-
-Lemma hedberg_formula
-      {A : Type}
-      `{decEq A}
-      {a1 a2 : A}
-      (p : a1 = a2)
-  : p = eq_trans (! (hedberg_map eq_refl)) (hedberg_map p).
-Proof.
-  unfold hedberg_map.
-  subst.
-  destruct (dec_eq a2 a2).
-  - rewrite eq_trans_sym_inv_l.
-    reflexivity.
-  - reflexivity.
-Qed.
-
-Theorem hedberg
-        {A : Type}
-        `{decEq A}
-        {a1 a2 : A}
-        (p q : a1 = a2)
-  : p = q.
-Proof.
-  etransitivity.
-  {
-    apply hedberg_formula.
-  }
-  rewrite (hedberg_const p q).
-  symmetry.
-  apply hedberg_formula.
-Qed.
-
 Proposition path_in_sigma_fst
             {A : Type}
             {B : A -> Type}
@@ -160,9 +106,8 @@ Proof.
   reflexivity.
 Defined.
 
-Proposition path_in_sigma_uip
+Proposition from_path_in_sigma
             {A : Type}
-            `{decEq A}
             (B : A -> Type)
             {a : A}
             {b1 b2 : B a}
@@ -170,7 +115,7 @@ Proposition path_in_sigma_uip
   : b1 = b2.
 Proof.
   pose (path_in_sigma_snd p) as q.
-  rewrite (hedberg (path_in_sigma_fst p) eq_refl) in q.
+  rewrite (UIP (path_in_sigma_fst p) eq_refl) in q.
   exact q.
 Defined.
 

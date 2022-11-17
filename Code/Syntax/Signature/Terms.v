@@ -24,7 +24,7 @@ Arguments App {_} {_} {_} {_} {_} {_} _ _.
 Notation "'λ' x" := (Lam x) (at level 10) : signature.
 Notation "f · x" := (App f x) (at level 20, left associativity) : signature.  
 
-(** * Decidable alpha equality of terms *)
+(** ** Decidable alpha equality of terms *)
 Definition is_BaseTm
            {B : Type}
            {F : Type}
@@ -233,7 +233,7 @@ Proof.
       * refine (Yes _).
         abstract
           (subst ;
-           rewrite (hedberg p eq_refl) ;
+           rewrite (UIP p eq_refl) ;
            reflexivity).
       * refine (No _).
         abstract
@@ -279,7 +279,7 @@ Proof.
            subst ;
            simpl in * ;
            inversion q ;
-           pose (path_in_sigma_uip _ H2) ;
+           pose (from_path_in_sigma _ H2) ;
            contradiction).
     + (* t2 is a lambda abstraction *)
       refine (No _).
@@ -310,18 +310,18 @@ Proof.
       * refine (Yes _).
         abstract
           (subst ; simpl ;
-           rewrite (hedberg p eq_refl) ;
+           rewrite (UIP p eq_refl) ;
            reflexivity).
       * refine (No _).
         abstract
           (intro q ;
            subst ;
            simpl in * ;
-           rewrite (hedberg p eq_refl) in q ;
+           rewrite (UIP p eq_refl) in q ;
            simpl in q ;
            inversion q; 
-           pose (path_in_sigma_uip _ H2) as e ;
-           pose (path_in_sigma_uip _ e) ;
+           pose (from_path_in_sigma _ H2) as e ;
+           pose (from_path_in_sigma _ e) ;
            contradiction).
     + (* t2 is an application *)
       refine (No _).
@@ -357,36 +357,36 @@ Proof.
         ** refine (Yes _).
            abstract
              (subst ;
-              rewrite (hedberg pq eq_refl) ;
+              rewrite (UIP pq eq_refl) ;
               reflexivity).
         ** refine (No _).
            abstract
              (intro r ;
               subst ;
               simpl in * ;
-              rewrite (hedberg pq eq_refl) in r ;
+              rewrite (UIP pq eq_refl) in r ;
               simpl in r ;
               inversion r ;
-              pose (path_in_sigma_uip _ H2) as e ;
+              pose (from_path_in_sigma _ H2) as e ;
               contradiction).
         ** refine (No _).
            abstract
              (intro r ;
               subst ;
-              rewrite (hedberg pq eq_refl) in q ;
+              rewrite (UIP pq eq_refl) in q ;
               simpl in * ;
               inversion r ;
-              pose (path_in_sigma_uip _ H2) as e ;
-              pose (path_in_sigma_uip _ e) ;
+              pose (from_path_in_sigma _ H2) as e ;
+              pose (from_path_in_sigma _ e) ;
               contradiction).
         ** refine (No _).
            abstract
              (intro r ;
               subst ;
-              rewrite (hedberg pq eq_refl) in q ;
+              rewrite (UIP pq eq_refl) in q ;
               simpl in * ;
               inversion r ;
-              pose (path_in_sigma_uip _ H3) ;
+              pose (from_path_in_sigma _ H3) ;
               contradiction).
       * refine (No _).
         abstract
