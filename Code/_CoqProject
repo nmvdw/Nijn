@@ -1,6 +1,6 @@
 COQC = coqc
 COQDEP = coqdep
--Q . "Nijn"
+-R . "Nijn"
 
 Prelude/Checks.v
 Prelude/Funext.v
