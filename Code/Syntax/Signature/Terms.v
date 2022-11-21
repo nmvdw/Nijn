@@ -32,7 +32,7 @@ Record tm_with_ty
   : Type
   := { type : ty B ; term :> tm ar C type }.    
 
-Definition nat_to_tm
+Definition v_idx
            {B : Type}
            {F : Type}
            {ar : F -> ty B}
