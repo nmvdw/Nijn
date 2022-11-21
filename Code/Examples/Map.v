@@ -35,17 +35,18 @@ Definition map_ar f
 
 Definition Nil {C} : tm map_ar C _
   := BaseTm TNil.
-Definition Cons {C} x xs : tm map_ar C _
-  := BaseTm TCons · x · xs.
-Definition Map {C} f xs : tm map_ar C _
-  := BaseTm TMap · f · xs.
+Definition Cons {C} : tm map_ar C _
+  := BaseTm TCons.
+Definition Map {C} : tm map_ar C _
+  := BaseTm TMap.
 
 (** The rewrite rules *)
 Definition map_nil
+  : rewriteRule map_ar
   := make_rewrite
        (_ ,, ∙) _
        (let f := TmVar Vz in
-        Map f Nil)
+        Map · f · Nil)
        Nil.
 
 Definition map_cons
@@ -54,11 +55,11 @@ Definition map_cons
        (let f := TmVar Vz in
         let x := TmVar (Vs Vz) in
         let xs := TmVar (Vs (Vs Vz)) in
-        Map f (Cons x xs))
+        Map · f · (Cons · x · xs))
        (let f := TmVar Vz in
         let x := TmVar (Vs Vz) in
         let xs := TmVar (Vs (Vs Vz)) in
-        Cons (f · x) (Map f xs)).
+        Cons · (f · x) · (Map · f · xs)).
 
 (** The AFS *)
 Definition map_afs
