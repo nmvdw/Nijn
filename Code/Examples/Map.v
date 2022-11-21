@@ -33,12 +33,9 @@ Definition map_ar f
      | TMap => (Btype ⟶ Btype) ⟶ List ⟶ List
      end.
 
-Definition Nil {C} : tm map_ar C _
-  := BaseTm TNil.
-Definition Cons {C} : tm map_ar C _
-  := BaseTm TCons.
-Definition Map {C} : tm map_ar C _
-  := BaseTm TMap.
+Definition Nil {C} : tm map_ar C _ := BaseTm TNil.
+Definition Cons {C} : tm map_ar C _ := BaseTm TCons.
+Definition Map {C} : tm map_ar C _ := BaseTm TMap.
 
 (** The rewrite rules *)
 Definition map_nil
