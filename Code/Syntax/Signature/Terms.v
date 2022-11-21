@@ -45,6 +45,8 @@ Proof.
   exact {| type := A ; term := TmVar v |}.
 Defined.
 
+Notation "'V' n" := (v_idx n _) (at level 0).
+
 (** ** Decidable alpha equality of terms *)
 Definition is_BaseTm
            {B : Type}
