@@ -2,6 +2,7 @@ Require Import Nijn.Prelude.
 Require Import Nijn.Syntax.Signature.Types.
 Require Import Coq.Program.Equality.
 Require Import List.
+Require Import Lia.
 
 (** * Contexts *)
 
@@ -14,6 +15,15 @@ Arguments Extend {_} _ _.
 
 Notation "∙" := Empty : signature.
 Notation "A ,, Γ" := (Extend A Γ) (at level 80, right associativity) : signature.
+
+Fixpoint length_con
+         {B : Type}
+         (C : con B)
+  : nat
+  := match C with
+     | ∙ => 0
+     | _ ,, C => S(length_con C)
+     end.
 
 (** ** Decidable equality of contexts *)
 Lemma not_empty_extend
@@ -102,6 +112,34 @@ Inductive var {B : Type} : con B -> ty B -> Type :=
     var (A ,, C) A
 | Vs : forall {C : con B} {A1 A2 : ty B},
     var C A2 -> var (A1 ,, C) A2.
+
+Definition nat_to_var
+           {B : Type}
+           {C : con B}
+           (n : nat)
+           (Hn : n < length_con C)
+  : { A : ty B & var C A }.
+Proof.
+  revert C Hn.
+  induction n as [ | n IHn ] ; intros C Hn.
+  - destruct C as [ | A C ].
+    + abstract
+        (cbn in * ;
+         exfalso ;
+         lia).
+    + exists A.
+      apply Vz.
+  - destruct C as [ | A C ].
+    + abstract
+        (cbn in * ;
+         exfalso ;
+         lia).
+    + cbn in Hn.
+      assert (n < length_con C) as H' by lia.
+      destruct (IHn C H') as [ A' v ].
+      exists A'.
+      exact (Vs v).
+Defined.
 
 (** ** Decidable equality of variables *)
 

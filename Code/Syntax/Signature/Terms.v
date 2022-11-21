@@ -22,7 +22,28 @@ Arguments Lam {_} {_} {_} {_} {_} {_} _.
 Arguments App {_} {_} {_} {_} {_} {_} _ _.
 
 Notation "'λ' x" := (Lam x) (at level 10) : signature.
-Notation "f · x" := (App f x) (at level 20, left associativity) : signature.  
+Notation "f · x" := (App f x) (at level 20, left associativity) : signature.
+
+Record tm_with_ty
+       {B : Type}
+       {F : Type}
+       (ar : F -> ty B)
+       (C : con B)
+  : Type
+  := { type : ty B ; term :> tm ar C type }.    
+
+Definition nat_to_tm
+           {B : Type}
+           {F : Type}
+           {ar : F -> ty B}
+           {C : con B}
+           (n : nat)
+           (Hn : n < length_con C)
+  : tm_with_ty ar C.
+Proof.
+  destruct (nat_to_var n Hn) as [ A v ].
+  exact {| type := A ; term := TmVar v |}.
+Defined.
 
 (** ** Decidable alpha equality of terms *)
 Definition is_BaseTm
