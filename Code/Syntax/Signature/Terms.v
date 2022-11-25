@@ -5,6 +5,13 @@ Require Import Coq.Program.Equality.
 
 Open Scope signature.
 
+Require Import Nijn.Prelude.
+Require Import Nijn.Syntax.Signature.Types.
+Require Import Nijn.Syntax.Signature.Contexts.
+Require Import Coq.Program.Equality.
+
+Open Scope signature.
+
 (** * Terms *)
 Inductive tm {B : Type} {F : Type} (ar : F -> ty B) (C : con B) : ty B -> Type :=
 | BaseTm : forall (f : F),
@@ -48,6 +55,182 @@ Defined.
 Notation "'V' n" := (v_idx n _) (at level 0).
 
 (** ** Decidable alpha equality of terms *)
+Inductive ut_tm (B : Type) (F : Type) : Type :=
+| UBaseTm : F -> ut_tm B F
+| UTmVar : nat -> ut_tm B F
+| ULam : ty B -> ut_tm B F -> ut_tm B F
+| UApp : ut_tm B F -> ut_tm B F -> ut_tm B F.
+
+Arguments UBaseTm {B F} f.
+Arguments UTmVar {B F} n.
+Arguments ULam {B F} A f.
+Arguments UApp {B F} f t.
+
+Program Fixpoint dec_eq_ut_tm
+                 {B : Type}
+                 {F : Type}
+                 `{decEq B}
+                 `{decEq F}
+                 (t₁ t₂ : ut_tm B F)
+  : dec (t₁ = t₂)
+  := match t₁ , t₂ with
+     | UBaseTm f₁ , UBaseTm f₂ =>
+       match dec_eq f₁ f₂ with
+       | Yes _ => Yes _
+       | No _ => No _
+       end
+     | UBaseTm f₁ , UTmVar n₂ => No _
+     | UBaseTm f₁ , ULam A₂ f₂ => No _
+     | UBaseTm f₁ , UApp f₂ t₂ => No _
+     | UTmVar n₁ , UBaseTm f₂ => No _
+     | UTmVar n₁ , UTmVar n₂ =>
+       match dec_eq n₁ n₂ with
+       | Yes _ => Yes _
+       | No _ => No _
+       end
+     | UTmVar n₁ , ULam A₂ f₂ => No _
+     | UTmVar n₁ , UApp f₂ t₂ => No _
+     | ULam A₁ f₁ , UBaseTm f₂ => No _
+     | ULam A₁ f₁ , UTmVar n₂ => No _
+     | ULam A₁ f₁ , ULam A₂ f₂ =>
+       match dec_eq A₁ A₂ , dec_eq_ut_tm f₁ f₂ with
+       | Yes _ , Yes _ => Yes _
+       | _ , No _ => No _
+       | No _ , _ => No _
+       end
+     | ULam A₁ f₁ , UApp f₂ t₂ => No _
+     | UApp f₁ t₁ , UBaseTm f₂ => No _
+     | UApp f₁ t₁ , UTmVar n₂ => No _
+     | UApp f₁ t₁ , ULam A₂ f₂ => No _
+     | UApp f₁ t₁ , UApp f₂ t₂ =>
+       match dec_eq_ut_tm f₁ f₂ , dec_eq_ut_tm t₁ t₂ with
+       | Yes _ , Yes _ => Yes _
+       | _ , No _ => No _
+       | No _ , _ => No _
+       end
+     end.
+
+Global Instance ut_tm_decEq
+       {B : Type}
+       {F : Type}
+       `{decEq B}
+       `{decEq F}
+  : decEq (ut_tm B F)
+  := {| dec_eq := dec_eq_ut_tm |}.
+
+Fixpoint tm_to_ut_tm
+         {B : Type}
+         {F : Type}
+         {ar : F -> ty B}
+         {C : con B}
+         {A : ty B}
+         (t : tm ar C A)
+  : ut_tm B F
+  := match t with
+     | BaseTm f => UBaseTm f
+     | TmVar v => UTmVar (var_to_nat v)
+     | @Lam _ _ _ _ A1 A2 f => ULam A1 (tm_to_ut_tm f)
+     | App f t => UApp (tm_to_ut_tm f) (tm_to_ut_tm t)
+     end.
+
+Proposition eq_ut_tm_ty
+            {B : Type}
+            {F : Type}
+            {ar : F -> ty B}
+            {C : con B}
+            {A1 A2 : ty B}
+            {t1 : tm ar C A1}
+            {t2 : tm ar C A2}
+            (p : tm_to_ut_tm t1 = tm_to_ut_tm t2)
+  : A1 = A2.
+Proof.
+  revert A2 t2 p.
+  induction t1 ;
+    intros ? t2 ;
+    destruct t2 ;
+    intros p ;
+    inversion p ;
+    subst.
+  - reflexivity.
+  - apply (var_tonat_eq_ty H0).
+  - f_equal.
+    apply (IHt1 _ t2).
+    assumption.
+  - pose (IHt1_1 _ t2_1 H0) as q.
+    inversion q.
+    reflexivity.
+Qed.
+
+Proposition eq_ut_tm
+            {B : Type}
+            {F : Type}
+            {ar : F -> ty B}
+            {C : con B}
+            {A1 A2 : ty B}
+            {t1 : tm ar C A1}
+            {t2 : tm ar C A2}
+            (p : tm_to_ut_tm t1 = tm_to_ut_tm t2)
+            (q : A1 = A2)
+  : transport (tm ar C) q t1 = t2.
+Proof.
+  revert A2 t2 p q.
+  induction t1 ;
+    intros ? t2 ;
+    destruct t2 ;
+    intros p q ;
+    inversion p ;
+    subst.
+  - rewrite (UIP q (eq_refl _)).
+    reflexivity.
+  - cbn.
+    f_equal.
+    apply var_tonat_eq.
+    assumption.
+  - inversion q.
+    subst.
+    rewrite (UIP q (eq_refl _)) ; cbn.
+    f_equal.
+    refine (IHt1 _ t2 _ (eq_refl _)).
+    assumption.
+  - cbn.
+    assert (A0 = A1).
+    {
+      symmetry.
+      apply (eq_ut_tm_ty H1).
+    }
+    subst.
+    rewrite <- (IHt1_1 _ t2_1 H0 (eq_refl _)) ; cbn.
+    f_equal.
+    apply (IHt1_2 _ t2_2 H1 (eq_refl _)).
+Qed.
+
+Definition tm_dec_eq
+           {B : Type}
+           {F : Type}
+           `{decEq B}
+           `{decEq F}
+           {ar : F -> ty B}
+           {C : con B}
+           {A : ty B}
+           (t1 : tm ar C A)
+           (t2 : tm ar C A)
+  : dec (t1 = t2)
+  := match dec_eq_ut_tm (tm_to_ut_tm t1) (tm_to_ut_tm t2) with
+     | Yes p => Yes (eq_ut_tm p (eq_refl _))
+     | No q => No (fun n => q (f_equal _ n))
+     end.
+
+Global Instance tm_decEq
+       {B : Type}
+       {F : Type}
+       `{decEq B}
+       `{decEq F}
+       (ar : F -> ty B)
+       (C : con B)
+       (A : ty B)
+  : decEq (tm ar C A)
+  := {| dec_eq := tm_dec_eq |}.
+
 Definition is_BaseTm
            {B : Type}
            {F : Type}
@@ -231,215 +414,3 @@ Proposition Lam_eq
 Proof.
   exact (Lam_eq' eq_refl p).
 Defined.
-
-Definition tm_dec_eq_help
-           {B : Type}
-           {F : Type}
-           `{decEq B}
-           `{decEq F}
-           {ar : F -> ty B}
-           {C : con B}
-           {A1 A2 : ty B}
-           (t1 : tm ar C A1)
-           (t2 : tm ar C A2)
-           (p : A1 = A2)
-  : dec (transport (tm ar C) p t1 = t2).
-Proof.
-  revert p.
-  revert t2.
-  revert A2.
-  induction t1 ; intros ? t2 p.
-  - (* t1 is a base term *)
-    destruct t2.
-    + (* t2 is a base term *)
-      destruct (dec_eq f f0).
-      * refine (Yes _).
-        abstract
-          (subst ;
-           rewrite (UIP p eq_refl) ;
-           reflexivity).
-      * refine (No _).
-        abstract
-          (intro q ;
-           pose (transport
-                   (is_BaseTm_at f)
-                   q
-                   (transport_BaseTm_at f (BaseTm f) p eq_refl))
-             as r ;
-           cbn in r ;
-           contradiction).
-    + (* t2 is a variable *)
-      refine (No _).
-      abstract
-        (subst ;
-         discriminate).
-    + (* t2 is a lambda abstraction *)
-      refine (No _).
-      abstract
-        (intro q ; 
-         exact (transport is_BaseTm q (transport_BaseTm (BaseTm f) p I))).
-    + (* t2 is an application *)
-      refine (No _).
-      abstract
-        (subst ;
-         discriminate).
-  - (* t1 is a variable *)
-    destruct t2.
-    + (* t2 is a base term *)
-      refine (No _).
-      abstract
-        (subst ;
-         discriminate).
-    + (* t2 is a variable *)
-      destruct (dec_eq (transport (var C) p v) v0).
-      * refine (Yes _).
-        abstract
-          (subst ;
-           reflexivity).
-      * refine (No _).
-        abstract
-          (intro q ;
-           subst ;
-           simpl in * ;
-           inversion q ;
-           pose (from_path_in_sigma _ H2) ;
-           contradiction).
-    + (* t2 is a lambda abstraction *)
-      refine (No _).
-      abstract
-        (subst ;
-         discriminate).
-    + (* t2 is an application *)
-      refine (No _).
-      abstract
-        (subst ;
-         discriminate).
-  - (* t1 is a lambda abstraction *)
-    destruct t2.
-    + (* t2 is a base term *)
-      refine (No _).
-      abstract
-        (intro q ;
-         refine ((transport is_Lambda q (transport_Lambda (λ t1) p I)))).
-    + (* t2 is a variable *)
-      refine (No _).
-      abstract
-        (subst ;
-         discriminate).
-    + (* t2 is a lambda abstraction *)
-      inversion p.
-      induction H2.
-      destruct (IHt1 _ t2 H3).
-      * refine (Yes _).
-        abstract
-          (subst ; simpl ;
-           rewrite (UIP p eq_refl) ;
-           reflexivity).
-      * refine (No _).
-        abstract
-          (intro q ;
-           subst ;
-           simpl in * ;
-           rewrite (UIP p eq_refl) in q ;
-           simpl in q ;
-           inversion q; 
-           pose (from_path_in_sigma _ H2) as e ;
-           pose (from_path_in_sigma _ e) ;
-           contradiction).
-    + (* t2 is an application *)
-      refine (No _).
-      abstract
-        (subst ;
-         discriminate).
-  - (* t1 is an application *)
-    destruct t2.
-    + (* t2 is a base term *)
-      refine (No _).
-      abstract
-        (subst ;
-         simpl ;
-         discriminate).
-    + (* t2 is a variable *)
-      refine (No _).
-      abstract
-        (subst ;
-         discriminate).
-    + (* t2 is a lambda abstraction *)
-      refine (No _).
-      abstract
-        (subst ;
-         discriminate).
-    + (* t2 is an application *)
-      destruct (dec_eq A1 A0).
-      * assert (pq : (A1 ⟶ A2) = (A0 ⟶ A3)).
-        {
-          subst.
-          reflexivity.
-        }
-        destruct (IHt1_1 _ t2_1 pq) as [q | q], (IHt1_2 _ t2_2 e) as [n | n].
-        ** refine (Yes _).
-           abstract
-             (subst ;
-              rewrite (UIP pq eq_refl) ;
-              reflexivity).
-        ** refine (No _).
-           abstract
-             (intro r ;
-              subst ;
-              simpl in * ;
-              rewrite (UIP pq eq_refl) in r ;
-              simpl in r ;
-              inversion r ;
-              pose (from_path_in_sigma _ H2) as e ;
-              contradiction).
-        ** refine (No _).
-           abstract
-             (intro r ;
-              subst ;
-              rewrite (UIP pq eq_refl) in q ;
-              simpl in * ;
-              inversion r ;
-              pose (from_path_in_sigma _ H2) as e ;
-              pose (from_path_in_sigma _ e) ;
-              contradiction).
-        ** refine (No _).
-           abstract
-             (intro r ;
-              subst ;
-              rewrite (UIP pq eq_refl) in q ;
-              simpl in * ;
-              inversion r ;
-              pose (from_path_in_sigma _ H3) ;
-              contradiction).
-      * refine (No _).
-        abstract
-          (intro q ;
-           subst ;
-           simpl in * ;
-           inversion q ;
-           contradiction).
-Defined.
-
-Definition tm_dec_eq
-           {B : Type}
-           {F : Type}
-           `{decEq B}
-           `{decEq F}
-           {ar : F -> ty B}
-           {C : con B}
-           {A : ty B}
-           (t1 : tm ar C A)
-           (t2 : tm ar C A)
-  : dec (t1 = t2)
-  := tm_dec_eq_help t1 t2 eq_refl.
-
-Global Instance tm_decEq
-       {B : Type}
-       {F : Type}
-       `{decEq B}
-       `{decEq F}
-       (ar : F -> ty B)
-       (C : con B)
-       (A : ty B)
-  : decEq (tm ar C A)
-  := {| dec_eq := tm_dec_eq |}.

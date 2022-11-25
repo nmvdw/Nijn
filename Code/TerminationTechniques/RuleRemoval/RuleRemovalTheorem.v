@@ -91,7 +91,7 @@ Section RuleRemoval.
              apply srp.
           ** apply rew_betaRed.
         * destruct H_srp as [ H_srp_1 H_srp_2 ].
-          destruct (dec_selector_members X P r) as [ d | d ].
+          destruct (dec_selector_members P r) as [ d | d ].
           ** left.
              cbn.
              apply sub_gt.

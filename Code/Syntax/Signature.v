@@ -22,44 +22,37 @@ Arguments tar_of {_ _ _} _.
 Arguments lhs_of {_ _ _} _.
 Arguments rhs_of {_ _ _} _.
 
-Definition dec_eq_rewriteRule
-           {B : Type}
-           `{decEq B}
-           {F : Type}
-           `{decEq F}
-           {ar : F -> ty B}
-           (r₁ r₂ : rewriteRule ar)
-  : dec (r₁ = r₂).
-Proof.
+Program Definition dec_eq_rewriteRule
+                   {B : Type}
+                   `{decEq B}
+                   {F : Type}
+                   `{decEq F}
+                   {ar : F -> ty B}
+                   (r₁ r₂ : rewriteRule ar)
+  : dec (r₁ = r₂)
+  := match dec_eq (vars_of r₁) (vars_of r₂) with
+     | Yes p₁ =>
+       match dec_eq (tar_of r₁) (tar_of r₂) with
+       | Yes p₂ =>
+         match dec_eq (tm_to_ut_tm (lhs_of r₁)) (tm_to_ut_tm (lhs_of r₂)) with
+         | Yes p₃ =>
+           match dec_eq (tm_to_ut_tm (rhs_of r₁)) (tm_to_ut_tm (rhs_of r₂)) with
+           | Yes p₄ => Yes _
+           | No _ => No _
+           end
+         | No _ => No _
+         end
+       | No _ => No _
+       end
+     | No _ => No _
+     end.
+Next Obligation.
   destruct r₁ as [ v₁ t₁ l₁ r₁ ].
   destruct r₂ as [ v₂ t₂ l₂ r₂ ].
-  destruct (dec_eq v₁ v₂) as [ p₁ | p₁ ].
-  - destruct (dec_eq t₁ t₂) as [ p₂ | p₂ ].
-    + subst.
-      destruct (dec_eq l₁ l₂) as [ p₃ | p₃ ].
-      * destruct (dec_eq r₁ r₂) as [ p₄ | p₄ ].
-        ** subst.
-           refine (Yes _).
-           reflexivity.
-        ** refine (No _).
-           intro n.
-           inversion n.
-           apply p₄.
-           apply (from_path_in_sigma _ (from_path_in_sigma _ H3)).
-      * refine (No _).
-        intro n.
-        inversion n.
-        apply p₃.
-        apply (from_path_in_sigma _ (from_path_in_sigma _ H2)).
-    + refine (No _).
-      intro n.
-      inversion n.
-      contradiction.
-  - refine (No _).
-    intro n.
-    inversion n.
-    contradiction.
-Defined.
+  cbn in *.
+  subst.
+  f_equal ; [ apply (eq_ut_tm p₃ (eq_refl _)) |  apply (eq_ut_tm p₄ (eq_refl _)) ].
+Qed.
 
 Global Instance decEq_rewriteRule
                 {B : Type}

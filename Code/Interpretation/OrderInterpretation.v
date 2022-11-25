@@ -484,7 +484,7 @@ Record SelectorInterpretation
                           (C : con B)
                           (s : sub (arity X) C (vars r))
                           (x : sem_Con (semB s_inter) C),
-                     selector_members X P r
+                     selector_members P r
                      ->
                      sem_Tm (semB _) (semF _) (semApp _) (lhs r [ s ]) x
                      >
@@ -493,7 +493,7 @@ Record SelectorInterpretation
                           (C : con B)
                           (s : sub (arity X) C (vars r))
                           (x : sem_Con (semB s_inter) C),
-                     ~(selector_members X P r)
+                     ~(selector_members P r)
                      ->
                      sem_Tm (semB _) (semF _) (semApp _) (lhs r [ s ]) x
                      >=

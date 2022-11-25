@@ -54,6 +54,18 @@ Section RuleSelector.
       pred j := i = j ;
       dec_pred j := dec_eq i j
     |}.
+
+  Fixpoint select_list (i : list (pos (list_of_rewriteRules X))) : selector :=
+    match i with
+    | nil => select_none
+    | i :: tl_i => select_or (select_pos i) (select_list tl_i)
+    end.
+
+  Definition select_list_nats
+             (ns : list nat)
+             (H : included (list_of_rewriteRules X) ns)
+    : selector
+    := select_list (list_nat_to_list_pos ns H).
 End RuleSelector.
 
 Arguments dec_pred {B F X} _ i.
@@ -63,7 +75,7 @@ Definition selector_members
            {B F : Type}
            `{decEq B}
            `{decEq F}
-           (X : afs B F)
+           {X : afs B F}
            (P : selector X)
            (r : rewriteRules X)
   : Prop
@@ -73,13 +85,32 @@ Definition dec_selector_members
            {B F : Type}
            `{decEq B}
            `{decEq F}
-           (X : afs B F)
+           {X : afs B F}
            (P : selector X)
            (r : rewriteRules X)
-  : dec (selector_members X P r).
+  : dec (selector_members P r).
 Proof.
   apply (dec_pred P).
 Defined.
+
+Proposition all_selector_members
+            {B F : Type}
+            `{decEq B}
+            `{decEq F}
+            (X : afs B F)
+            (Q : rewriteRules X -> Prop)
+            (P : selector X)
+            (HQ : forall (i : pos (list_of_rewriteRules X)), P i -> Q (listAtMembers i))
+            (r : rewriteRules X)
+            (Hr : selector_members P r)
+  : Q r.
+Proof.
+  destruct r as [ r k ].
+  pose (HQ (isMember_to_pos (in_to_isMember k)) Hr).
+  refine (transport Q _ q).
+  apply eq_MakeMem.
+  apply isMember_listAt.
+Qed.
 
 (** ** Filter and removing rules from an AFS using a rule selector *)
 Definition filter_rewrite_rules
@@ -128,9 +159,9 @@ Definition respects_selector
            (P : selector X)
   : Prop
   := (forall (r : rewriteRules X),
-      selector_members X P r
+      selector_members P r
       -> lhs r ≺[ A ] rhs r)
      /\
      forall (r : rewriteRules X),
-     ~(selector_members X P r)
+     ~(selector_members P r)
      -> lhs r ≼[ A ] rhs r.

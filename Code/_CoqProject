@@ -46,9 +46,11 @@ TerminationTechniques/NoRules/NoRulesSN.v
 TerminationTechniques/NoRules.v
 
 TerminationTechniques/Certificate.v
+TerminationTechniques/CertificateTactics.v
 
 TerminationTechniques.v
 
 Nijn.v
 
 Examples/Map.v
+Examples/MapRuleRemoval.v

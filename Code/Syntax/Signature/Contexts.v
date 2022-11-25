@@ -155,6 +155,30 @@ Fixpoint var_to_nat
      | Vs v => S(var_to_nat v)
      end.
 
+Proposition var_tonat_eq_ty
+            {B : Type}
+            {C : con B}
+            {A1 A2 : ty B}
+            {v1 : var C A1}
+            {v2 : var C A2}
+            (p : var_to_nat v1 = var_to_nat v2)
+  : A1 = A2.
+Proof.
+  induction v1.
+  - dependent destruction v2.
+    + reflexivity.
+    + cbn in p.
+      discriminate.
+  - dependent destruction v2.
+    + simpl in p.
+      discriminate.
+    + f_equal.
+      apply (IHv1 v2).
+      simpl in p.
+      inversion p.
+      reflexivity.
+Qed.
+
 Proposition var_tonat_eq
             {B : Type}
             {C : con B}

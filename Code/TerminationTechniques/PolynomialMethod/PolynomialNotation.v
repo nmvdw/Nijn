@@ -17,7 +17,7 @@ Notation "P1 + P2" := (addFun P1 P2) : poly_scope.
 Global Instance add_base_base {B : Type} (C : con B)
   : addClass (base_poly C) (base_poly C) (base_poly C)
   := fun P1 P2 => P_plus P1 P2.
-
+  
 Global Instance add_base_poly {B : Type} (C : con B) (b : B)
   : addClass (base_poly C) (poly C (Base b)) (base_poly C)
   := fun P1 P2 => P1 + from_poly P2.

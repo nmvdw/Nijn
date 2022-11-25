@@ -7,24 +7,13 @@ Require Import List.
 
 (** Next we define the notion of finite types, and for that, we use the enumerated types (also known as Kuratowski finite types. These are types for which we can write down a list that contains all the elements of that particular type. We start by defining a proof relevant membership relation. *)
 Inductive isMember {A : Type} : A -> list A -> Type :=
-| Here : forall (a : A) (xs : list A), isMember a (a :: xs)
+| Here : forall (a₁ a₂ : A) (xs : list A) (p : a₁ = a₂), isMember a₁ (a₂ :: xs)
 | There : forall {a : A} (x : A) {xs : list A},
     isMember a xs -> isMember a (x :: xs).
 
 Notation "a ∈ l" := (isMember a l) (at level 60).
 
 (** The predicate `isMember` can be related to `In` if we have decidable equality *)
-Definition here_eq
-           {A : Type}
-           {a1 a2 : A}
-           (p : a2 = a1)
-           (l : list A)
-  : a1 ∈ (a2 :: l).
-Proof.
-  induction p.
-  apply Here.
-Defined.
-
 Definition in_tail
            {A : Type}
            {a x : A}
@@ -39,18 +28,18 @@ Proof.
   - exact p.
 Qed.
 
-Fixpoint in_to_isMember
+Program Fixpoint in_to_isMember
          {A : Type}
          `{decEq A}
          {a : A}
          {l : list A}
   : In a l -> isMember a l
   := match l with
-     | nil => fun p => False_rect _ p
+     | nil => fun p => False_rect _ _
      | x :: xs =>
        fun p =>
          match dec_eq a x with
-         | Yes e => here_eq (eq_sym e) _
+         | Yes e => Here _ _ _ _
          | No e => There _ (in_to_isMember (in_tail p e))
          end
      end.
@@ -63,7 +52,8 @@ Definition isMember_to_in
   : In a l.
 Proof.
   induction p.
-  - apply in_eq.
+  - subst.
+    apply in_eq.
   - apply in_cons.
     apply IHp.
 Qed.
@@ -79,6 +69,7 @@ Definition isMember_append_left
 Proof.
   induction p as [ x xs | x x' xs p IHp ] ; simpl.
   - apply Here.
+    assumption.
   - apply There.
     apply IHp.
 Defined.
@@ -109,6 +100,8 @@ Definition isMember_map
 Proof.
   induction p as [ x xs | x x' xs p IHp ] ; simpl.
   - apply Here.
+    f_equal.
+    assumption.
   - apply There.
     exact IHp.
 Defined.
@@ -214,6 +207,20 @@ Inductive members {A : Type} (l : list A) : Type :=
 | MakeMem : forall (x : A), In x l -> members l.
 
 Arguments MakeMem {_ _} _ _.
+
+Definition eq_MakeMem
+           {A : Type}
+           {l : list A}
+           {a1 a2 : A}
+           (p : a1 = a2)
+           {Ha1 : In a1 l}
+           {Ha2 : In a2 l}
+  : MakeMem a1 Ha1 = MakeMem a2 Ha2.
+Proof.
+  subst.
+  f_equal.
+  apply proof_irrelevance.
+Qed.
 
 Definition member_el
            {A : Type}

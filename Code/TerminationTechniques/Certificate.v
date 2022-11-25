@@ -27,7 +27,7 @@ Inductive rule_removal_certificate
   forall (J : forall (f : F), poly ∙ (arity X f)),
     (forall (r : rewriteRules X)
             (x : sem_Con p_base (vars r)),
-       selector_members X P r
+       selector_members P r
        ->
        sem_Tm p_base (p_fun_sym X J) p_app (lhs r) x
        >
@@ -35,7 +35,7 @@ Inductive rule_removal_certificate
     ->
     (forall (r : rewriteRules X)
             (x : sem_Con p_base (vars r)),
-       ~(selector_members X P r)
+       ~(selector_members P r)
        ->
        sem_Tm p_base (p_fun_sym X J) p_app (lhs r) x
        >=

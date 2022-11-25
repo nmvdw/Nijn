@@ -18,6 +18,19 @@ Fixpoint listAt {A : Type} {l : list A} (i : pos l) : A :=
   | Tl i => listAt i
   end.
 
+Proposition in_listAt {A : Type} {l : list A} (i : pos l)
+  : In (listAt i) l.
+Proof.
+  induction i as [ x xs | x xs i Hi ] ; cbn.
+  - left.
+    reflexivity.
+  - right.
+    exact Hi.
+Defined.
+
+Definition listAtMembers {A : Type} {l : list A} (i : pos l) : members l
+  := MakeMem (listAt i) (in_listAt i).
+
 (** We can map the natural numbers to positions *)
 Program Fixpoint nat_to_pos
                  {A : Type}
@@ -40,6 +53,27 @@ Qed.
 Next Obligation.
   lia.
 Qed.
+
+Fixpoint included
+         {A : Type}
+         (l : list A)
+         (ns : list nat)
+  : Prop
+  := match ns with
+     | nil => True
+     | n :: ns => n < length l /\ included l ns
+     end.
+
+Program Fixpoint list_nat_to_list_pos
+                 {A : Type}
+                 {l : list A}
+                 (ns : list nat)
+  : forall (H : included l ns),
+    list (pos l)
+  := match ns with
+     | nil => fun _ => nil
+     | n :: ns => fun H => nat_to_pos n _ :: list_nat_to_list_pos ns _
+     end.
 
 (** From a member of the list, we obtain a position *)
 Definition isMember_to_pos
@@ -141,7 +175,8 @@ Proposition isMember_listAt
   : listAt (isMember_to_pos H) = a.
 Proof.
   induction H.
-  - reflexivity.
+  - subst.
+    reflexivity.
   - assumption.
 Qed.
 
@@ -184,7 +219,31 @@ Fixpoint pos_to_nat
      | Hd _ _ => 0
      | Tl j => S(pos_to_nat j)
      end.
-         
+
+Proposition pos_to_nat_lt
+            {A : Type}
+            {l : list A}
+            (i : pos l)
+  : pos_to_nat i < length l.
+Proof.
+  induction i as [ x xs | x xs i Hi ] ; cbn.
+  - lia.
+  - lia.
+Qed.
+
+Proposition pos_to_nat_to_pos
+            {A : Type}
+            {l : list A}
+            (i : pos l)
+            (H : pos_to_nat i < length l)
+  : nat_to_pos (pos_to_nat i) H = i.
+Proof.
+  induction i as [ x xs | x xs i Hi ] ; cbn.
+  - reflexivity.
+  - f_equal.
+    apply Hi.
+Qed.
+  
 Proposition pos_tonat_eq
             {A : Type}
             {l : list A}
@@ -219,3 +278,16 @@ Definition dec_eq_pos
   
 Global Instance decEq_pos {A : Type} (l : list A) : decEq (pos l) :=
   {| dec_eq := dec_eq_pos |}.
+
+Proposition all_pos
+            {A : Type}
+            {l : list A}
+            (P : pos l -> Prop)
+            (H : forall (n : nat) (H : n < length l), P (nat_to_pos n H))
+            (i : pos l)
+  : P i.
+Proof.
+  simple refine (transport P _ (H (pos_to_nat i) (pos_to_nat_lt i))).
+  rewrite pos_to_nat_to_pos.
+  reflexivity.
+Qed.

@@ -377,11 +377,11 @@ Section PolyAlgebra.
              (P : selector X)
              (H_gt : forall (r : rewriteRules X)
                             (x : ⟦ vars r ⟧con),
-                       selector_members X P r
+                       selector_members P r
                        -> ⟦ lhs r ⟧tm x > ⟦ rhs r ⟧tm x)
              (H_ge : forall (r : rewriteRules X)
                             (x : ⟦ vars r ⟧con),
-                       ~(selector_members X P r)
+                       ~(selector_members P r)
                        -> ⟦ lhs r ⟧tm x >= ⟦ rhs r ⟧tm x)
     : SelectorInterpretation X P.
   Proof.

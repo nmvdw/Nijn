@@ -1,6 +1,7 @@
 Require Import Nijn.Prelude.
 Require Import Nijn.Syntax.
 Require Import Nijn.Interpretation.OrderInterpretation.
+Require Import Nijn.TerminationTechniques.RuleRemoval.RuleSelector.
 Require Import Nijn.TerminationTechniques.PolynomialMethod.Polynomial.
 Require Import Lia.
 Require Import PeanoNat.
@@ -22,8 +23,15 @@ Ltac generate_goals :=
   repeat (match goal with
           | [ x : In _ _ |- _ ] => destruct x
           end) ;
-  subst ; cbn -[add mul] in *.
-
+  subst ;
+  cbn -[add mul] in * ;
+  repeat (match goal with
+          | [ x : _ \/ _ |- _ ] => destruct x
+          | [ x : False |- _ ] => destruct x
+          | _ => idtac
+          end) ;
+  try discriminate.
+  
 (** ** Solving inequalities *)
 (** We also need to solve inequalities that involve some weakly monotonic map. This tactic solves such goals. It gets an assumption which is the proof of monotonicity *)
 Ltac solve_ineq Hf := subst ; apply Hf ; cbn ; nia.
@@ -80,8 +88,11 @@ Ltac destruct_WM :=
 
 (** ** Solving polynomial goals *)
 (** This tactic tries to prove strong normalization using the polynomial method. Its argument is a polynomial for every function symbol of the system. It applies the theorems, and after that, it used the tactics we discussed before. So, it first generates the goals and then it destructs the context. After that it tries to generate as many assumptions as possible, and then `nia` is used. *)
-Ltac solve_poly pols :=
-  apply afs_is_SN_from_Interpretation ;
-  apply (poly_Interpretation _ pols) ;
+Ltac solve_poly :=
   generate_goals ;
   (destruct_con ; destruct_WM ; nia).
+
+Ltac solve_poly_SN pols :=
+  apply afs_is_SN_from_Interpretation ;
+  apply (poly_Interpretation _ pols) ;
+  solve_poly.
