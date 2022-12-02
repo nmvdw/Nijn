@@ -5,13 +5,6 @@ Require Import Coq.Program.Equality.
 
 Open Scope signature.
 
-Require Import Nijn.Prelude.
-Require Import Nijn.Syntax.Signature.Types.
-Require Import Nijn.Syntax.Signature.Contexts.
-Require Import Coq.Program.Equality.
-
-Open Scope signature.
-
 (** * Terms *)
 Inductive tm {B : Type} {F : Type} (ar : F -> ty B) (C : con B) : ty B -> Type :=
 | BaseTm : forall (f : F),
@@ -28,7 +21,7 @@ Arguments TmVar {_} {_} {_} {_} {_} _.
 Arguments Lam {_} {_} {_} {_} {_} {_} _.
 Arguments App {_} {_} {_} {_} {_} {_} _ _.
 
-Notation "'λ' x" := (Lam x) (at level 10) : signature.
+Notation "'λ' x" := (Lam x) (at level 21) : signature.
 Notation "f · x" := (App f x) (at level 20, left associativity) : signature.
 
 Record tm_with_ty
@@ -304,6 +297,19 @@ Proof.
   simpl.
   exact Ht.
 Qed.
+
+Definition is_TmVar
+           {B : Type}
+           {F : Type}
+           {ar : F -> ty B}
+           {C : con B}
+           {A : ty B}
+           (t : tm ar C A)
+  : Prop
+  := match t with
+     | TmVar _ => True
+     | _ => False
+     end.
 
 Definition is_Lambda
            {B : Type}

@@ -80,7 +80,7 @@ Section StrongReductionPair.
                        (A₁ A₂ : ty B)
                        (f : tm ar (A₁ ,, C) A₂)
                        (t : tm ar C A₁),
-                  λ f · t ≼[ O ] f [ beta_sub t ]
+                  (λ f) · t ≼[ O ] f [ beta_sub t ]
     }.
   
   Record strong_reduction_pair : Type :=

@@ -815,10 +815,10 @@ Definition red_beta_redex
            {f : tm ar (A1 ,, C) A2}
            {t : tm ar C A1}
            {u : tm ar C A2}
-           (r : (λ f · t) ∼>β u)
+           (r : (λ f) · t ∼>β u)
   : (u = f [ beta_sub t ])
-    + { t' : tm ar C A1 & (t ∼>β t') * (u = λ f · t') }
-    + { f' : tm ar (A1 ,, C) A2 & (f ∼>β f') * (u = λ f' · t)}.
+    + { t' : tm ar C A1 & (t ∼>β t') * (u = (λ f) · t') }
+    + { f' : tm ar (A1 ,, C) A2 & (f ∼>β f') * (u = (λ f') · t)}.
 Proof.
   dependent destruction r.
   - dependent destruction r.
@@ -849,7 +849,7 @@ Lemma logical_SN_beta_help_base
       (Hsub : term_is_beta_SN (f [ beta_sub t ] ·· ps))
       (Hf : term_is_beta_SN f)
       (Ht : term_is_beta_SN t)
-  : term_is_beta_SN ((λ f · t) ·· ps).
+  : term_is_beta_SN (((λ f) · t) ·· ps).
 Proof.
   revert t Ht ps Hsub.
   induction Hf as [f Hf IHf].
@@ -858,7 +858,7 @@ Proof.
   intros ps Hsub.
   induction (repeat_app_red_Wf ar C A2 A3 ps) as [ps Hps IHps].
   apply single_step_SN ; intros t' r.
-  assert (W : ~(is_Lambda (λ f · t))) by auto.
+  assert (W : ~(is_Lambda ((λ f) · t))) by auto.
   destruct (red_repeat_app W r) as [ [u  [r' H]] | [ps' [ r' p ]] ].
   - destruct (red_beta_redex r') as [ [ p | [ u' [ p H' ]]] | [ f' [ p H' ]]].
     + subst.
@@ -900,7 +900,7 @@ Lemma logical_SN_beta_help
       (Hf : logical_SN f)
       (Ht : logical_SN t)
       (ps : repeat_app ar C A2 A3)
-  : logical_SN ((λ f · t) ·· ps).
+  : logical_SN (((λ f) · t) ·· ps).
 Proof.
   revert ps Ht Hf Hsub.
   revert t f.
@@ -951,7 +951,7 @@ Lemma logical_SN_beta
       (Hsub : logical_SN (f [ beta_sub t ]))
       (Hf : logical_SN f)
       (Ht : logical_SN t)
-  : logical_SN (λ f · t).
+  : logical_SN ((λ f) · t).
 Proof.
   exact (logical_SN_beta_help f t Hsub Hf Ht empty).
 Qed.

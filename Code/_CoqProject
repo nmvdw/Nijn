@@ -25,6 +25,7 @@ Syntax/Signature/RewritingSystem.v
 Syntax/Signature.v
 Syntax/Signature/SubstitutionLemmas.v
 Syntax/Signature/RewriteLemmas.v
+Syntax/Signature/SubTerm.v
 Syntax/StrongReductionPair.v
 Syntax/StrongNormalization/SN.v
 Syntax/StrongNormalization/BetaNormalForm.v
@@ -44,6 +45,9 @@ TerminationTechniques/PolynomialMethod.v
 
 TerminationTechniques/NoRules/NoRulesSN.v
 TerminationTechniques/NoRules.v
+
+TerminationTechniques/NonTermination/Loops.v
+TerminationTechniques/NonTermination/NonTerminationTactics.v
 
 TerminationTechniques/Certificate.v
 TerminationTechniques/CertificateTactics.v

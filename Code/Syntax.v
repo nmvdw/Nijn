@@ -7,6 +7,7 @@ Require Export Nijn.Syntax.Signature.RewritingSystem.
 Require Export Nijn.Syntax.Signature.
 Require Export Nijn.Syntax.Signature.SubstitutionLemmas.
 Require Export Nijn.Syntax.Signature.RewriteLemmas.
+Require Export Nijn.Syntax.Signature.SubTerm.
 Require Export Nijn.Syntax.StrongReductionPair.
 Require Export Nijn.Syntax.StrongNormalization.SN.
 Require Export Nijn.Syntax.StrongNormalization.BetaNormalForm.
