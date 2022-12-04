@@ -26,6 +26,10 @@ Global Instance add_poly_base {B : Type} (C : con B) (b : B)
   : addClass (poly C (Base b)) (base_poly C) (base_poly C)
   := fun P1 P2 => from_poly P1 + P2.
 
+Global Instance add_poly_poly {B : Type} (C : con B) (b1 b2 : B)
+  : addClass (poly C (Base b1)) (poly C (Base b2)) (base_poly C)
+  := fun P1 P2 => from_poly P1 + from_poly P2.
+
 (** ** Notation for multiplication *)
 Class multClass (A B C : Type) :=
   multFun : A -> B -> C.
@@ -43,6 +47,10 @@ Global Instance mult_base_poly {B : Type} (C : con B) (b : B)
 Global Instance mult_poly_base {B : Type} (C : con B) (b : B)
   : multClass (poly C (Base b)) (base_poly C) (base_poly C)
   := fun P1 P2 => from_poly P1 * P2.
+
+Global Instance mult_poly_poly {B : Type} (C : con B) (b1 b2 : B)
+  : multClass (poly C (Base b1)) (poly C (Base b2)) (base_poly C)
+  := fun P1 P2 => from_poly P1 * from_poly P2.
 
 (** ** Notation for application *)
 Class appClass (A B C : Type) :=
