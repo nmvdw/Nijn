@@ -90,7 +90,7 @@ Ltac destruct_WM :=
 (** This tactic tries to prove strong normalization using the polynomial method. Its argument is a polynomial for every function symbol of the system. It applies the theorems, and after that, it used the tactics we discussed before. So, it first generates the goals and then it destructs the context. After that it tries to generate as many assumptions as possible, and then `nia` is used. *)
 Ltac solve_poly :=
   generate_goals ;
-  (destruct_con ; destruct_WM ; try nia).
+  (destruct_con ; destruct_WM ; nia).
 
 Ltac solve_poly_SN pols :=
   apply afs_is_SN_from_Interpretation ;

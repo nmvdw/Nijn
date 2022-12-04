@@ -59,12 +59,12 @@ Definition map_afs :=
 (** The polynomials *)
 Definition map_fun_poly f : poly ∙ (arity map_afs f) :=
   match f with
-  | TNil => P_base (P_const 3)
-  | TCons => λP λP (P_base (P_const 3))
+  | TNil => to_Poly (P_const 3)
+  | TCons => λP λP (to_Poly (P_const 3))
   | TMap =>
     λP let y0 := P_var Vz in
     λP let G1 := P_var (Vs Vz) in
-    P_base (P_const 3 * y0 + G1 ·P y0 + P_const 3 * y0 * G1 ·P y0)
+    to_Poly (P_const 3 * y0 + G1 ·P y0 + P_const 3 * y0 * G1 ·P y0)
   end.
 
 (** Strong normalization *)

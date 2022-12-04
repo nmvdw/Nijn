@@ -62,4 +62,27 @@ Global Instance app_base_base {B : Type} (C : con B) (b1 b2 b3 : B)
   : appClass (poly C (Base b1 ⟶ Base b2)) (poly C (Base b3)) (base_poly C)
   := fun P1 P2 => P1 ·P P_base (from_poly P2).
 
+Global Instance app_base_base_alt {B : Type} (C : con B) (b1 b2 : B)
+  : appClass (poly C (Base b1 ⟶ Base b2)) (base_poly C) (base_poly C)
+  := fun P1 P2 => P1 ·P @P_base _ _ b2 P2.
+
+Global Instance app_base_poly {B : Type} (C : con B) (b1 b2 : B) (A : ty B)
+  : appClass (poly C (Base b1 ⟶ A)) (poly C (Base b2)) (poly C A)
+  := fun P1 P2 => P_app P1 (P_base (from_poly P2)).
+
+Global Instance app_base_base_poly {B : Type} (C : con B) (b1 b2 : B) (A : ty B)
+  : appClass (poly C (Base b1 ⟶ A)) (base_poly C ) (poly C A)
+  := fun P1 P2 => P_app P1 (P_base P2).
+
 Notation "'λP' P" := (P_lam P) (at level 10) : poly_scope.
+
+Class toPoly (X : Type) {B : Type} (C : con B) (A : ty B) :=
+  to_Poly : X -> poly C A.
+
+Global Instance base_poly_toPoly {B : Type} (C : con B) (b : B)
+  : toPoly (base_poly C) C (Base b)
+  := fun P => P_base P.
+
+Global Instance poly_toPoly {B : Type} (C : con B) (A : ty B)
+  : toPoly (poly C A) C A
+  := fun P => P.
