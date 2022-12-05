@@ -113,7 +113,7 @@ Section PolyAlgebra.
 
   Notation "f '+c' n" := (plus_ty_nat (f , n)) (at level 50).
 
-  Proposition plus_ty_nat_strict_monotone
+  Proposition plus_ty_nat_strict_monotone_l
               {A : ty B}
               (x : ⟦ A ⟧ty)
               {y y' : nat_CompatRel}
@@ -123,6 +123,33 @@ Section PolyAlgebra.
     induction A as [ b | A₁ IHA₁ A₂ IHA₂ ] ; cbn.
     - cbn in p.
       lia.
+    - intros z.
+      apply IHA₂.
+  Qed.
+
+  Proposition plus_ty_nat_strict_monotone_r
+              {A : ty B}
+              {x x' : ⟦ A ⟧ty}
+              (y : nat_CompatRel)
+              (p : x > x')
+    : x +c y > x' +c y.
+  Proof.
+    induction A as [ b | A₁ IHA₁ A₂ IHA₂ ] ; cbn.
+    - cbn in p.
+      lia.
+    - intros z.
+      apply IHA₂.
+      apply p.
+  Qed.
+
+  Proposition plus_ty_nat_ge
+              {A : ty B}
+              (x : ⟦ A ⟧ty)
+              (y : nat_CompatRel)
+    : x +c y >= x.
+  Proof.
+    induction A as [ b | A₁ IHA₁ A₂ IHA₂ ] ; cbn.
+    - lia.
     - intros z.
       apply IHA₂.
   Qed.
@@ -201,7 +228,7 @@ Section PolyAlgebra.
     := fun z =>
          let f := fst z in
          let x := snd z in
-         (sum_lvf A2 +c (lvf f + lvf x)) +f f x.
+         (f x +c (lvf x)).
 
   Global Instance weakMonotone_p_app_fun
                   (A₁ A₂ : ty B)
@@ -215,20 +242,14 @@ Section PolyAlgebra.
     apply map_ge.
     split.
     - cbn.
-      apply map_ge.
-      split.
-      * apply ge_refl.
-      * apply plus_ge.
-        ** apply lvf.
-           apply p.
-        ** apply lvf.
-           apply p.
-    - cbn.
       cbn in p.
       destruct p as [ p1 p2 ].
       refine (ge_trans (p1 _) _).
       apply map_ge.
       apply p2.
+    - cbn.
+      apply lvf.
+      apply p.
   Qed.
   
   Definition p_app
@@ -247,8 +268,7 @@ Section PolyAlgebra.
     : p_app_fun (f , x) >= f x.
   Proof.
     unfold p_app_fun ; cbn.
-    apply plus_ty_ge_right.
-    apply ge_refl.
+    apply plus_ty_nat_ge.
   Qed.
 
   Proposition p_app_strict_l
@@ -259,20 +279,8 @@ Section PolyAlgebra.
     : p_app_fun (f₁ , x) > p_app_fun (f₂ , x).
   Proof.
     unfold p_app_fun ; cbn.
-    apply plus_ty_strict_monotonic.
-    - apply plus_ty_nat_strict_monotone.
-      cbn.
-      enough (lvf (f₁ (min_el_ty A₁))
-              >
-              lvf (f₂ (min_el_ty A₁)))
-        as H.
-      {
-        cbn in H.
-        nia.
-      }
-      apply lvf_strict_monotonic.
-      apply p.
-    - apply p.
+    apply plus_ty_nat_strict_monotone_r.
+    apply p.
   Qed.
 
   Proposition p_app_strict_r
@@ -283,21 +291,17 @@ Section PolyAlgebra.
     : p_app_fun (f , x₁) > p_app_fun (f , x₂).
   Proof.
     unfold p_app_fun ; cbn.
-    apply plus_ty_strict_weak_monotonic.
-    - apply plus_ty_nat_strict_monotone.
-      enough (lvf x₁
-              >
-              lvf x₂)
-        as H.
-      {
-        cbn ; cbn in H.
-        nia.
-      }
-      apply lvf_strict_monotonic.
-      exact p.
+    simple refine (ge_gt _ _).
+    - exact (f x₂ +c lvf x₁).
     - apply map_ge.
-      apply compat.
-      exact p.
+      split.
+      + cbn.
+        apply map_ge.
+        apply compat.
+        exact p.
+      + apply ge_refl.
+    - apply plus_ty_nat_strict_monotone_l.
+      apply (lvf_strict_monotonic p).
   Qed.
 
   Notation "⟦ t ⟧tm" := (sem_Tm p_base p_fun_sym p_app t).
