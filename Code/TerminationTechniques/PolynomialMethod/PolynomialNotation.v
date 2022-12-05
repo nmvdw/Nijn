@@ -94,3 +94,7 @@ Global Instance base_poly_toPoly {B : Type} (C : con B) (b : B)
 Global Instance poly_toPoly {B : Type} (C : con B) (A : ty B)
   : toPoly (poly C A) C A
   := fun P => P.
+
+Global Instance poly_base_toPoly {B : Type} (C : con B) (b₁ b₂ : B)
+  : toPoly (poly C (Base b₁)) C (Base b₂)
+  := fun P => P_base (from_poly P).
