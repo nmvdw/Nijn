@@ -62,12 +62,22 @@ Ltac NotFound a l :=
    | _ :: ?l => find l
    end
  in find l.
+Ltac generate_mult_ineqs N M :=
+  let rec go acc :=
+    match goal with
+    | [ K : nat |- _ ] =>
+        NotFound K acc ;
+        assert (K * N >= K * M) by (apply mult_ge ; assumption) ;
+        go (K::acc)
+    | _ => idtac
+    end
+  in go (@nil (nat)).
 Ltac generate_ineqs Hf :=
   let rec go acc :=
     match goal with
     | [ N : nat, M : nat |- _ ] =>
         NotFound (N,M) acc;
-        try (assert (N >= M) by solve_ineq Hf) ;
+        try ((assert (N >= M) by solve_ineq Hf) ; generate_mult_ineqs N M) ;
         go ((N,M)::acc)
     | _ => idtac
     end

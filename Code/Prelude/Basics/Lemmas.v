@@ -32,6 +32,14 @@ Proof.
   lia.
 Qed.
 
+Proposition mult_ge
+            {k n m : nat}
+            (p : n >= m)
+  : k * n >= k * m.
+Proof.
+  nia.
+Qed.
+
 (** ** Basics functions *)
 
 Arguments id {_} _/.
