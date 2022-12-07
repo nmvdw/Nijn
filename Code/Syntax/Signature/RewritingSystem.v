@@ -7,7 +7,7 @@ Require Import Nijn.Syntax.Signature.TermSubstitutions.
 
 (** * Rewriting systems *)
 
-(** First, we look at certain closure properties and how to create relations closed under these *)
+(** First, we look at certain closure properties and how to create relations closed under these. The first one, is compatibility closure, which says that you can rewrite under all type formers. *)
 Inductive compatibilityClosure
           {B : Type}
           {F : Type}
@@ -360,7 +360,9 @@ Proof.
   apply beta_betaRed.
 Defined.
 
-(** * Rewriting system in an AFS *)
+(** * Rewriting 43lq5ion ro4 an AFS *)
+
+(** An algebraic functional system is given by a type of base types, a type of function symbols, an arity for every function symbols, and a collection of rewrite rules. Given such data, we can define the rewrite relation. *)
 
 (** First we look at the base steps in an AFS *)
 Inductive baseRewStep

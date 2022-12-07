@@ -68,7 +68,7 @@ Section PolyAlgebra.
   Definition p_fun_sym (f : F) : ⟦ arity X f ⟧ty
     := ⟦ J f ⟧poly tt.
 
-  (** ** Minimal element of types *)
+  (** ** Minimal element of interpretations of types *)
   Fixpoint min_el_ty
            (A : ty B)
     : minimal_element ⟦ A ⟧ty

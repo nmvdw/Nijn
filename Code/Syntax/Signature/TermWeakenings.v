@@ -12,6 +12,8 @@ Inductive wk {B : Type} : con B -> con B -> Type :=
 | Drop : forall {C1 C2 : con B} (A : ty B),
     wk C1 C2 -> wk (A ,, C1) C2.
 
+(** Notational convention: we use [w1], [w2], ... to denote weakenings *)
+
 (** ** Operations on weakenings *)
 
 (** Identity weakening *)

@@ -6,6 +6,10 @@ Require Import Lia.
 
 (** * Contexts *)
 
+(** A context is a list of types. We use them for typed variables. *)
+
+(** Notational convention: contexts are denoted by [C1], [C2], ... *)
+
 Inductive con (B : Type) : Type :=
 | Empty : con B
 | Extend : ty B -> con B -> con B.
@@ -80,7 +84,7 @@ Proof.
   reflexivity.
 Qed.
 
-(** The function that decides equality *)
+(** The function that decides equality of contexts *)
 Fixpoint dec_eq_con
          {B : Type}
          `{decEq B}
@@ -113,6 +117,7 @@ Inductive var {B : Type} : con B -> ty B -> Type :=
 | Vs : forall {C : con B} {A1 A2 : ty B},
     var C A2 -> var (A1 ,, C) A2.
 
+(** Every natural number gives rise to a variable if that number actually is a valid position in the list *)
 Definition nat_to_var
            {B : Type}
            {C : con B}
@@ -222,9 +227,9 @@ Global Instance decEq_Var
 
 (** * The type of variables is finite *)
 Fixpoint all_Vars
-           {B : Type}
-           `{decEq B}
-           (C : con B)
+         {B : Type}
+         `{decEq B}
+         (C : con B)
   : forall (A : ty B), list (var C A)
   := match C with
      | ∙ => fun _ => nil

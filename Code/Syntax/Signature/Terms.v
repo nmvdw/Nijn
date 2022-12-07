@@ -6,6 +6,8 @@ Require Import Coq.Program.Equality.
 Open Scope signature.
 
 (** * Terms *)
+
+(** Notational contention: we write [F] for the type of function symbols and [ar] for their arities. We denote terms by [t1] and [t2] and we use [f1], [f2], ... for function symbols and terms of a function type. *)
 Inductive tm {B : Type} {F : Type} (ar : F -> ty B) (C : con B) : ty B -> Type :=
 | BaseTm : forall (f : F),
     tm ar C (ar f)
@@ -24,6 +26,7 @@ Arguments App {_} {_} {_} {_} {_} {_} _ _.
 Notation "'λ' x" := (Lam x) (at level 21) : signature.
 Notation "f · x" := (App f x) (at level 20, left associativity) : signature.
 
+(** The following two definitions are used so that we can denote De Bruijn indices using natural numbers. *)
 Record tm_with_ty
        {B : Type}
        {F : Type}
@@ -48,6 +51,8 @@ Defined.
 Notation "'V' n" := (v_idx n _) (at level 0).
 
 (** ** Decidable alpha equality of terms *)
+
+(** To decide equality of terms, we first map them to untyped terms. After that, we decide equality of untyped terms. *)
 Inductive ut_tm (B : Type) (F : Type) : Type :=
 | UBaseTm : F -> ut_tm B F
 | UTmVar : nat -> ut_tm B F

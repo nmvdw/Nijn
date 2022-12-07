@@ -6,7 +6,9 @@ Require Export Nijn.Syntax.Signature.TermWeakenings.
 Require Export Nijn.Syntax.Signature.TermSubstitutions.
 Require Export Nijn.Syntax.Signature.RewritingSystem.
 
-(** * The notion of Algebraic Functional System *)
+(** * Rewrite rules *)
+
+(** Rewrite rules are given by two terms. These terms have the same type and they live in the same context. *)
 Record rewriteRule {B : Type} {F : Type} (ar : F -> ty B) :=
   make_rewrite
     {
@@ -63,6 +65,7 @@ Global Instance decEq_rewriteRule
   : decEq (rewriteRule ar)
   := {| dec_eq := dec_eq_rewriteRule |}.
 
+(** * The notion of Algebraic Functional System *)
 Record afs (B : Type) (F : Type) :=
   make_afs
     {

@@ -5,108 +5,7 @@ Require Import List.
 
 (** * Finite types *)
 
-(** Next we define the notion of finite types, and for that, we use the enumerated types (also known as Kuratowski finite types. These are types for which we can write down a list that contains all the elements of that particular type. We start by defining a proof relevant membership relation. *)
-Inductive isMember {A : Type} : A -> list A -> Type :=
-| Here : forall (a₁ a₂ : A) (xs : list A) (p : a₁ = a₂), isMember a₁ (a₂ :: xs)
-| There : forall {a : A} (x : A) {xs : list A},
-    isMember a xs -> isMember a (x :: xs).
-
-Notation "a ∈ l" := (isMember a l) (at level 60).
-
-(** The predicate `isMember` can be related to `In` if we have decidable equality *)
-Definition in_tail
-           {A : Type}
-           {a x : A}
-           {xs : list A}
-           (p : In a (x :: xs))
-           (q : a <> x)
-  : In a xs.
-Proof.
-  simpl in p.
-  destruct p as [p | p].
-  - contradiction (q (! p)).
-  - exact p.
-Qed.
-
-Program Fixpoint in_to_isMember
-         {A : Type}
-         `{decEq A}
-         {a : A}
-         {l : list A}
-  : In a l -> isMember a l
-  := match l with
-     | nil => fun p => False_rect _ _
-     | x :: xs =>
-       fun p =>
-         match dec_eq a x with
-         | Yes e => Here _ _ _ _
-         | No e => There _ (in_to_isMember (in_tail p e))
-         end
-     end.
-
-Definition isMember_to_in
-           {A : Type}
-           {a : A}
-           {l : list A}
-           (p : isMember a l)
-  : In a l.
-Proof.
-  induction p.
-  - subst.
-    apply in_eq.
-  - apply in_cons.
-    apply IHp.
-Qed.
-
-(** Properties of [isMember] *)
-Definition isMember_append_left
-           {A : Type}
-           {a : A}
-           {l1 : list A}
-           (p : a ∈ l1)
-           (l2 : list A)
-  : a ∈ (l1 ++ l2).
-Proof.
-  induction p as [ x xs | x x' xs p IHp ] ; simpl.
-  - apply Here.
-    assumption.
-  - apply There.
-    apply IHp.
-Defined.
-
-Definition isMember_append_right
-           {A : Type}
-           {a : A}
-           (l1 : list A)
-           {l2 : list A}
-           (p : a ∈ l2)
-  : a ∈ (l1 ++ l2).
-Proof.
-  revert l2 p.
-  induction l1 as [ | ? l IHl ] ; intros l2 p ; simpl.
-  - exact p.
-  - apply There.
-    apply IHl.
-    exact p.
-Defined.
-
-Definition isMember_map
-           {A B : Type}
-           {a : A}
-           {l : list A}
-           (f : A -> B)
-           (p : a ∈ l)
-  : f a ∈ map f l.
-Proof.
-  induction p as [ x xs | x x' xs p IHp ] ; simpl.
-  - apply Here.
-    f_equal.
-    assumption.
-  - apply There.
-    exact IHp.
-Defined.
-
-(** The definition of finite types *)
+(** We define the notion of finite types, and for that, we use the enumerated types (also known as Kuratowski finite types). These are types for which we can write down a list that contains all the elements of that particular type. *)
 Class isFinite (A : Type) :=
   {
     els : list A ;
@@ -555,4 +454,108 @@ Proof.
           (intro r ;
            induction r ;
            contradiction).
+Defined.
+
+(** * Proof-relevant membership *)
+
+(** We define a proof relevant membership relation for lists. *)
+Inductive isMember {A : Type} : A -> list A -> Type :=
+| Here : forall (a₁ a₂ : A) (xs : list A) (p : a₁ = a₂), isMember a₁ (a₂ :: xs)
+| There : forall {a : A} (x : A) {xs : list A},
+    isMember a xs -> isMember a (x :: xs).
+
+Notation "a ∈ l" := (isMember a l) (at level 60).
+
+(** We can relate [a ∈ l] to [In a l]. The former always implies the latter. *)
+Definition isMember_to_in
+           {A : Type}
+           {a : A}
+           {l : list A}
+           (p : a ∈ l)
+  : In a l.
+Proof.
+  induction p.
+  - subst.
+    apply in_eq.
+  - apply in_cons.
+    apply IHp.
+Qed.
+
+(** For the converse, we need to assume decidable equality. We also use the following lemma. *)
+Lemma in_tail
+      {A : Type}
+      {a x : A}
+      {xs : list A}
+      (p : In a (x :: xs))
+      (q : a <> x)
+  : In a xs.
+Proof.
+  simpl in p.
+  destruct p as [p | p].
+  - contradiction (q (! p)).
+  - exact p.
+Qed.
+
+Program Fixpoint in_to_isMember
+         {A : Type}
+         `{decEq A}
+         {a : A}
+         {l : list A}
+  : In a l -> a ∈ l
+  := match l with
+     | nil => fun p => False_rect _ _
+     | x :: xs =>
+       fun p =>
+         match dec_eq a x with
+         | Yes e => Here _ _ _ _
+         | No e => There _ (in_to_isMember (in_tail p e))
+         end
+     end.
+
+(** Properties of [isMember] *)
+Definition isMember_append_left
+           {A : Type}
+           {a : A}
+           {l1 : list A}
+           (p : a ∈ l1)
+           (l2 : list A)
+  : a ∈ (l1 ++ l2).
+Proof.
+  induction p as [ x xs | x x' xs p IHp ] ; simpl.
+  - apply Here.
+    assumption.
+  - apply There.
+    apply IHp.
+Defined.
+
+Definition isMember_append_right
+           {A : Type}
+           {a : A}
+           (l1 : list A)
+           {l2 : list A}
+           (p : a ∈ l2)
+  : a ∈ (l1 ++ l2).
+Proof.
+  revert l2 p.
+  induction l1 as [ | ? l IHl ] ; intros l2 p ; simpl.
+  - exact p.
+  - apply There.
+    apply IHl.
+    exact p.
+Defined.
+
+Definition isMember_map
+           {A B : Type}
+           {a : A}
+           {l : list A}
+           (f : A -> B)
+           (p : a ∈ l)
+  : f a ∈ map f l.
+Proof.
+  induction p as [ x xs | x x' xs p IHp ] ; simpl.
+  - apply Here.
+    f_equal.
+    assumption.
+  - apply There.
+    exact IHp.
 Defined.

@@ -5,6 +5,8 @@ Open Scope signature.
 
 (** * Definition of simple types in an AFS *)
 
+(** Notational convention: we use [B] for the collection of base types, and simple types are named [A, A1, ...] *)
+
 Inductive ty (B : Type) : Type :=
 | Base : B -> ty B
 | Fun : ty B -> ty B -> ty B.

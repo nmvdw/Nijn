@@ -5,6 +5,8 @@ Require Import Bool.
 (** * Decidable propositions *)
 
 (** A proposition is called decidable if we can either find an element of it or if we can refute it. As such, decidable propositions are those for which the law of excluded middle holds. *)
+
+(** Decidable propositions are those for which we can compute whether they hold or not. We also use this notion to define types with decidable equality, which are types for which we can determine whether two inhabitants are equal. *)
 Inductive dec (A : Prop) : Type :=
 | Yes : A -> dec A
 | No : (A -> False) -> dec A.
@@ -83,7 +85,7 @@ Proof.
   reflexivity.
 Qed.
 
-(** If a type has decidable equality, then all proofs of equality are equal *)
+(** Equality in sigma types *)
 Proposition path_in_sigma_fst
             {A : Type}
             {B : A -> Type}

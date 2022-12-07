@@ -2,10 +2,12 @@ Require Import Nijn.Prelude.
 Require Import Nijn.Syntax.Signature.
 Require Import Coq.Program.Equality.
 
+(** * The subterm relation *)
 Section SubTerm.
   Context {B F : Type}
           {ar : F -> ty B}.
-  
+
+  (** We define the subterm relation inductively. If two terms are equal, then they are subterms of each other. In addition, we can take subterms of application and lambda abstraction. *)
   Inductive subTerm
             {C₁ : con B}
             {A₁ : ty B}
@@ -36,6 +38,7 @@ Section SubTerm.
 
   Notation "t₁ ≼ t₂" := (subTerm t₁ t₂) (at level 50) : signature. (* \preceq *)
 
+  (** The subterm relation is decidable. For that, we need several lemmas. *)
   Definition subTm_baseTm_help
              {C₁ C₂ : con B}
              {A₁ A₂ : ty B}
@@ -393,7 +396,8 @@ Section SubTerm.
            end
          end           
        end.             
-  
+
+  (** * Properties of the subterm relation *)
   Definition subTm_trans
              {C₁ C₂ C₃ : con B}
              {A₁ A₂ A₃ : ty B}
@@ -466,6 +470,7 @@ Notation "t₁ ≼ t₂" := (subTerm t₁ t₂) (at level 50) : signature.
 
 Import AFSNotation.
 
+(** Rewriting in a subterm *)
 Definition rew_subTerm
            {B F : Type}
            (X : afs B F)

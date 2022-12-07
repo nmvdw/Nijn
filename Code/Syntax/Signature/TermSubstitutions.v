@@ -5,6 +5,9 @@ Require Import Nijn.Syntax.Signature.TermWeakenings.
 
 (** * Substitutions *)
 
+(** A substitution from a context [C1] to a context [C2] is given by a list of terms, and it gives for every variable in [C2] a term in context [C1] with the corresponding type. The length of the list is equal to the length of the context [C2]. *)
+
+(** Notational convention: substitutions are denoted by [s1], [s2], ... *)
 Inductive sub {B : Type} {F : Type} (ar : F -> ty B) : con B -> con B -> Type :=
 | ToEmpty : forall (C : con B), sub ar C ∙
 | ExtendSub : forall {C1 C2 : con B} {A : ty B},
