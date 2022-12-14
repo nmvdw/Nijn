@@ -161,7 +161,7 @@ Section PolyAlgebra.
     := fun z =>
          let f := fst z in
          let x := snd z in
-         (f x +c (lvf x)).
+         f x +c lvf x.
 
   Global Instance weakMonotone_p_app_fun
                   (A₁ A₂ : ty B)

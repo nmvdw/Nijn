@@ -41,14 +41,20 @@ Definition Map {C} : tm map_ar C _ := BaseTm TMap.
 Program Definition map_nil :=
   make_rewrite
     (_ ,, ∙) _
-    (Map · V 0 · Nil)
+    (let f := TmVar Vz in Map · f · Nil)
     Nil.
 
 Program Definition map_cons :=
   make_rewrite
     (_ ,, _ ,, _ ,, ∙) _
-    (Map · V 0 · (Cons · V 1 · V 2))
-    (Cons · (V 0 · V 1) · (Map · V 0 · V 2)).
+    (let f := TmVar Vz in
+     let x := TmVar (Vs Vz) in
+     let xs := TmVar (Vs (Vs Vz)) in
+     Map · f · (Cons · x · xs))
+    (let f := TmVar Vz in
+     let x := TmVar (Vs Vz) in
+     let xs := TmVar (Vs (Vs Vz)) in
+     Cons · (f · x) · (Map · f · xs)).
 
 (** The AFS *)
 Definition map_afs :=
