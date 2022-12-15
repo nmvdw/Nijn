@@ -223,7 +223,7 @@ Global Instance decEq_members
   : decEq (members l)
   := {| dec_eq := dec_eq_members l |}.
 
-(** * If we have a finite type and a decidable proposition on it, then we can decide whether that proposition holds for every element of that type and whether it holds for some element. *)
+(** If we have a finite type and a decidable proposition on it, then we can decide whether that proposition holds for every element of that type and whether it holds for some element. *)
 Lemma all_nil
       {A : Type}
       (P : A -> Prop)

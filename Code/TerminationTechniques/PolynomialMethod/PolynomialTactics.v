@@ -37,7 +37,7 @@ Ltac generate_goals :=
 Ltac solve_ineq Hf := subst ; apply Hf ; cbn ; nia.
 
 (** ** Simplifiying contexts *)
-(** For every rewrite rule, we have a variable in the context. The type of this variable, let's call it `x`,is the interpretation of some context. As such, the type of `x` is some product, and this tactic destructs `x` so that we don't have products/unit ty[es in the context. *)
+(** For every rewrite rule, we have a variable in the context. The type of this variable, let's call it `x`,is the interpretation of some context. As such, the type of `x` is some product, and this tactic destructs `x` so that we don't have products/unit types in the context. *)
 Ltac destruct_con :=
   repeat (match goal with
           | [ x : _ * _ |- _ ] => destruct x
