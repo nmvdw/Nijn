@@ -29,17 +29,17 @@ Inductive rule_removal_certificate
             (x : sem_Con p_base (vars r)),
        selector_members P r
        ->
-       sem_Tm p_base (p_fun_sym X J) p_app (lhs r) x
+       sem_Tm p_base (p_fun_sym X J) p_app' (lhs r) x
        >
-       sem_Tm p_base (p_fun_sym X J) p_app (rhs r) x)
+       sem_Tm p_base (p_fun_sym X J) p_app' (rhs r) x)
     ->
     (forall (r : rewriteRules X)
             (x : sem_Con p_base (vars r)),
        ~(selector_members P r)
        ->
-       sem_Tm p_base (p_fun_sym X J) p_app (lhs r) x
+       sem_Tm p_base (p_fun_sym X J) p_app' (lhs r) x
        >=
-       sem_Tm p_base (p_fun_sym X J) p_app (rhs r) x)
+       sem_Tm p_base (p_fun_sym X J) p_app' (rhs r) x)
     -> rule_removal_certificate X P.
 
 Definition rr_certificate_to_srp
@@ -81,9 +81,9 @@ Inductive certificate
   forall (J : forall (f : F), poly ∙ (arity X f)),
          (forall (r : rewriteRules X)
                  (x : sem_Con p_base (vars r)),
-           sem_Tm p_base (p_fun_sym X J) p_app (lhs r) x
+           sem_Tm p_base (p_fun_sym X J) p_app' (lhs r) x
            >
-           sem_Tm p_base (p_fun_sym X J) p_app (rhs r) x)
+           sem_Tm p_base (p_fun_sym X J) p_app' (rhs r) x)
          ->
          certificate X
 | RuleRemovalSN :

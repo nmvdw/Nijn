@@ -155,52 +155,24 @@ Section PolyAlgebra.
   Qed.
 
   (** ** Interpretation of application *)
-  Definition p_app_fun
-             {A1 A2 : ty B}
-    : ⟦ A1 ⟶ A2 ⟧ty * ⟦ A1 ⟧ty -> ⟦ A2 ⟧ty
-    := fun z =>
-         let f := fst z in
-         let x := snd z in
-         f x +c lvf x.
-
-  Global Instance weakMonotone_p_app_fun
-                  (A₁ A₂ : ty B)
-    : @weakMonotone
-        (⟦ A₁ ⟶ A₂ ⟧ty * ⟦ A₁ ⟧ty)
-        ⟦ A₂ ⟧ty
-        p_app_fun.
-  Proof.
-    intros x₁ x₂ p.
-    unfold p_app_fun.
-    apply map_ge.
-    split.
-    - cbn.
-      cbn in p.
-      destruct p as [ p1 p2 ].
-      refine (ge_trans (p1 _) _).
-      apply map_ge.
-      apply p2.
-    - cbn.
-      apply lvf.
-      apply p.
-  Qed.
-  
   Definition p_app
-             (A₁ A₂ : ty B)
-    : ⟦ A₁ ⟶ A₂ ⟧ty * ⟦ A₁ ⟧ty →wm ⟦ A₂ ⟧ty
-    := @make_monotone
-         (⟦ A₁ ⟶ A₂ ⟧ty * ⟦ A₁ ⟧ty)
-         ⟦ A₂ ⟧ty
-         p_app_fun
-         _.
+             {A1 A2 : ty B}
+    : ⟦ A1 ⟶ A2 ⟧ty * ⟦ A1 ⟧ty →wm ⟦ A2 ⟧ty
+    := let f := fst_wm in
+       let x := snd_wm in
+       plus_ty_nat ∘wm ⟨ f ·wm x , lvf ∘wm x ⟩.
 
+  Definition p_app'
+             (A1 A2 : ty B)
+    : ⟦ A1 ⟶ A2 ⟧ty * ⟦ A1 ⟧ty →wm ⟦ A2 ⟧ty
+    := p_app.
+  
   Proposition p_app_ge_id
               (A₁ A₂ : ty B)
               (f : ⟦ A₁ ⟧ty →wm ⟦ A₂ ⟧ty)
               (x : ⟦ A₁ ⟧ty)
-    : p_app_fun (f , x) >= f x.
+    : p_app (f , x) >= f x.
   Proof.
-    unfold p_app_fun ; cbn.
     apply plus_ty_nat_ge.
   Qed.
 
@@ -209,9 +181,9 @@ Section PolyAlgebra.
               (f₁ f₂ : ⟦ A₁ ⟧ty →wm ⟦ A₂ ⟧ty)
               (x : ⟦ A₁ ⟧ty)
               (p : f₁ > f₂)
-    : p_app_fun (f₁ , x) > p_app_fun (f₂ , x).
+    : p_app (f₁ , x) > p_app (f₂ , x).
   Proof.
-    unfold p_app_fun ; cbn.
+    unfold p_app ; cbn.
     apply plus_ty_nat_strict_monotone_r.
     apply p.
   Qed.
@@ -221,9 +193,9 @@ Section PolyAlgebra.
               (f : ⟦ A₁ ⟧ty →wm ⟦ A₂ ⟧ty)
               (x₁ x₂ : ⟦ A₁ ⟧ty)
               (p : x₁ > x₂)
-    : p_app_fun (f , x₁) > p_app_fun (f , x₂).
+    : p_app (f , x₁) > p_app (f , x₂).
   Proof.
-    unfold p_app_fun ; cbn.
+    unfold p_app ; cbn.
     simple refine (ge_gt _ _).
     - exact (f x₂ +c lvf x₁).
     - apply map_ge.
@@ -237,7 +209,7 @@ Section PolyAlgebra.
       apply (lvf_strict_monotonic p).
   Qed.
 
-  Notation "⟦ t ⟧tm" := (sem_Tm p_base p_fun_sym p_app t).
+  Notation "⟦ t ⟧tm" := (sem_Tm p_base p_fun_sym p_app' t).
 
   (** ** Compatibility requirement *)
   Definition poly_WMalgebra_rewrite_rule
@@ -277,7 +249,7 @@ Section PolyAlgebra.
                      (fun _ => 0)
                      (fun _ => nat_Wf)
                      p_fun_sym
-                     p_app
+                     p_app'
                      _
                      _
                      _).
