@@ -546,7 +546,7 @@ Qed.
 
 Definition fst_wm
            {X Y : CompatRel}
-  : (X * Y) →wm X
+  : X * Y →wm X
   := make_monotone _ _.
 
 Definition fst_strong_monotone
@@ -573,7 +573,7 @@ Qed.
 
 Definition snd_wm
            {X Y : CompatRel}
-  : (X * Y) →wm Y
+  : X * Y →wm Y
   := make_monotone _ _.
 
 Definition snd_strong_monotone
