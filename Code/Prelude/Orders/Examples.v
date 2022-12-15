@@ -49,8 +49,8 @@ Definition prod_CompatRel
            (X Y : CompatRel)
   : CompatRel
   := {| carrier := X * Y ;
-        gt x y := (fst x > fst y) /\ (snd x > snd y) ;
-        ge x y := (fst x >= fst y) /\ (snd x >= snd y) |}.
+        gt x y := fst x > fst y /\ snd x > snd y ;
+        ge x y := fst x >= fst y /\ snd x >= snd y |}.
 
 Notation "X * Y" := (prod_CompatRel X Y) : compat.
 
@@ -765,11 +765,11 @@ Qed.
 
 (** Application *)  
 Definition app_wm
-           {A B C : CompatRel}
-           `{isCompatRel C}
-           (f : A →wm (B →wm C))
-           (x : A →wm B)
-  : A →wm C
+           {X Y Z : CompatRel}
+           `{isCompatRel Z}
+           (f : X →wm (Y →wm Z))
+           (x : X →wm Y)
+  : X →wm Z
   := make_monotone (fun a => f a (x a)) _.
 
 Notation "f '·wm' x" := (app_wm f x) (at level 20, left associativity).
@@ -821,11 +821,11 @@ Proof.
 Qed.
   
 Definition apply_el_wm
-           {A₁ A₂ : CompatRel}
-           (x : A₁)
-  : (A₁ →wm A₂) →wm A₂
+           {X Y : CompatRel}
+           (x : X)
+  : (X →wm Y) →wm Y
   := @make_monotone
-       (A₁ →wm A₂)
-       A₂
+       (X →wm Y)
+       Y
        (fun f => f x)
        _.
