@@ -1,80 +1,70 @@
 Require Import Nijn.Nijn.
-
 Open Scope poly_scope.
 
-(** The base types *)
-Inductive base_types :=
-| TBtype
-| TList.
+Inductive base_types := 
+| Ca  
+| Clist.
 
 Global Instance decEq_base_types : decEq base_types.
 Proof.
   decEq_finite.
 Defined.
 
-Definition Btype := Base TBtype.
-Definition List := Base TList.
 
-(** The function symbols and their arities *)
-Inductive fun_symbols :=
-| TNil
-| TCons
-| TMap.
+Definition a := Base Ca.
+Definition list := Base Clist.
+
+Inductive fun_symbols := 
+| Tcons  
+| Tmap  
+| Tnil.
 
 Global Instance decEq_fun_symbols : decEq fun_symbols.
 Proof.
   decEq_finite.
 Defined.
 
-Definition map_ar f
-  := match f with
-     | TNil => List
-     | TCons => Btype ⟶ List ⟶ List
-     | TMap => (Btype ⟶ Btype) ⟶ List ⟶ List
-     end.
 
-Definition Nil {C} : tm map_ar C _ := BaseTm TNil.
-Definition Cons {C} : tm map_ar C _ := BaseTm TCons.
-Definition Map {C} : tm map_ar C _ := BaseTm TMap.
-
-(** The rewrite rules *)
-Program Definition map_nil :=
-  make_rewrite
-    (_ ,, ∙) _
-    (let f := TmVar Vz in Map · f · Nil)
-    Nil.
-
-Program Definition map_cons :=
-  make_rewrite
-    (_ ,, _ ,, _ ,, ∙) _
-    (let f := TmVar Vz in
-     let x := TmVar (Vs Vz) in
-     let xs := TmVar (Vs (Vs Vz)) in
-     Map · f · (Cons · x · xs))
-    (let f := TmVar Vz in
-     let x := TmVar (Vs Vz) in
-     let xs := TmVar (Vs (Vs Vz)) in
-     Cons · (f · x) · (Map · f · xs)).
-
-(** The AFS *)
-Definition map_afs :=
-  make_afs
-    map_ar
-    (map_nil :: map_cons :: nil).
-
-(** The polynomials *)
-Definition map_fun_poly f : poly ∙ (arity map_afs f) :=
-  match f with
-  | TNil => to_Poly (P_const 3)
-  | TCons => λP λP (to_Poly (P_const 3))
-  | TMap =>
-    λP let y0 := P_var Vz in
-    λP let G1 := P_var (Vs Vz) in
-    to_Poly (P_const 3 * y0 + G1 ·P y0 + P_const 3 * y0 * G1 ·P y0)
+Definition fn_arity fn_symbols := 
+  match fn_symbols with
+  | Tcons  =>  a ⟶ list ⟶ list
+  | Tmap  =>  list ⟶ (a ⟶ a) ⟶ list
+  | Tnil => list
   end.
 
-(** Strong normalization *)
-Definition map_isSN : isSN map_afs.
+Definition cons {C} : tm fn_arity C _ := BaseTm Tcons.
+Definition map {C} : tm fn_arity C _ := BaseTm Tmap.
+Definition nil {C} : tm fn_arity C _ := BaseTm Tnil.
+
+Program Definition rule_0 := 
+  make_rewrite
+    (_ ,, ∙) _
+    (map · nil ·  V 0)
+    nil.
+
+Program Definition rule_1 := 
+  make_rewrite
+    (_ ,, _ ,, _ ,, ∙) _
+    (map · (cons ·  V 0 ·  V 1) ·  V 2)
+    (cons · ( V 2 ·  V 0) · (map ·  V 1 ·  V 2)).
+
+Definition trs := 
+  make_afs
+    fn_arity 
+    (rule_0 :: rule_1 :: List.nil).
+
+Definition map_fun_poly fn_symbols : poly ∙ (arity trs fn_symbols) := 
+  match fn_symbols with
+  | Tnil => to_Poly (P_const 3)
+  | Tcons  => λP λP let y1 := P_var Vz in
+    to_Poly (P_const 3
+             + P_const 2 * y1)
+  | Tmap  =>  λP let y0 := P_var (Vs Vz) in λP let G1 := P_var Vz in
+    to_Poly (P_const 3 * y0
+             + P_const 3 * y0 * (G1 ·P (y0)))
+  end.
+
+Definition  trs_isSN : isSN trs.
 Proof.
   solve_poly_SN map_fun_poly.
 Qed.
