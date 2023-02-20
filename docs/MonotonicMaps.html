@@ -1,0 +1,185 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+"http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1" />
+<link href="coqdoc.css" rel="stylesheet" type="text/css" />
+<title>MonotonicMaps</title>
+</head>
+
+<body>
+
+<div id="page">
+
+<div id="header">
+</div>
+
+<div id="main">
+
+<h1 class="libtitle">Library MonotonicMaps</h1>
+
+<div class="code">
+<span class="id" title="keyword">Require</span> <span class="id" title="keyword">Import</span> <span class="id" title="var">Nijn.Prelude.Checks</span>.<br/>
+<span class="id" title="keyword">Require</span> <span class="id" title="keyword">Import</span> <span class="id" title="var">Nijn.Prelude.Funext</span>.<br/>
+<span class="id" title="keyword">Require</span> <span class="id" title="keyword">Import</span> <span class="id" title="var">Nijn.Prelude.Relations.WellfoundedRelation</span>.<br/>
+<span class="id" title="keyword">Require</span> <span class="id" title="keyword">Import</span> <span class="id" title="var">Nijn.Prelude.Orders.CompatibleRelation</span>.<br/>
+
+<br/>
+</div>
+
+<div class="doc">
+<a id="lab40"></a><h1 class="section">Monotone maps</h1>
+
+<div class="paragraph"> </div>
+
+ We have two kinds of structure preserving maps between compatible relations. First of all, we can look at strictly monotone maps, which preserve the strict order. 
+</div>
+<div class="code">
+<span class="id" title="keyword">Class</span> <span class="id" title="var">strictMonotone</span> {<span class="id" title="var">X</span> <span class="id" title="var">Y</span> : <span class="id" title="var">CompatRel</span>} (<span class="id" title="var">f</span> : <span class="id" title="var">X</span> -&gt; <span class="id" title="var">Y</span>) :=<br/>
+&nbsp;&nbsp;<span class="id" title="var">map_gt</span> : <span class="id" title="keyword">forall</span> (<span class="id" title="var">x</span> <span class="id" title="var">y</span> : <span class="id" title="var">X</span>),<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="var">x</span> &gt; <span class="id" title="var">y</span> -&gt; <span class="id" title="var">f</span> <span class="id" title="var">x</span> &gt; <span class="id" title="var">f</span> <span class="id" title="var">y</span>.<br/>
+
+<br/>
+</div>
+
+<div class="doc">
+Second of all, we can look at weak monotone maps, which preserve the other order 
+</div>
+<div class="code">
+<span class="id" title="keyword">Class</span> <span class="id" title="var">weakMonotone</span> {<span class="id" title="var">X</span> <span class="id" title="var">Y</span> : <span class="id" title="var">CompatRel</span>} (<span class="id" title="var">f</span> : <span class="id" title="var">X</span> -&gt; <span class="id" title="var">Y</span>) :=<br/>
+&nbsp;&nbsp;<span class="id" title="var">map_ge</span> : <span class="id" title="keyword">forall</span> (<span class="id" title="var">x</span> <span class="id" title="var">y</span> : <span class="id" title="var">X</span>),<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="var">x</span> &gt;= <span class="id" title="var">y</span> -&gt; <span class="id" title="var">f</span> <span class="id" title="var">x</span> &gt;= <span class="id" title="var">f</span> <span class="id" title="var">y</span>.<br/>
+
+<br/>
+</div>
+
+<div class="doc">
+Now we define the type of weakly and strongly monotone maps between compatible relations 
+</div>
+<div class="code">
+<span class="id" title="keyword">Record</span> <span class="id" title="var">weakMonotoneMap</span> (<span class="id" title="var">X</span> <span class="id" title="var">Y</span> : <span class="id" title="var">CompatRel</span>) :=<br/>
+&nbsp;&nbsp;<span class="id" title="var">make_monotone</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;{<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="var">fun_carrier</span> :&gt; <span class="id" title="var">X</span> -&gt; <span class="id" title="var">Y</span> ;<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="var">is_weak_monotone</span> : <span class="id" title="var">weakMonotone</span> <span class="id" title="var">fun_carrier</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;}.<br/>
+
+<br/>
+<span class="id" title="keyword">Arguments</span> <span class="id" title="var">make_monotone</span> {<span class="id" title="var">_</span> <span class="id" title="var">_</span>} <span class="id" title="var">_</span> <span class="id" title="var">_</span>.<br/>
+
+<br/>
+<span class="id" title="keyword">Global Instance</span> <span class="id" title="var">weakMonotoneMap_isWeakMonotone</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{<span class="id" title="var">X</span> <span class="id" title="var">Y</span> : <span class="id" title="var">CompatRel</span>}<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(<span class="id" title="var">f</span> : <span class="id" title="var">weakMonotoneMap</span> <span class="id" title="var">X</span> <span class="id" title="var">Y</span>)<br/>
+&nbsp;&nbsp;: <span class="id" title="var">weakMonotone</span> <span class="id" title="var">f</span><br/>
+&nbsp;&nbsp;:= <span class="id" title="var">is_weak_monotone</span> <span class="id" title="var">_</span> <span class="id" title="var">_</span> <span class="id" title="var">f</span>.<br/>
+
+<br/>
+<span class="id" title="keyword">Record</span> <span class="id" title="var">strongMonotoneMap</span> (<span class="id" title="var">X</span> <span class="id" title="var">Y</span> : <span class="id" title="var">CompatRel</span>) :=<br/>
+&nbsp;&nbsp;<span class="id" title="var">make_strong_monotone</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;{<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="var">strong_fun_carrier</span> :&gt; <span class="id" title="var">X</span> -&gt; <span class="id" title="var">Y</span> ;<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="var">strong_is_weak</span> : <span class="id" title="var">weakMonotone</span> <span class="id" title="var">strong_fun_carrier</span> ;<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="var">strong_is_strict</span> : <span class="id" title="var">strictMonotone</span> <span class="id" title="var">strong_fun_carrier</span> ;<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;}.<br/>
+
+<br/>
+<span class="id" title="keyword">Arguments</span> <span class="id" title="var">make_strong_monotone</span> {<span class="id" title="var">_</span> <span class="id" title="var">_</span>} <span class="id" title="var">_</span> <span class="id" title="var">_</span> <span class="id" title="var">_</span>.<br/>
+
+<br/>
+<span class="id" title="keyword">Global Instance</span> <span class="id" title="var">strongMonotone_to_strictMonotone</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{<span class="id" title="var">X</span> <span class="id" title="var">Y</span> : <span class="id" title="var">CompatRel</span>}<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(<span class="id" title="var">f</span> : <span class="id" title="var">strongMonotoneMap</span> <span class="id" title="var">X</span> <span class="id" title="var">Y</span>)<br/>
+&nbsp;&nbsp;: <span class="id" title="var">strictMonotone</span> <span class="id" title="var">f</span><br/>
+&nbsp;&nbsp;:= <span class="id" title="var">strong_is_strict</span> <span class="id" title="var">_</span> <span class="id" title="var">_</span> <span class="id" title="var">f</span>.<br/>
+
+<br/>
+<span class="id" title="keyword">Global Instance</span> <span class="id" title="var">strongMonotone_to_weakMonotone</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{<span class="id" title="var">X</span> <span class="id" title="var">Y</span> : <span class="id" title="var">CompatRel</span>}<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(<span class="id" title="var">f</span> : <span class="id" title="var">strongMonotoneMap</span> <span class="id" title="var">X</span> <span class="id" title="var">Y</span>)<br/>
+&nbsp;&nbsp;: <span class="id" title="var">weakMonotone</span> <span class="id" title="var">f</span><br/>
+&nbsp;&nbsp;:= <span class="id" title="var">strong_is_weak</span> <span class="id" title="var">_</span> <span class="id" title="var">_</span> <span class="id" title="var">f</span>.<br/>
+
+<br/>
+</div>
+
+<div class="doc">
+<a id="lab41"></a><h2 class="section">Equality of monotone maps</h2>
+
+<div class="paragraph"> </div>
+
+ Using function extensionality and proof irrelevance, we can show that monotone maps are equal if they are pointwise equal. 
+</div>
+<div class="code">
+<span class="id" title="keyword">Definition</span> <span class="id" title="var">eq_weakMonotoneMap_help</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{<span class="id" title="var">X</span> <span class="id" title="var">Y</span> : <span class="id" title="var">CompatRel</span>}<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;`{<span class="id" title="var">isCompatRel</span> <span class="id" title="var">Y</span>}<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(<span class="id" title="var">f</span> <span class="id" title="var">g</span> : <span class="id" title="var">weakMonotoneMap</span> <span class="id" title="var">X</span> <span class="id" title="var">Y</span>)<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(<span class="id" title="var">p</span> : <span class="id" title="var">fun_carrier</span> <span class="id" title="var">_</span> <span class="id" title="var">_</span> <span class="id" title="var">f</span> = <span class="id" title="var">fun_carrier</span> <span class="id" title="var">_</span> <span class="id" title="var">_</span> <span class="id" title="var">g</span>)<br/>
+&nbsp;&nbsp;: <span class="id" title="var">f</span> = <span class="id" title="var">g</span>.<br/>
+<span class="id" title="keyword">Proof</span>.<br/>
+&nbsp;&nbsp;<span class="id" title="tactic">destruct</span> <span class="id" title="var">f</span> <span class="id" title="keyword">as</span> [<span class="id" title="var">f</span> <span class="id" title="var">Hf</span>].<br/>
+&nbsp;&nbsp;<span class="id" title="tactic">destruct</span> <span class="id" title="var">g</span> <span class="id" title="keyword">as</span> [<span class="id" title="var">g</span> <span class="id" title="var">Hg</span>].<br/>
+&nbsp;&nbsp;<span class="id" title="var">cbn</span> <span class="id" title="tactic">in</span> <span class="id" title="var">p</span>.<br/>
+&nbsp;&nbsp;<span class="id" title="var">revert</span> <span class="id" title="var">Hf</span> <span class="id" title="var">Hg</span>.<br/>
+&nbsp;&nbsp;<span class="id" title="tactic">rewrite</span> <span class="id" title="var">p</span>.<br/>
+&nbsp;&nbsp;<span class="id" title="tactic">intros</span> <span class="id" title="var">Hf</span> <span class="id" title="var">Hg</span>.<br/>
+&nbsp;&nbsp;<span class="id" title="tactic">f_equal</span>.<br/>
+&nbsp;&nbsp;<span class="id" title="tactic">apply</span> <span class="id" title="var">proof_irrelevance</span>.<br/>
+<span class="id" title="keyword">Qed</span>.<br/>
+
+<br/>
+<span class="id" title="keyword">Definition</span> <span class="id" title="var">eq_weakMonotoneMap</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{<span class="id" title="var">X</span> <span class="id" title="var">Y</span> : <span class="id" title="var">CompatRel</span>}<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;`{<span class="id" title="var">isCompatRel</span> <span class="id" title="var">Y</span>}<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(<span class="id" title="var">f</span> <span class="id" title="var">g</span> : <span class="id" title="var">weakMonotoneMap</span> <span class="id" title="var">X</span> <span class="id" title="var">Y</span>)<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(<span class="id" title="var">p</span> : <span class="id" title="keyword">forall</span> (<span class="id" title="var">x</span> : <span class="id" title="var">X</span>), <span class="id" title="var">f</span> <span class="id" title="var">x</span> = <span class="id" title="var">g</span> <span class="id" title="var">x</span>)<br/>
+&nbsp;&nbsp;: <span class="id" title="var">f</span> = <span class="id" title="var">g</span>.<br/>
+<span class="id" title="keyword">Proof</span>.<br/>
+&nbsp;&nbsp;<span class="id" title="tactic">apply</span> <span class="id" title="var">eq_weakMonotoneMap_help</span>.<br/>
+&nbsp;&nbsp;<span class="id" title="tactic">apply</span> <span class="id" title="var">funext</span>.<br/>
+&nbsp;&nbsp;<span class="id" title="tactic">exact</span> <span class="id" title="var">p</span>.<br/>
+<span class="id" title="keyword">Qed</span>.<br/>
+
+<br/>
+<span class="id" title="keyword">Definition</span> <span class="id" title="var">eq_strongMonotoneMap_help</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{<span class="id" title="var">X</span> <span class="id" title="var">Y</span> : <span class="id" title="var">CompatRel</span>}<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;`{<span class="id" title="var">isCompatRel</span> <span class="id" title="var">Y</span>}<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(<span class="id" title="var">f</span> <span class="id" title="var">g</span> : <span class="id" title="var">strongMonotoneMap</span> <span class="id" title="var">X</span> <span class="id" title="var">Y</span>)<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(<span class="id" title="var">p</span> : <span class="id" title="var">strong_fun_carrier</span> <span class="id" title="var">_</span> <span class="id" title="var">_</span> <span class="id" title="var">f</span> = <span class="id" title="var">strong_fun_carrier</span> <span class="id" title="var">_</span> <span class="id" title="var">_</span> <span class="id" title="var">g</span>)<br/>
+&nbsp;&nbsp;: <span class="id" title="var">f</span> = <span class="id" title="var">g</span>.<br/>
+<span class="id" title="keyword">Proof</span>.<br/>
+&nbsp;&nbsp;<span class="id" title="tactic">destruct</span> <span class="id" title="var">f</span> <span class="id" title="keyword">as</span> [ <span class="id" title="var">f</span> <span class="id" title="var">Hf1</span> <span class="id" title="var">Hf2</span> ].<br/>
+&nbsp;&nbsp;<span class="id" title="tactic">destruct</span> <span class="id" title="var">g</span> <span class="id" title="keyword">as</span> [ <span class="id" title="var">g</span> <span class="id" title="var">Hg1</span> <span class="id" title="var">Hg2</span> ].<br/>
+&nbsp;&nbsp;<span class="id" title="var">cbn</span> <span class="id" title="tactic">in</span> <span class="id" title="var">p</span>.<br/>
+&nbsp;&nbsp;<span class="id" title="var">revert</span> <span class="id" title="var">Hf1</span> <span class="id" title="var">Hf2</span> <span class="id" title="var">Hg1</span> <span class="id" title="var">Hg2</span>.<br/>
+&nbsp;&nbsp;<span class="id" title="tactic">rewrite</span> <span class="id" title="var">p</span>.<br/>
+&nbsp;&nbsp;<span class="id" title="tactic">intros</span> <span class="id" title="var">Hf1</span> <span class="id" title="var">Hf2</span> <span class="id" title="var">Hg1</span> <span class="id" title="var">Hg2</span>.<br/>
+&nbsp;&nbsp;<span class="id" title="tactic">f_equal</span> ; <span class="id" title="tactic">apply</span> <span class="id" title="var">proof_irrelevance</span>.<br/>
+<span class="id" title="keyword">Qed</span>.<br/>
+
+<br/>
+<span class="id" title="keyword">Definition</span> <span class="id" title="var">eq_strongMonotoneMap</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{<span class="id" title="var">X</span> <span class="id" title="var">Y</span> : <span class="id" title="var">CompatRel</span>}<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;`{<span class="id" title="var">isCompatRel</span> <span class="id" title="var">Y</span>}<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(<span class="id" title="var">f</span> <span class="id" title="var">g</span> : <span class="id" title="var">strongMonotoneMap</span> <span class="id" title="var">X</span> <span class="id" title="var">Y</span>)<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(<span class="id" title="var">p</span> : <span class="id" title="keyword">forall</span> (<span class="id" title="var">x</span> : <span class="id" title="var">X</span>), <span class="id" title="var">f</span> <span class="id" title="var">x</span> = <span class="id" title="var">g</span> <span class="id" title="var">x</span>)<br/>
+&nbsp;&nbsp;: <span class="id" title="var">f</span> = <span class="id" title="var">g</span>.<br/>
+<span class="id" title="keyword">Proof</span>.<br/>
+&nbsp;&nbsp;<span class="id" title="tactic">apply</span> <span class="id" title="var">eq_strongMonotoneMap_help</span>.<br/>
+&nbsp;&nbsp;<span class="id" title="tactic">apply</span> <span class="id" title="var">funext</span>.<br/>
+&nbsp;&nbsp;<span class="id" title="tactic">exact</span> <span class="id" title="var">p</span>.<br/>
+<span class="id" title="keyword">Qed</span>.<br/>
+
+<br/>
+</div>
+</div>
+
+<div id="footer">
+<hr/><a href="index.html">Index</a><hr/>This page has been generated by <a href="http://coq.inria.fr/">coqdoc</a>
+</div>
+
+</div>
+
+</body>
+</html>

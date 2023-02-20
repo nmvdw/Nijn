@@ -1,0 +1,147 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+"http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1" />
+<link href="coqdoc.css" rel="stylesheet" type="text/css" />
+<title>Lexico</title>
+</head>
+
+<body>
+
+<div id="page">
+
+<div id="header">
+</div>
+
+<div id="main">
+
+<h1 class="libtitle">Library Lexico</h1>
+
+<div class="code">
+<span class="id" title="keyword">Require</span> <span class="id" title="keyword">Import</span> <span class="id" title="var">Nijn.Prelude.Checks</span>.<br/>
+<span class="id" title="keyword">Require</span> <span class="id" title="keyword">Import</span> <span class="id" title="var">Nijn.Prelude.Relations.WellfoundedRelation</span>.<br/>
+<span class="id" title="keyword">Require</span> <span class="id" title="keyword">Import</span> <span class="id" title="var">Nijn.Prelude.Orders.CompatibleRelation</span>.<br/>
+
+<br/>
+</div>
+
+<div class="doc">
+<a id="lab42"></a><h1 class="section">The lexicographic order</h1>
+
+</div>
+<div class="code">
+
+<br/>
+<span class="id" title="keyword">Section</span> <span class="id" title="var">Lexico</span>.<br/>
+&nbsp;&nbsp;<span class="id" title="keyword">Context</span> (<span class="id" title="var">X</span> : <span class="id" title="var">CompatRel</span>)<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{<span class="id" title="var">Y</span> : <span class="id" title="keyword">Type</span>}<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;`{<span class="id" title="var">isCompatRel</span> <span class="id" title="var">X</span>}<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(<span class="id" title="var">RY</span> : <span class="id" title="var">Y</span> -&gt; <span class="id" title="var">Y</span> -&gt; <span class="id" title="keyword">Type</span>).<br/>
+
+<br/>
+</div>
+
+<div class="doc">
+Given a compatible relation and a type with a relation on it, then we can define the lexicographic order on the product. 
+</div>
+<div class="code">
+&nbsp;&nbsp;<span class="id" title="keyword">Definition</span> <span class="id" title="var">lexico</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;: <span class="id" title="var">X</span> * <span class="id" title="var">Y</span> -&gt; <span class="id" title="var">X</span> * <span class="id" title="var">Y</span> -&gt; <span class="id" title="keyword">Type</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;:= <span class="id" title="keyword">fun</span> <span class="id" title="var">x</span> <span class="id" title="var">y</span> =&gt; ((<span class="id" title="var">gt</span> (<span class="id" title="var">fst</span> <span class="id" title="var">x</span>) (<span class="id" title="var">fst</span> <span class="id" title="var">y</span>))<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;+<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;((<span class="id" title="var">fst</span> <span class="id" title="var">x</span> &gt;= <span class="id" title="var">fst</span> <span class="id" title="var">y</span>) * <span class="id" title="var">RY</span> (<span class="id" title="var">snd</span> <span class="id" title="var">x</span>) (<span class="id" title="var">snd</span> <span class="id" title="var">y</span>)))%<span class="id" title="keyword">type</span>.<br/>
+
+<br/>
+</div>
+
+<div class="doc">
+Transitivity for the lexicographic order 
+</div>
+<div class="code">
+&nbsp;&nbsp;<span class="id" title="keyword">Proposition</span> <span class="id" title="var">lexico_trans</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(<span class="id" title="var">RYtrans</span> : <span class="id" title="keyword">forall</span> (<span class="id" title="var">y1</span> <span class="id" title="var">y2</span> <span class="id" title="var">y3</span> : <span class="id" title="var">Y</span>),<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="var">RY</span> <span class="id" title="var">y1</span> <span class="id" title="var">y2</span> -&gt; <span class="id" title="var">RY</span> <span class="id" title="var">y2</span> <span class="id" title="var">y3</span> -&gt; <span class="id" title="var">RY</span> <span class="id" title="var">y1</span> <span class="id" title="var">y3</span>)<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{<span class="id" title="var">x</span> <span class="id" title="var">y</span> <span class="id" title="var">z</span> : <span class="id" title="var">X</span> * <span class="id" title="var">Y</span>}<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(<span class="id" title="var">p</span> : <span class="id" title="var">lexico</span> <span class="id" title="var">x</span> <span class="id" title="var">y</span>)<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(<span class="id" title="var">q</span> : <span class="id" title="var">lexico</span> <span class="id" title="var">y</span> <span class="id" title="var">z</span>)<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;: <span class="id" title="var">lexico</span> <span class="id" title="var">x</span> <span class="id" title="var">z</span>.<br/>
+&nbsp;&nbsp;<span class="id" title="keyword">Proof</span>.<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="tactic">destruct</span> <span class="id" title="var">p</span> <span class="id" title="keyword">as</span> [<span class="id" title="var">p</span> | [<span class="id" title="var">p1</span> <span class="id" title="var">p2</span>]], <span class="id" title="var">q</span> <span class="id" title="keyword">as</span> [<span class="id" title="var">q</span> | [<span class="id" title="var">q1</span> <span class="id" title="var">q2</span>]].<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;- <span class="id" title="tactic">left</span>.<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="tactic">exact</span> (<span class="id" title="var">gt_trans</span> <span class="id" title="var">p</span> <span class="id" title="var">q</span>).<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;- <span class="id" title="tactic">left</span>.<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="tactic">exact</span> (<span class="id" title="var">gt_ge</span> <span class="id" title="var">p</span> <span class="id" title="var">q1</span>).<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;- <span class="id" title="tactic">left</span>.<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="tactic">exact</span> (<span class="id" title="var">ge_gt</span> <span class="id" title="var">p1</span> <span class="id" title="var">q</span>).<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;- <span class="id" title="tactic">right</span>.<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="tactic">split</span>.<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;+ <span class="id" title="tactic">exact</span> (<span class="id" title="var">ge_trans</span> <span class="id" title="var">p1</span> <span class="id" title="var">q1</span>).<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;+ <span class="id" title="tactic">exact</span> (<span class="id" title="var">RYtrans</span> <span class="id" title="var">_</span> <span class="id" title="var">_</span> <span class="id" title="var">_</span> <span class="id" title="var">p2</span> <span class="id" title="var">q2</span>).<br/>
+&nbsp;&nbsp;<span class="id" title="keyword">Qed</span>.<br/>
+
+<br/>
+</div>
+
+<div class="doc">
+Wellfoundedness of the lexicographic order 
+</div>
+<div class="code">
+&nbsp;&nbsp;<span class="id" title="keyword">Proposition</span> <span class="id" title="var">lexico_Wf_help</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(<span class="id" title="var">x</span> : <span class="id" title="var">X</span> * <span class="id" title="var">Y</span>)<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(<span class="id" title="var">z1</span> : <span class="id" title="var">X</span>)<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(<span class="id" title="var">p</span> : <span class="id" title="var">fst</span> <span class="id" title="var">x</span> &gt;= <span class="id" title="var">z1</span>)<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(<span class="id" title="var">HX</span> : <span class="id" title="var">isWf</span> <span class="id" title="var">lexico</span> <span class="id" title="var">x</span>)<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;: <span class="id" title="var">isWf</span> <span class="id" title="var">lexico</span> (<span class="id" title="var">z1</span> , <span class="id" title="var">snd</span> <span class="id" title="var">x</span>).<br/>
+&nbsp;&nbsp;<span class="id" title="keyword">Proof</span>.<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="var">revert</span> <span class="id" title="var">p</span>.<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="var">revert</span> <span class="id" title="var">z1</span>.<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="tactic">induction</span> <span class="id" title="var">HX</span> <span class="id" title="keyword">as</span> [[<span class="id" title="var">q1</span> <span class="id" title="var">q2</span>] <span class="id" title="var">Hq</span> <span class="id" title="var">IHq</span>].<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="tactic">simpl</span> <span class="id" title="tactic">in</span> *.<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="tactic">intros</span> <span class="id" title="var">z1</span> <span class="id" title="var">p</span>.<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="tactic">apply</span> <span class="id" title="var">acc</span>.<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="tactic">intros</span> [<span class="id" title="var">w1</span> <span class="id" title="var">w2</span>] [<span class="id" title="var">H'</span> | [<span class="id" title="var">H1</span> <span class="id" title="var">H2</span>]] ; <span class="id" title="tactic">simpl</span> <span class="id" title="tactic">in</span> *.<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;- <span class="id" title="tactic">refine</span> (<span class="id" title="var">IHq</span> (<span class="id" title="var">w1</span> , <span class="id" title="var">w2</span>) <span class="id" title="var">_</span> <span class="id" title="var">w1</span> <span class="id" title="var">_</span>) ; <span class="id" title="tactic">simpl</span>.<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;+ <span class="id" title="tactic">left</span> ; <span class="id" title="tactic">simpl</span>.<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="tactic">exact</span> (<span class="id" title="var">ge_gt</span> <span class="id" title="var">p</span> <span class="id" title="var">H'</span>).<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;+ <span class="id" title="tactic">apply</span> <span class="id" title="var">ge_refl</span>.<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;- <span class="id" title="tactic">refine</span> (<span class="id" title="var">IHq</span> (<span class="id" title="var">q1</span> , <span class="id" title="var">w2</span>) <span class="id" title="var">_</span> <span class="id" title="var">w1</span> <span class="id" title="var">_</span>).<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;+ <span class="id" title="tactic">right</span> ; <span class="id" title="tactic">simpl</span>.<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="tactic">split</span>.<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;* <span class="id" title="tactic">apply</span> <span class="id" title="var">ge_refl</span>.<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;* <span class="id" title="tactic">exact</span> <span class="id" title="var">H2</span>.<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;+ <span class="id" title="tactic">refine</span> (<span class="id" title="var">ge_trans</span> <span class="id" title="var">p</span> <span class="id" title="var">H1</span>).<br/>
+&nbsp;&nbsp;<span class="id" title="keyword">Qed</span>.<br/>
+
+<br/>
+&nbsp;&nbsp;<span class="id" title="keyword">Proposition</span> <span class="id" title="var">lexico_Wf</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(<span class="id" title="var">HX</span> : <span class="id" title="var">Wf</span> (<span class="id" title="keyword">fun</span> (<span class="id" title="var">x</span> <span class="id" title="var">y</span> : <span class="id" title="var">X</span>) =&gt; <span class="id" title="var">x</span> &gt; <span class="id" title="var">y</span>))<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(<span class="id" title="var">HY</span> : <span class="id" title="var">Wf</span> <span class="id" title="var">RY</span>)<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;: <span class="id" title="var">Wf</span> <span class="id" title="var">lexico</span>.<br/>
+&nbsp;&nbsp;<span class="id" title="keyword">Proof</span>.<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="tactic">intros</span> [<span class="id" title="var">x</span> <span class="id" title="var">y</span>].<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="tactic">pose</span> (<span class="id" title="var">HX</span> <span class="id" title="var">x</span>) <span class="id" title="keyword">as</span> <span class="id" title="var">Hx</span>.<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="var">revert</span> <span class="id" title="var">y</span>.<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="tactic">induction</span> <span class="id" title="var">Hx</span> <span class="id" title="keyword">as</span> [<span class="id" title="var">x</span> <span class="id" title="var">Hx</span> <span class="id" title="var">IHx</span>].<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="tactic">intros</span> <span class="id" title="var">y</span>.<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="tactic">pose</span> (<span class="id" title="var">HY</span> <span class="id" title="var">y</span>) <span class="id" title="keyword">as</span> <span class="id" title="var">Hy</span>.<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="tactic">induction</span> <span class="id" title="var">Hy</span> <span class="id" title="keyword">as</span> [<span class="id" title="var">y</span> <span class="id" title="var">Hy</span> <span class="id" title="var">IHy</span>].<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="tactic">apply</span> <span class="id" title="var">acc</span>.<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="tactic">intros</span> [<span class="id" title="var">z1</span> <span class="id" title="var">z2</span>] [<span class="id" title="var">Hz</span> | [<span class="id" title="var">Hz1</span> <span class="id" title="var">Hz2</span>]] ; <span class="id" title="tactic">simpl</span> <span class="id" title="tactic">in</span> *.<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;- <span class="id" title="tactic">apply</span> <span class="id" title="var">IHx</span>.<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="tactic">exact</span> <span class="id" title="var">Hz</span>.<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;- <span class="id" title="tactic">refine</span> (<span class="id" title="var">lexico_Wf_help</span> (<span class="id" title="var">x</span> , <span class="id" title="var">_</span>) <span class="id" title="var">z1</span> <span class="id" title="var">Hz1</span> <span class="id" title="var">_</span>).<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="tactic">exact</span> (<span class="id" title="var">IHy</span> <span class="id" title="var">z2</span> <span class="id" title="var">Hz2</span>).<br/>
+&nbsp;&nbsp;<span class="id" title="keyword">Qed</span>.<br/>
+<span class="id" title="keyword">End</span> <span class="id" title="var">Lexico</span>.<br/>
+</div>
+</div>
+
+<div id="footer">
+<hr/><a href="index.html">Index</a><hr/>This page has been generated by <a href="http://coq.inria.fr/">coqdoc</a>
+</div>
+
+</div>
+
+</body>
+</html>

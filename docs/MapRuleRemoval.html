@@ -1,0 +1,157 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+"http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1" />
+<link href="coqdoc.css" rel="stylesheet" type="text/css" />
+<title>MapRuleRemoval</title>
+</head>
+
+<body>
+
+<div id="page">
+
+<div id="header">
+</div>
+
+<div id="main">
+
+<h1 class="libtitle">Library MapRuleRemoval</h1>
+
+<div class="code">
+<span class="id" title="keyword">Require</span> <span class="id" title="keyword">Import</span> <span class="id" title="var">Nijn.Nijn</span>.<br/>
+
+<br/>
+<span class="id" title="keyword">Open</span> <span class="id" title="keyword">Scope</span> <span class="id" title="var">poly_scope</span>.<br/>
+
+<br/>
+</div>
+
+<div class="doc">
+The base types 
+</div>
+<div class="code">
+<span class="id" title="keyword">Inductive</span> <span class="id" title="var">base_types</span> :=<br/>
+| <span class="id" title="var">TBtype</span><br/>
+| <span class="id" title="var">TList</span>.<br/>
+
+<br/>
+<span class="id" title="keyword">Global Instance</span> <span class="id" title="var">decEq_base_types</span> : <span class="id" title="var">decEq</span> <span class="id" title="var">base_types</span>.<br/>
+<span class="id" title="keyword">Proof</span>.<br/>
+&nbsp;&nbsp;<span class="id" title="var">decEq_finite</span>.<br/>
+<span class="id" title="keyword">Defined</span>.<br/>
+
+<br/>
+<span class="id" title="keyword">Definition</span> <span class="id" title="var">Btype</span> := <span class="id" title="var">Base</span> <span class="id" title="var">TBtype</span>.<br/>
+<span class="id" title="keyword">Definition</span> <span class="id" title="var">List</span> := <span class="id" title="var">Base</span> <span class="id" title="var">TList</span>.<br/>
+
+<br/>
+</div>
+
+<div class="doc">
+The function symbols and their arities 
+</div>
+<div class="code">
+<span class="id" title="keyword">Inductive</span> <span class="id" title="var">fun_symbols</span> :=<br/>
+| <span class="id" title="var">TNil</span><br/>
+| <span class="id" title="var">TCons</span><br/>
+| <span class="id" title="var">TMap</span>.<br/>
+
+<br/>
+<span class="id" title="keyword">Global Instance</span> <span class="id" title="var">decEq_fun_symbols</span> : <span class="id" title="var">decEq</span> <span class="id" title="var">fun_symbols</span>.<br/>
+<span class="id" title="keyword">Proof</span>.<br/>
+&nbsp;&nbsp;<span class="id" title="var">decEq_finite</span>.<br/>
+<span class="id" title="keyword">Defined</span>.<br/>
+
+<br/>
+<span class="id" title="keyword">Definition</span> <span class="id" title="var">map_ar</span> <span class="id" title="var">f</span><br/>
+&nbsp;&nbsp;:= <span class="id" title="keyword">match</span> <span class="id" title="var">f</span> <span class="id" title="keyword">with</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;| <span class="id" title="var">TNil</span> =&gt; <span class="id" title="var">List</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;| <span class="id" title="var">TCons</span> =&gt; <span class="id" title="var">Btype</span> ⟶ <span class="id" title="var">List</span> ⟶ <span class="id" title="var">List</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;| <span class="id" title="var">TMap</span> =&gt; (<span class="id" title="var">Btype</span> ⟶ <span class="id" title="var">Btype</span>) ⟶ <span class="id" title="var">List</span> ⟶ <span class="id" title="var">List</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="keyword">end</span>.<br/>
+
+<br/>
+<span class="id" title="keyword">Definition</span> <span class="id" title="var">Nil</span> {<span class="id" title="var">C</span>} : <span class="id" title="var">tm</span> <span class="id" title="var">map_ar</span> <span class="id" title="var">C</span> <span class="id" title="var">_</span> := <span class="id" title="var">BaseTm</span> <span class="id" title="var">TNil</span>.<br/>
+<span class="id" title="keyword">Definition</span> <span class="id" title="var">Cons</span> {<span class="id" title="var">C</span>} : <span class="id" title="var">tm</span> <span class="id" title="var">map_ar</span> <span class="id" title="var">C</span> <span class="id" title="var">_</span> := <span class="id" title="var">BaseTm</span> <span class="id" title="var">TCons</span>.<br/>
+<span class="id" title="keyword">Definition</span> <span class="id" title="var">Map</span> {<span class="id" title="var">C</span>} : <span class="id" title="var">tm</span> <span class="id" title="var">map_ar</span> <span class="id" title="var">C</span> <span class="id" title="var">_</span> := <span class="id" title="var">BaseTm</span> <span class="id" title="var">TMap</span>.<br/>
+
+<br/>
+</div>
+
+<div class="doc">
+The rewrite rules 
+</div>
+<div class="code">
+<span class="id" title="keyword">Program Definition</span> <span class="id" title="var">map_nil</span> :=<br/>
+&nbsp;&nbsp;<span class="id" title="var">make_rewrite</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;(<span class="id" title="var">_</span> ,, ∙) <span class="id" title="var">_</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;(<span class="id" title="var">Map</span> · <span class="id" title="var">V</span> 0 · <span class="id" title="var">Nil</span>)<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="var">Nil</span>.<br/>
+
+<br/>
+<span class="id" title="keyword">Program Definition</span> <span class="id" title="var">map_cons</span> :=<br/>
+&nbsp;&nbsp;<span class="id" title="var">make_rewrite</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;(<span class="id" title="var">_</span> ,, <span class="id" title="var">_</span> ,, <span class="id" title="var">_</span> ,, ∙) <span class="id" title="var">_</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;(<span class="id" title="var">Map</span> · <span class="id" title="var">V</span> 0 · (<span class="id" title="var">Cons</span> · <span class="id" title="var">V</span> 1 · <span class="id" title="var">V</span> 2))<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;(<span class="id" title="var">Cons</span> · (<span class="id" title="var">V</span> 0 · <span class="id" title="var">V</span> 1) · (<span class="id" title="var">Map</span> · <span class="id" title="var">V</span> 0 · <span class="id" title="var">V</span> 2)).<br/>
+
+<br/>
+</div>
+
+<div class="doc">
+The AFS 
+</div>
+<div class="code">
+<span class="id" title="keyword">Definition</span> <span class="id" title="var">map_afs</span> :=<br/>
+&nbsp;&nbsp;<span class="id" title="var">make_afs</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="var">map_ar</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;(<span class="id" title="var">map_nil</span> :: <span class="id" title="var">map_cons</span> :: <span class="id" title="var">nil</span>).<br/>
+
+<br/>
+</div>
+
+<div class="doc">
+The polynomials 
+</div>
+<div class="code">
+<span class="id" title="keyword">Definition</span> <span class="id" title="var">map_fun_poly</span> <span class="id" title="var">f</span> : <span class="id" title="var">poly</span> ∙ (<span class="id" title="var">arity</span> <span class="id" title="var">map_afs</span> <span class="id" title="var">f</span>) :=<br/>
+&nbsp;&nbsp;<span class="id" title="keyword">match</span> <span class="id" title="var">f</span> <span class="id" title="keyword">with</span><br/>
+&nbsp;&nbsp;| <span class="id" title="var">TNil</span> =&gt; <span class="id" title="var">to_Poly</span> (<span class="id" title="var">P_const</span> 2)<br/>
+&nbsp;&nbsp;| <span class="id" title="var">TCons</span> =&gt;<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="var">λP</span> <span class="id" title="keyword">let</span> <span class="id" title="var">y0</span> := <span class="id" title="var">P_var</span> (<span class="id" title="var">Vz</span>) <span class="id" title="tactic">in</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="var">λP</span> <span class="id" title="keyword">let</span> <span class="id" title="var">y1</span> := <span class="id" title="var">P_var</span> (<span class="id" title="var">Vs</span> <span class="id" title="var">Vz</span>) <span class="id" title="tactic">in</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="var">to_Poly</span> (<span class="id" title="var">P_const</span> 3 + <span class="id" title="var">y0</span> + <span class="id" title="var">y1</span>)<br/>
+&nbsp;&nbsp;| <span class="id" title="var">TMap</span> =&gt;<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="var">λP</span> <span class="id" title="keyword">let</span> <span class="id" title="var">y0</span> := <span class="id" title="var">P_var</span> <span class="id" title="var">Vz</span> <span class="id" title="tactic">in</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="var">λP</span> <span class="id" title="keyword">let</span> <span class="id" title="var">G1</span> := <span class="id" title="var">P_var</span> (<span class="id" title="var">Vs</span> <span class="id" title="var">Vz</span>) <span class="id" title="tactic">in</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="var">to_Poly</span> (<span class="id" title="var">P_const</span> 3 + <span class="id" title="var">P_const</span> 3 * <span class="id" title="var">y0</span> + <span class="id" title="var">G1</span> ·<span class="id" title="var">P</span> <span class="id" title="var">y0</span> + <span class="id" title="var">P_const</span> 3 * <span class="id" title="var">y0</span> * <span class="id" title="var">G1</span> ·<span class="id" title="var">P</span> <span class="id" title="var">y0</span>)<br/>
+&nbsp;&nbsp;<span class="id" title="keyword">end</span>.<br/>
+
+<br/>
+</div>
+
+<div class="doc">
+Strong normalization 
+</div>
+<div class="code">
+<span class="id" title="keyword">Theorem</span> <span class="id" title="var">map_isSN</span> : <span class="id" title="var">isSN</span> <span class="id" title="var">map_afs</span>.<br/>
+<span class="id" title="keyword">Proof</span>.<br/>
+&nbsp;&nbsp;<span class="id" title="var">certificate_SN</span>.<br/>
+&nbsp;&nbsp;<span class="id" title="var">rule_removal_certificate</span> (0 :: <span class="id" title="var">nil</span>).<br/>
+&nbsp;&nbsp;{ <span class="id" title="var">poly_certificate</span> <span class="id" title="var">map_fun_poly</span>. }<br/>
+&nbsp;&nbsp;<span class="id" title="var">rule_removal_certificate</span> (0 :: <span class="id" title="var">nil</span>).<br/>
+&nbsp;&nbsp;{ <span class="id" title="var">poly_certificate</span> <span class="id" title="var">map_fun_poly</span>. }<br/>
+&nbsp;&nbsp;<span class="id" title="var">empty_certificate</span>.<br/>
+<span class="id" title="keyword">Qed</span>.<br/>
+</div>
+</div>
+
+<div id="footer">
+<hr/><a href="index.html">Index</a><hr/>This page has been generated by <a href="http://coq.inria.fr/">coqdoc</a>
+</div>
+
+</div>
+
+</body>
+</html>

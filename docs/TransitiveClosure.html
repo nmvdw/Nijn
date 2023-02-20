@@ -1,0 +1,92 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+"http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1" />
+<link href="coqdoc.css" rel="stylesheet" type="text/css" />
+<title>TransitiveClosure</title>
+</head>
+
+<body>
+
+<div id="page">
+
+<div id="header">
+</div>
+
+<div id="main">
+
+<h1 class="libtitle">Library TransitiveClosure</h1>
+
+<div class="code">
+<span class="id" title="keyword">Require</span> <span class="id" title="keyword">Import</span> <span class="id" title="var">Nijn.Prelude.Checks</span>.<br/>
+<span class="id" title="keyword">Require</span> <span class="id" title="keyword">Import</span> <span class="id" title="var">Nijn.Prelude.Relations.WellfoundedRelation</span>.<br/>
+
+<br/>
+</div>
+
+<div class="doc">
+<a id="lab43"></a><h1 class="section">Transitive closures</h1>
+
+<div class="paragraph"> </div>
+
+ The transitive closure 
+</div>
+<div class="code">
+<span class="id" title="keyword">Inductive</span> <span class="id" title="var">transitiveClosure</span> {<span class="id" title="var">A</span> : <span class="id" title="keyword">Type</span>} (<span class="id" title="var">R</span> : <span class="id" title="var">A</span> -&gt; <span class="id" title="var">A</span> -&gt; <span class="id" title="keyword">Type</span>) : <span class="id" title="var">A</span> -&gt; <span class="id" title="var">A</span> -&gt; <span class="id" title="keyword">Type</span> :=<br/>
+| <span class="id" title="var">TStep</span> : <span class="id" title="keyword">forall</span> (<span class="id" title="var">a1</span> <span class="id" title="var">a2</span> : <span class="id" title="var">A</span>),<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="var">R</span> <span class="id" title="var">a1</span> <span class="id" title="var">a2</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;-&gt; <span class="id" title="var">transitiveClosure</span> <span class="id" title="var">R</span> <span class="id" title="var">a1</span> <span class="id" title="var">a2</span><br/>
+| <span class="id" title="var">Trans</span> : <span class="id" title="keyword">forall</span> {<span class="id" title="var">a1</span> <span class="id" title="var">a2</span> <span class="id" title="var">a3</span> : <span class="id" title="var">A</span>},<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="var">transitiveClosure</span> <span class="id" title="var">R</span> <span class="id" title="var">a1</span> <span class="id" title="var">a2</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;-&gt; <span class="id" title="var">transitiveClosure</span> <span class="id" title="var">R</span> <span class="id" title="var">a2</span> <span class="id" title="var">a3</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;-&gt; <span class="id" title="var">transitiveClosure</span> <span class="id" title="var">R</span> <span class="id" title="var">a1</span> <span class="id" title="var">a3</span>.<br/>
+
+<br/>
+<span class="id" title="keyword">Arguments</span> <span class="id" title="var">TStep</span> {<span class="id" title="var">_</span> <span class="id" title="var">_</span> <span class="id" title="var">_</span> <span class="id" title="var">_</span>} <span class="id" title="var">_</span>.<br/>
+<span class="id" title="keyword">Arguments</span> <span class="id" title="var">Trans</span> {<span class="id" title="var">_</span> <span class="id" title="var">_</span> <span class="id" title="var">_</span> <span class="id" title="var">_</span> <span class="id" title="var">_</span>} <span class="id" title="var">_</span> <span class="id" title="var">_</span>.<br/>
+
+<br/>
+</div>
+
+<div class="doc">
+<a id="lab44"></a><h1 class="section">Wellfoundedness of the transitive closure</h1>
+
+<div class="paragraph"> </div>
+
+ A relation is wellfounded if its transitive closure is wellfounded 
+</div>
+<div class="code">
+<span class="id" title="keyword">Proposition</span> <span class="id" title="var">wf_from_transitiveClosure</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{<span class="id" title="var">A</span> : <span class="id" title="keyword">Type</span>}<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(<span class="id" title="var">R</span> : <span class="id" title="var">A</span> -&gt; <span class="id" title="var">A</span> -&gt; <span class="id" title="keyword">Type</span>)<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(<span class="id" title="var">HR</span> : <span class="id" title="var">Wf</span> (<span class="id" title="var">transitiveClosure</span> <span class="id" title="var">R</span>))<br/>
+&nbsp;&nbsp;: <span class="id" title="var">Wf</span> <span class="id" title="var">R</span>.<br/>
+<span class="id" title="keyword">Proof</span>.<br/>
+&nbsp;&nbsp;<span class="id" title="tactic">refine</span> (<span class="id" title="var">fiber_Wf</span> <span class="id" title="var">HR</span> (<span class="id" title="keyword">fun</span> <span class="id" title="var">a</span> =&gt; <span class="id" title="var">a</span>) <span class="id" title="var">_</span>).<br/>
+&nbsp;&nbsp;<span class="id" title="tactic">intros</span> <span class="id" title="var">a1</span> <span class="id" title="var">a2</span> <span class="id" title="var">r</span>.<br/>
+&nbsp;&nbsp;<span class="id" title="tactic">apply</span> <span class="id" title="var">TStep</span>.<br/>
+&nbsp;&nbsp;<span class="id" title="tactic">exact</span> <span class="id" title="var">r</span>.<br/>
+<span class="id" title="keyword">Qed</span>.<br/>
+
+<br/>
+</div>
+
+<div class="doc">
+<a id="lab45"></a><h1 class="section">Reflexive closure</h1>
+
+</div>
+<div class="code">
+<span class="id" title="keyword">Definition</span> <span class="id" title="var">reflexiveClosure</span> {<span class="id" title="var">A</span> : <span class="id" title="keyword">Type</span>} (<span class="id" title="var">R</span> : <span class="id" title="var">A</span> -&gt; <span class="id" title="var">A</span> -&gt; <span class="id" title="keyword">Type</span>) : <span class="id" title="var">A</span> -&gt; <span class="id" title="var">A</span> -&gt; <span class="id" title="keyword">Type</span> :=<br/>
+&nbsp;&nbsp;<span class="id" title="keyword">fun</span> <span class="id" title="var">a1</span> <span class="id" title="var">a2</span> =&gt; (<span class="id" title="var">R</span> <span class="id" title="var">a1</span> <span class="id" title="var">a2</span> + (<span class="id" title="var">a1</span> = <span class="id" title="var">a2</span>))%<span class="id" title="keyword">type</span>.<br/>
+</div>
+</div>
+
+<div id="footer">
+<hr/><a href="index.html">Index</a><hr/>This page has been generated by <a href="http://coq.inria.fr/">coqdoc</a>
+</div>
+
+</div>
+
+</body>
+</html>

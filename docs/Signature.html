@@ -1,0 +1,240 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+"http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1" />
+<link href="coqdoc.css" rel="stylesheet" type="text/css" />
+<title>Signature</title>
+</head>
+
+<body>
+
+<div id="page">
+
+<div id="header">
+</div>
+
+<div id="main">
+
+<h1 class="libtitle">Library Signature</h1>
+
+<div class="code">
+<span class="id" title="keyword">Require</span> <span class="id" title="keyword">Import</span> <span class="id" title="var">Nijn.Prelude</span>.<br/>
+<span class="id" title="keyword">Require</span> <span class="id" title="keyword">Export</span> <span class="id" title="var">Nijn.Syntax.Signature.Types</span>.<br/>
+<span class="id" title="keyword">Require</span> <span class="id" title="keyword">Export</span> <span class="id" title="var">Nijn.Syntax.Signature.Contexts</span>.<br/>
+<span class="id" title="keyword">Require</span> <span class="id" title="keyword">Export</span> <span class="id" title="var">Nijn.Syntax.Signature.Terms</span>.<br/>
+<span class="id" title="keyword">Require</span> <span class="id" title="keyword">Export</span> <span class="id" title="var">Nijn.Syntax.Signature.TermWeakenings</span>.<br/>
+<span class="id" title="keyword">Require</span> <span class="id" title="keyword">Export</span> <span class="id" title="var">Nijn.Syntax.Signature.TermSubstitutions</span>.<br/>
+<span class="id" title="keyword">Require</span> <span class="id" title="keyword">Export</span> <span class="id" title="var">Nijn.Syntax.Signature.RewritingSystem</span>.<br/>
+
+<br/>
+</div>
+
+<div class="doc">
+<a id="lab15"></a><h1 class="section">Rewrite rules</h1>
+
+<div class="paragraph"> </div>
+
+ Rewrite rules are given by two terms. These terms have the same type and they live in the same context. 
+</div>
+<div class="code">
+<span class="id" title="keyword">Record</span> <span class="id" title="var">rewriteRule</span> {<span class="id" title="var">B</span> : <span class="id" title="keyword">Type</span>} {<span class="id" title="var">F</span> : <span class="id" title="keyword">Type</span>} (<span class="id" title="var">ar</span> : <span class="id" title="var">F</span> -&gt; <span class="id" title="var">ty</span> <span class="id" title="var">B</span>) :=<br/>
+&nbsp;&nbsp;<span class="id" title="var">make_rewrite</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;{<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="var">vars_of</span> : <span class="id" title="var">con</span> <span class="id" title="var">B</span> ;<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="var">tar_of</span> : <span class="id" title="var">ty</span> <span class="id" title="var">B</span> ;<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="var">lhs_of</span> : <span class="id" title="var">tm</span> <span class="id" title="var">ar</span> <span class="id" title="var">vars_of</span> <span class="id" title="var">tar_of</span> ;<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="var">rhs_of</span> : <span class="id" title="var">tm</span> <span class="id" title="var">ar</span> <span class="id" title="var">vars_of</span> <span class="id" title="var">tar_of</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;}.<br/>
+
+<br/>
+<span class="id" title="keyword">Arguments</span> <span class="id" title="var">make_rewrite</span> {<span class="id" title="var">_</span> <span class="id" title="var">_</span> <span class="id" title="var">_</span>} <span class="id" title="var">_</span> <span class="id" title="var">_</span> <span class="id" title="var">_</span> <span class="id" title="var">_</span>.<br/>
+<span class="id" title="keyword">Arguments</span> <span class="id" title="var">vars_of</span> {<span class="id" title="var">_</span> <span class="id" title="var">_</span> <span class="id" title="var">_</span>} <span class="id" title="var">_</span>.<br/>
+<span class="id" title="keyword">Arguments</span> <span class="id" title="var">tar_of</span> {<span class="id" title="var">_</span> <span class="id" title="var">_</span> <span class="id" title="var">_</span>} <span class="id" title="var">_</span>.<br/>
+<span class="id" title="keyword">Arguments</span> <span class="id" title="var">lhs_of</span> {<span class="id" title="var">_</span> <span class="id" title="var">_</span> <span class="id" title="var">_</span>} <span class="id" title="var">_</span>.<br/>
+<span class="id" title="keyword">Arguments</span> <span class="id" title="var">rhs_of</span> {<span class="id" title="var">_</span> <span class="id" title="var">_</span> <span class="id" title="var">_</span>} <span class="id" title="var">_</span>.<br/>
+
+<br/>
+<span class="id" title="keyword">Program Definition</span> <span class="id" title="var">dec_eq_rewriteRule</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{<span class="id" title="var">B</span> : <span class="id" title="keyword">Type</span>}<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;`{<span class="id" title="var">decEq</span> <span class="id" title="var">B</span>}<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{<span class="id" title="var">F</span> : <span class="id" title="keyword">Type</span>}<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;`{<span class="id" title="var">decEq</span> <span class="id" title="var">F</span>}<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{<span class="id" title="var">ar</span> : <span class="id" title="var">F</span> -&gt; <span class="id" title="var">ty</span> <span class="id" title="var">B</span>}<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(<span class="id" title="var">r₁</span> <span class="id" title="var">r₂</span> : <span class="id" title="var">rewriteRule</span> <span class="id" title="var">ar</span>)<br/>
+&nbsp;&nbsp;: <span class="id" title="var">dec</span> (<span class="id" title="var">r₁</span> = <span class="id" title="var">r₂</span>)<br/>
+&nbsp;&nbsp;:= <span class="id" title="keyword">match</span> <span class="id" title="var">dec_eq</span> (<span class="id" title="var">vars_of</span> <span class="id" title="var">r₁</span>) (<span class="id" title="var">vars_of</span> <span class="id" title="var">r₂</span>) <span class="id" title="keyword">with</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;| <span class="id" title="var">Yes</span> <span class="id" title="var">p₁</span> =&gt;<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="keyword">match</span> <span class="id" title="var">dec_eq</span> (<span class="id" title="var">tar_of</span> <span class="id" title="var">r₁</span>) (<span class="id" title="var">tar_of</span> <span class="id" title="var">r₂</span>) <span class="id" title="keyword">with</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;| <span class="id" title="var">Yes</span> <span class="id" title="var">p₂</span> =&gt;<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="keyword">match</span> <span class="id" title="var">dec_eq</span> (<span class="id" title="var">tm_to_ut_tm</span> (<span class="id" title="var">lhs_of</span> <span class="id" title="var">r₁</span>)) (<span class="id" title="var">tm_to_ut_tm</span> (<span class="id" title="var">lhs_of</span> <span class="id" title="var">r₂</span>)) <span class="id" title="keyword">with</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;| <span class="id" title="var">Yes</span> <span class="id" title="var">p₃</span> =&gt;<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="keyword">match</span> <span class="id" title="var">dec_eq</span> (<span class="id" title="var">tm_to_ut_tm</span> (<span class="id" title="var">rhs_of</span> <span class="id" title="var">r₁</span>)) (<span class="id" title="var">tm_to_ut_tm</span> (<span class="id" title="var">rhs_of</span> <span class="id" title="var">r₂</span>)) <span class="id" title="keyword">with</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;| <span class="id" title="var">Yes</span> <span class="id" title="var">p₄</span> =&gt; <span class="id" title="var">Yes</span> <span class="id" title="var">_</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;| <span class="id" title="var">No</span> <span class="id" title="var">_</span> =&gt; <span class="id" title="var">No</span> <span class="id" title="var">_</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="keyword">end</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;| <span class="id" title="var">No</span> <span class="id" title="var">_</span> =&gt; <span class="id" title="var">No</span> <span class="id" title="var">_</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="keyword">end</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;| <span class="id" title="var">No</span> <span class="id" title="var">_</span> =&gt; <span class="id" title="var">No</span> <span class="id" title="var">_</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="keyword">end</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;| <span class="id" title="var">No</span> <span class="id" title="var">_</span> =&gt; <span class="id" title="var">No</span> <span class="id" title="var">_</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="keyword">end</span>.<br/>
+<span class="id" title="keyword">Next</span> <span class="id" title="keyword">Obligation</span>.<br/>
+&nbsp;&nbsp;<span class="id" title="tactic">destruct</span> <span class="id" title="var">r₁</span> <span class="id" title="keyword">as</span> [ <span class="id" title="var">v₁</span> <span class="id" title="var">t₁</span> <span class="id" title="var">l₁</span> <span class="id" title="var">r₁</span> ].<br/>
+&nbsp;&nbsp;<span class="id" title="tactic">destruct</span> <span class="id" title="var">r₂</span> <span class="id" title="keyword">as</span> [ <span class="id" title="var">v₂</span> <span class="id" title="var">t₂</span> <span class="id" title="var">l₂</span> <span class="id" title="var">r₂</span> ].<br/>
+&nbsp;&nbsp;<span class="id" title="var">cbn</span> <span class="id" title="tactic">in</span> *.<br/>
+&nbsp;&nbsp;<span class="id" title="tactic">subst</span>.<br/>
+&nbsp;&nbsp;<span class="id" title="tactic">f_equal</span> ; [ <span class="id" title="tactic">apply</span> (<span class="id" title="var">eq_ut_tm</span> <span class="id" title="var">p₃</span> (<span class="id" title="var">eq_refl</span> <span class="id" title="var">_</span>)) |  <span class="id" title="tactic">apply</span> (<span class="id" title="var">eq_ut_tm</span> <span class="id" title="var">p₄</span> (<span class="id" title="var">eq_refl</span> <span class="id" title="var">_</span>)) ].<br/>
+<span class="id" title="keyword">Qed</span>.<br/>
+
+<br/>
+<span class="id" title="keyword">Global Instance</span> <span class="id" title="var">decEq_rewriteRule</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{<span class="id" title="var">B</span> : <span class="id" title="keyword">Type</span>}<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;`{<span class="id" title="var">decEq</span> <span class="id" title="var">B</span>}<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{<span class="id" title="var">F</span> : <span class="id" title="keyword">Type</span>}<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;`{<span class="id" title="var">decEq</span> <span class="id" title="var">F</span>}<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(<span class="id" title="var">ar</span> : <span class="id" title="var">F</span> -&gt; <span class="id" title="var">ty</span> <span class="id" title="var">B</span>)<br/>
+&nbsp;&nbsp;: <span class="id" title="var">decEq</span> (<span class="id" title="var">rewriteRule</span> <span class="id" title="var">ar</span>)<br/>
+&nbsp;&nbsp;:= {| <span class="id" title="var">dec_eq</span> := <span class="id" title="var">dec_eq_rewriteRule</span> |}.<br/>
+
+<br/>
+</div>
+
+<div class="doc">
+<a id="lab16"></a><h1 class="section">The notion of Algebraic Functional System</h1>
+
+</div>
+<div class="code">
+<span class="id" title="keyword">Record</span> <span class="id" title="var">afs</span> (<span class="id" title="var">B</span> : <span class="id" title="keyword">Type</span>) (<span class="id" title="var">F</span> : <span class="id" title="keyword">Type</span>) :=<br/>
+&nbsp;&nbsp;<span class="id" title="var">make_afs</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;{<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="var">arity</span> : <span class="id" title="var">F</span> -&gt; <span class="id" title="var">ty</span> <span class="id" title="var">B</span> ;<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="var">list_of_rewriteRules</span> : <span class="id" title="var">list</span> (<span class="id" title="var">rewriteRule</span> <span class="id" title="var">arity</span>)<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;}.<br/>
+
+<br/>
+<span class="id" title="keyword">Arguments</span> <span class="id" title="var">make_afs</span> {<span class="id" title="var">_</span> <span class="id" title="var">_</span>} <span class="id" title="var">_</span> <span class="id" title="var">_</span>.<br/>
+<span class="id" title="keyword">Arguments</span> <span class="id" title="var">arity</span> {<span class="id" title="var">_</span> <span class="id" title="var">_</span>} <span class="id" title="var">_</span> <span class="id" title="var">_</span>.<br/>
+<span class="id" title="keyword">Arguments</span> <span class="id" title="var">list_of_rewriteRules</span> {<span class="id" title="var">_</span> <span class="id" title="var">_</span>} <span class="id" title="var">_</span>.<br/>
+
+<br/>
+<span class="id" title="keyword">Record</span> <span class="id" title="var">fin_afs</span> (<span class="id" title="var">B</span> : <span class="id" title="keyword">Type</span>) (<span class="id" title="var">F</span> : <span class="id" title="keyword">Type</span>) :=<br/>
+&nbsp;&nbsp;<span class="id" title="var">make_fin_afs</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;{<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="var">carrier</span> :&gt; <span class="id" title="var">afs</span> <span class="id" title="var">B</span> <span class="id" title="var">F</span> ;<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="var">baseTyFin</span> : <span class="id" title="var">isFinite</span> <span class="id" title="var">B</span> ;<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="var">baseTmFin</span> : <span class="id" title="var">isFinite</span> <span class="id" title="var">F</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;}.<br/>
+
+<br/>
+<span class="id" title="keyword">Arguments</span> <span class="id" title="var">make_fin_afs</span> {<span class="id" title="var">_</span> <span class="id" title="var">_</span>} <span class="id" title="var">_</span> <span class="id" title="var">_</span> <span class="id" title="var">_</span>.<br/>
+<span class="id" title="keyword">Arguments</span> <span class="id" title="var">carrier</span> {<span class="id" title="var">_</span> <span class="id" title="var">_</span>} <span class="id" title="var">_</span>.<br/>
+<span class="id" title="keyword">Arguments</span> <span class="id" title="var">baseTyFin</span> {<span class="id" title="var">_</span> <span class="id" title="var">_</span>} <span class="id" title="var">_</span>.<br/>
+<span class="id" title="keyword">Arguments</span> <span class="id" title="var">baseTmFin</span> {<span class="id" title="var">_</span> <span class="id" title="var">_</span>} <span class="id" title="var">_</span>.<br/>
+
+<br/>
+<span class="id" title="keyword">Definition</span> <span class="id" title="var">rewriteRules</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{<span class="id" title="var">B</span> <span class="id" title="var">F</span> : <span class="id" title="keyword">Type</span>}<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(<span class="id" title="var">X</span> : <span class="id" title="var">afs</span> <span class="id" title="var">B</span> <span class="id" title="var">F</span>)<br/>
+&nbsp;&nbsp;: <span class="id" title="keyword">Type</span><br/>
+&nbsp;&nbsp;:= <span class="id" title="var">members</span> (<span class="id" title="var">list_of_rewriteRules</span> <span class="id" title="var">X</span>).<br/>
+
+<br/>
+<span class="id" title="keyword">Definition</span> <span class="id" title="var">vars</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{<span class="id" title="var">B</span> <span class="id" title="var">F</span> : <span class="id" title="keyword">Type</span>}<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{<span class="id" title="var">X</span> : <span class="id" title="var">afs</span> <span class="id" title="var">B</span> <span class="id" title="var">F</span>}<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(<span class="id" title="var">r</span> : <span class="id" title="var">rewriteRules</span> <span class="id" title="var">X</span>)<br/>
+&nbsp;&nbsp;: <span class="id" title="var">con</span> <span class="id" title="var">B</span><br/>
+&nbsp;&nbsp;:= <span class="id" title="var">vars_of</span> (<span class="id" title="var">member_el</span> <span class="id" title="var">r</span>).<br/>
+
+<br/>
+<span class="id" title="keyword">Definition</span> <span class="id" title="var">tars</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{<span class="id" title="var">B</span> <span class="id" title="var">F</span> : <span class="id" title="keyword">Type</span>}<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{<span class="id" title="var">X</span> : <span class="id" title="var">afs</span> <span class="id" title="var">B</span> <span class="id" title="var">F</span>}<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(<span class="id" title="var">r</span> : <span class="id" title="var">rewriteRules</span> <span class="id" title="var">X</span>)<br/>
+&nbsp;&nbsp;: <span class="id" title="var">ty</span> <span class="id" title="var">B</span><br/>
+&nbsp;&nbsp;:= <span class="id" title="var">tar_of</span> (<span class="id" title="var">member_el</span> <span class="id" title="var">r</span>).<br/>
+
+<br/>
+<span class="id" title="keyword">Definition</span> <span class="id" title="var">lhs</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{<span class="id" title="var">B</span> <span class="id" title="var">F</span> : <span class="id" title="keyword">Type</span>}<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{<span class="id" title="var">X</span> : <span class="id" title="var">afs</span> <span class="id" title="var">B</span> <span class="id" title="var">F</span>}<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(<span class="id" title="var">r</span> : <span class="id" title="var">rewriteRules</span> <span class="id" title="var">X</span>)<br/>
+&nbsp;&nbsp;: <span class="id" title="var">tm</span> (<span class="id" title="var">arity</span> <span class="id" title="var">X</span>) (<span class="id" title="var">vars</span> <span class="id" title="var">r</span>) (<span class="id" title="var">tars</span> <span class="id" title="var">r</span>)<br/>
+&nbsp;&nbsp;:= <span class="id" title="var">lhs_of</span> (<span class="id" title="var">member_el</span> <span class="id" title="var">r</span>).<br/>
+
+<br/>
+<span class="id" title="keyword">Definition</span> <span class="id" title="var">rhs</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{<span class="id" title="var">B</span> <span class="id" title="var">F</span> : <span class="id" title="keyword">Type</span>}<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{<span class="id" title="var">X</span> : <span class="id" title="var">afs</span> <span class="id" title="var">B</span> <span class="id" title="var">F</span>}<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(<span class="id" title="var">r</span> : <span class="id" title="var">rewriteRules</span> <span class="id" title="var">X</span>)<br/>
+&nbsp;&nbsp;: <span class="id" title="var">tm</span> (<span class="id" title="var">arity</span> <span class="id" title="var">X</span>) (<span class="id" title="var">vars</span> <span class="id" title="var">r</span>) (<span class="id" title="var">tars</span> <span class="id" title="var">r</span>)<br/>
+&nbsp;&nbsp;:= <span class="id" title="var">rhs_of</span> (<span class="id" title="var">member_el</span> <span class="id" title="var">r</span>).<br/>
+
+<br/>
+</div>
+
+<div class="doc">
+Accessor functions for AFSs 
+</div>
+<div class="code">
+<span class="id" title="keyword">Module</span> <span class="id" title="var">AFSNotation</span>.<br/>
+&nbsp;&nbsp;<span class="id" title="keyword">Definition</span> <span class="id" title="var">tm</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{<span class="id" title="var">B</span> : <span class="id" title="keyword">Type</span>}<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{<span class="id" title="var">F</span> : <span class="id" title="keyword">Type</span>}<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(<span class="id" title="var">X</span> : <span class="id" title="var">afs</span> <span class="id" title="var">B</span> <span class="id" title="var">F</span>)<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(<span class="id" title="var">C</span> : <span class="id" title="var">con</span> <span class="id" title="var">B</span>)<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(<span class="id" title="var">A</span> : <span class="id" title="var">ty</span> <span class="id" title="var">B</span>)<br/>
+&nbsp;&nbsp;: <span class="id" title="keyword">Type</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;:= <span class="id" title="var">Terms.tm</span> (<span class="id" title="var">arity</span> <span class="id" title="var">X</span>) <span class="id" title="var">C</span> <span class="id" title="var">A</span>.<br/>
+
+<br/>
+&nbsp;&nbsp;<span class="id" title="keyword">Definition</span> <span class="id" title="var">betaRed</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{<span class="id" title="var">B</span> : <span class="id" title="keyword">Type</span>}<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{<span class="id" title="var">F</span> : <span class="id" title="keyword">Type</span>}<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(<span class="id" title="var">X</span> : <span class="id" title="var">afs</span> <span class="id" title="var">B</span> <span class="id" title="var">F</span>)<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{<span class="id" title="var">C</span> : <span class="id" title="var">con</span> <span class="id" title="var">B</span>}<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{<span class="id" title="var">A</span> : <span class="id" title="var">ty</span> <span class="id" title="var">B</span>}<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(<span class="id" title="var">t1</span> <span class="id" title="var">t2</span> : <span class="id" title="var">tm</span> <span class="id" title="var">X</span> <span class="id" title="var">C</span> <span class="id" title="var">A</span>)<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;: <span class="id" title="keyword">Type</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;:= <span class="id" title="var">RewritingSystem.betaRed</span> <span class="id" title="var">t1</span> <span class="id" title="var">t2</span>.<br/>
+
+<br/>
+&nbsp;&nbsp;<span class="id" title="keyword">Definition</span> <span class="id" title="var">rew</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{<span class="id" title="var">B</span> : <span class="id" title="keyword">Type</span>}<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{<span class="id" title="var">F</span> : <span class="id" title="keyword">Type</span>}<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(<span class="id" title="var">X</span> : <span class="id" title="var">afs</span> <span class="id" title="var">B</span> <span class="id" title="var">F</span>)<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{<span class="id" title="var">C</span> : <span class="id" title="var">con</span> <span class="id" title="var">B</span>}<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{<span class="id" title="var">A</span> : <span class="id" title="var">ty</span> <span class="id" title="var">B</span>}<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(<span class="id" title="var">t1</span> <span class="id" title="var">t2</span> : <span class="id" title="var">tm</span> <span class="id" title="var">X</span> <span class="id" title="var">C</span> <span class="id" title="var">A</span>)<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;:= <span class="id" title="var">RewritingSystem.rew</span> <span class="id" title="var">lhs</span> <span class="id" title="var">rhs</span> <span class="id" title="var">t1</span> <span class="id" title="var">t2</span>.<br/>
+
+<br/>
+&nbsp;&nbsp;<span class="id" title="keyword">Notation</span> &quot;t1 ∼&gt; t2" := (<span class="id" title="var">rew</span> <span class="id" title="var">_</span> <span class="id" title="var">t1</span> <span class="id" title="var">t2</span>) (<span class="id" title="tactic">at</span> <span class="id" title="keyword">level</span> 70). <span class="id" title="keyword">End</span> <span class="id" title="var">AFSNotation</span>.<br/>
+
+<br/>
+<span class="id" title="keyword">Import</span> <span class="id" title="var">AFSNotation</span>.<br/>
+
+<br/>
+<span class="id" title="keyword">Definition</span> <span class="id" title="var">rew_rewrite_rule</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{<span class="id" title="var">B</span> : <span class="id" title="keyword">Type</span>}<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{<span class="id" title="var">F</span> : <span class="id" title="keyword">Type</span>}<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(<span class="id" title="var">X</span> : <span class="id" title="var">afs</span> <span class="id" title="var">B</span> <span class="id" title="var">F</span>)<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(<span class="id" title="var">r</span> : <span class="id" title="var">rewriteRules</span> <span class="id" title="var">X</span>)<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{<span class="id" title="var">C</span> : <span class="id" title="var">con</span> <span class="id" title="var">B</span>}<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(<span class="id" title="var">s</span> : <span class="id" title="var">sub</span> (<span class="id" title="var">arity</span> <span class="id" title="var">X</span>) <span class="id" title="var">C</span> (<span class="id" title="var">vars</span> <span class="id" title="var">r</span>))<br/>
+&nbsp;&nbsp;: <span class="id" title="var">lhs</span> <span class="id" title="var">r</span> [ <span class="id" title="var">s</span> ] ∼&gt; <span class="id" title="var">rhs</span> <span class="id" title="var">r</span> [ <span class="id" title="var">s</span> ].<br/>
+<span class="id" title="keyword">Proof</span>.<br/>
+&nbsp;&nbsp;<span class="id" title="tactic">apply</span> <span class="id" title="var">rew_baseStep</span>.<br/>
+<span class="id" title="keyword">Defined</span>.<br/>
+</div>
+</div>
+
+<div id="footer">
+<hr/><a href="index.html">Index</a><hr/>This page has been generated by <a href="http://coq.inria.fr/">coqdoc</a>
+</div>
+
+</div>
+
+</body>
+</html>
