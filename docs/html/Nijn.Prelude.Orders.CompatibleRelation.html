@@ -1,0 +1,252 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+"http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<link href="coqdoc.css" rel="stylesheet" type="text/css" />
+<title>Nijn.Prelude.Orders.CompatibleRelation</title>
+</head>
+
+<body>
+
+<div id="page">
+
+<div id="header">
+</div>
+
+<div id="main">
+
+<h1 class="libtitle">Library Nijn.Prelude.Orders.CompatibleRelation</h1>
+
+<div class="code">
+<span class="id" title="keyword">Require</span> <span class="id" title="keyword">Import</span> <a class="idref" href="Nijn.Prelude.Checks.html#"><span class="id" title="library">Nijn.Prelude.Checks</span></a>.<br/>
+<span class="id" title="keyword">Require</span> <span class="id" title="keyword">Import</span> <a class="idref" href="Nijn.Prelude.Basics.Decidable.html#"><span class="id" title="library">Nijn.Prelude.Basics.Decidable</span></a>.<br/>
+<span class="id" title="keyword">Require</span> <span class="id" title="keyword">Import</span> <a class="idref" href="Nijn.Prelude.Relations.WellfoundedRelation.html#"><span class="id" title="library">Nijn.Prelude.Relations.WellfoundedRelation</span></a>.<br/>
+
+<br/>
+<span class="id" title="keyword">Declare Scope</span> <span class="id" title="var">qr</span>.<br/>
+<span class="id" title="keyword">Open</span> <span class="id" title="keyword">Scope</span> <span class="id" title="var">qr</span>.<br/>
+<span class="id" title="keyword">Delimit</span> <span class="id" title="keyword">Scope</span> <span class="id" title="var">qr</span> <span class="id" title="keyword">with</span> <span class="id" title="var">qr</span>.<br/>
+
+<br/>
+</div>
+
+<div class="doc">
+<a id="lab20"></a><h1 class="section">Quasi-orders</h1>
+
+</div>
+<div class="code">
+<span class="id" title="keyword">Record</span> <a id="QuasiRel" class="idref" href="#QuasiRel"><span class="id" title="record">QuasiRel</span></a> :=<br/>
+&nbsp;&nbsp;{<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<a id="carrier_qr" class="idref" href="#carrier_qr"><span class="id" title="projection">carrier_qr</span></a> :&gt; <span class="id" title="keyword">Type</span> ;<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<a id="ge_qr" class="idref" href="#ge_qr"><span class="id" title="projection">ge_qr</span></a> : <a class="idref" href="Nijn.Prelude.Orders.CompatibleRelation.html#carrier_qr:2"><span class="id" title="method">carrier_qr</span></a> <a class="idref" href="http://coq.inria.fr/distrib/V8.16.1/stdlib//Coq.Init.Logic.html#::type_scope:x_'-&gt;'_x"><span class="id" title="notation">→</span></a> <a class="idref" href="Nijn.Prelude.Orders.CompatibleRelation.html#carrier_qr:2"><span class="id" title="method">carrier_qr</span></a> <a class="idref" href="http://coq.inria.fr/distrib/V8.16.1/stdlib//Coq.Init.Logic.html#::type_scope:x_'-&gt;'_x"><span class="id" title="notation">→</span></a> <span class="id" title="keyword">Prop</span><br/>
+&nbsp;&nbsp;}.<br/>
+
+<br/>
+<span class="id" title="keyword">Arguments</span> <a class="idref" href="Nijn.Prelude.Orders.CompatibleRelation.html#ge_qr"><span class="id" title="projection">ge_qr</span></a> {<span class="id" title="var">_</span>} <span class="id" title="var">_</span> <span class="id" title="var">_</span>.<br/>
+
+<br/>
+<span class="id" title="keyword">Notation</span> <a id="f9d68e48da39af520fb33780cb020c07" class="idref" href="#f9d68e48da39af520fb33780cb020c07"><span class="id" title="notation">&quot;</span></a>x &gt;= y" := (<a class="idref" href="Nijn.Prelude.Orders.CompatibleRelation.html#ge_qr"><span class="id" title="projection">ge_qr</span></a> <span class="id" title="var">x</span> <span class="id" title="var">y</span>) : <span class="id" title="var">qr</span>.<br/>
+
+<br/>
+<span class="id" title="keyword">Class</span> <a id="isQuasiRel" class="idref" href="#isQuasiRel"><span class="id" title="record">isQuasiRel</span></a> ( <a id="X:4" class="idref" href="#X:4"><span class="id" title="binder">X</span></a> : <a class="idref" href="Nijn.Prelude.Orders.CompatibleRelation.html#QuasiRel"><span class="id" title="record">QuasiRel</span></a> ) :=<br/>
+&nbsp;&nbsp;{<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<a id="ge_qr_refl" class="idref" href="#ge_qr_refl"><span class="id" title="projection">ge_qr_refl</span></a> : <span class="id" title="keyword">∀</span> (<a id="x:6" class="idref" href="#x:6"><span class="id" title="binder">x</span></a> : <a class="idref" href="Nijn.Prelude.Orders.CompatibleRelation.html#X:4"><span class="id" title="variable">X</span></a>),<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<a class="idref" href="Nijn.Prelude.Orders.CompatibleRelation.html#x:6"><span class="id" title="variable">x</span></a> <a class="idref" href="Nijn.Prelude.Orders.CompatibleRelation.html#f9d68e48da39af520fb33780cb020c07"><span class="id" title="notation">≥</span></a> <a class="idref" href="Nijn.Prelude.Orders.CompatibleRelation.html#x:6"><span class="id" title="variable">x</span></a>;<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<a id="ge_qr_trans" class="idref" href="#ge_qr_trans"><span class="id" title="projection">ge_qr_trans</span></a> : <span class="id" title="keyword">∀</span> { <a id="x:8" class="idref" href="#x:8"><span class="id" title="binder">x</span></a> <a id="y:9" class="idref" href="#y:9"><span class="id" title="binder">y</span></a> <a id="z:10" class="idref" href="#z:10"><span class="id" title="binder">z</span></a> : <a class="idref" href="Nijn.Prelude.Orders.CompatibleRelation.html#X:4"><span class="id" title="variable">X</span></a> },<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<a class="idref" href="Nijn.Prelude.Orders.CompatibleRelation.html#x:8"><span class="id" title="variable">x</span></a> <a class="idref" href="Nijn.Prelude.Orders.CompatibleRelation.html#f9d68e48da39af520fb33780cb020c07"><span class="id" title="notation">≥</span></a> <a class="idref" href="Nijn.Prelude.Orders.CompatibleRelation.html#y:9"><span class="id" title="variable">y</span></a> <a class="idref" href="http://coq.inria.fr/distrib/V8.16.1/stdlib//Coq.Init.Logic.html#::type_scope:x_'-&gt;'_x"><span class="id" title="notation">→</span></a> <a class="idref" href="Nijn.Prelude.Orders.CompatibleRelation.html#y:9"><span class="id" title="variable">y</span></a> <a class="idref" href="Nijn.Prelude.Orders.CompatibleRelation.html#f9d68e48da39af520fb33780cb020c07"><span class="id" title="notation">≥</span></a> <a class="idref" href="Nijn.Prelude.Orders.CompatibleRelation.html#z:10"><span class="id" title="variable">z</span></a> <a class="idref" href="http://coq.inria.fr/distrib/V8.16.1/stdlib//Coq.Init.Logic.html#::type_scope:x_'-&gt;'_x"><span class="id" title="notation">→</span></a> <a class="idref" href="Nijn.Prelude.Orders.CompatibleRelation.html#x:8"><span class="id" title="variable">x</span></a> <a class="idref" href="Nijn.Prelude.Orders.CompatibleRelation.html#f9d68e48da39af520fb33780cb020c07"><span class="id" title="notation">≥</span></a> <a class="idref" href="Nijn.Prelude.Orders.CompatibleRelation.html#z:10"><span class="id" title="variable">z</span></a><br/>
+&nbsp;&nbsp;}.<br/>
+
+<br/>
+<span class="id" title="keyword">Close</span> <span class="id" title="keyword">Scope</span> <span class="id" title="var">qr</span>.<br/>
+
+<br/>
+</div>
+
+<div class="doc">
+<a id="lab21"></a><h1 class="section">Compatible relations</h1>
+
+</div>
+<div class="code">
+
+<br/>
+<span class="id" title="keyword">Declare Scope</span> <span class="id" title="var">compat</span>.<br/>
+<span class="id" title="keyword">Open</span> <span class="id" title="keyword">Scope</span> <span class="id" title="var">compat</span>.<br/>
+<span class="id" title="keyword">Delimit</span> <span class="id" title="keyword">Scope</span> <span class="id" title="var">compat</span> <span class="id" title="keyword">with</span> <span class="id" title="var">compat</span>.<br/>
+
+<br/>
+</div>
+
+<div class="doc">
+A compatible relation is a type equipped with two relations 
+</div>
+<div class="code">
+<span class="id" title="keyword">Record</span> <a id="CompatRel" class="idref" href="#CompatRel"><span class="id" title="record">CompatRel</span></a> :=<br/>
+&nbsp;&nbsp;{<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<a id="carrier" class="idref" href="#carrier"><span class="id" title="projection">carrier</span></a> :&gt; <span class="id" title="keyword">Type</span> ;<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<a id="gt" class="idref" href="#gt"><span class="id" title="projection">gt</span></a> : <a class="idref" href="Nijn.Prelude.Orders.CompatibleRelation.html#carrier:13"><span class="id" title="method">carrier</span></a> <a class="idref" href="http://coq.inria.fr/distrib/V8.16.1/stdlib//Coq.Init.Logic.html#::type_scope:x_'-&gt;'_x"><span class="id" title="notation">→</span></a> <a class="idref" href="Nijn.Prelude.Orders.CompatibleRelation.html#carrier:13"><span class="id" title="method">carrier</span></a> <a class="idref" href="http://coq.inria.fr/distrib/V8.16.1/stdlib//Coq.Init.Logic.html#::type_scope:x_'-&gt;'_x"><span class="id" title="notation">→</span></a> <span class="id" title="keyword">Prop</span> ;<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<a id="ge" class="idref" href="#ge"><span class="id" title="projection">ge</span></a> : <a class="idref" href="Nijn.Prelude.Orders.CompatibleRelation.html#carrier:13"><span class="id" title="method">carrier</span></a> <a class="idref" href="http://coq.inria.fr/distrib/V8.16.1/stdlib//Coq.Init.Logic.html#::type_scope:x_'-&gt;'_x"><span class="id" title="notation">→</span></a> <a class="idref" href="Nijn.Prelude.Orders.CompatibleRelation.html#carrier:13"><span class="id" title="method">carrier</span></a> <a class="idref" href="http://coq.inria.fr/distrib/V8.16.1/stdlib//Coq.Init.Logic.html#::type_scope:x_'-&gt;'_x"><span class="id" title="notation">→</span></a> <span class="id" title="keyword">Prop</span><br/>
+&nbsp;&nbsp;}.<br/>
+
+<br/>
+<span class="id" title="keyword">Arguments</span> <a class="idref" href="Nijn.Prelude.Orders.CompatibleRelation.html#gt"><span class="id" title="projection">gt</span></a> {<span class="id" title="var">_</span>} <span class="id" title="var">_</span> <span class="id" title="var">_</span>.<br/>
+<span class="id" title="keyword">Arguments</span> <a class="idref" href="Nijn.Prelude.Orders.CompatibleRelation.html#ge"><span class="id" title="projection">ge</span></a> {<span class="id" title="var">_</span>} <span class="id" title="var">_</span> <span class="id" title="var">_</span>.<br/>
+
+<br/>
+<span class="id" title="keyword">Notation</span> <a id="::compat:x_'&gt;'_x" class="idref" href="#::compat:x_'&gt;'_x"><span class="id" title="notation">&quot;</span></a>x &gt; y" := (<a class="idref" href="Nijn.Prelude.Orders.CompatibleRelation.html#gt"><span class="id" title="projection">gt</span></a> <span class="id" title="var">x</span> <span class="id" title="var">y</span>) : <span class="id" title="var">compat</span>.<br/>
+<span class="id" title="keyword">Notation</span> <a id="231a83d61b3d2e6aa3ef6e09c112a19e" class="idref" href="#231a83d61b3d2e6aa3ef6e09c112a19e"><span class="id" title="notation">&quot;</span></a>x &gt;= y" := (<a class="idref" href="Nijn.Prelude.Orders.CompatibleRelation.html#ge"><span class="id" title="projection">ge</span></a> <span class="id" title="var">x</span> <span class="id" title="var">y</span>) : <span class="id" title="var">compat</span>.<br/>
+
+<br/>
+</div>
+
+<div class="doc">
+These are the axioms that should hold for compatible relations. Note that we do not require the relations to be well-founded, but that condition is formulated separately. 
+</div>
+<div class="code">
+<span class="id" title="keyword">Class</span> <a id="isCompatRel" class="idref" href="#isCompatRel"><span class="id" title="record">isCompatRel</span></a> (<a id="X:16" class="idref" href="#X:16"><span class="id" title="binder">X</span></a> : <a class="idref" href="Nijn.Prelude.Orders.CompatibleRelation.html#CompatRel"><span class="id" title="record">CompatRel</span></a>) :=<br/>
+&nbsp;&nbsp;{<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<a id="gt_trans" class="idref" href="#gt_trans"><span class="id" title="projection">gt_trans</span></a> : <span class="id" title="keyword">∀</span> {<a id="x:18" class="idref" href="#x:18"><span class="id" title="binder">x</span></a> <a id="y:19" class="idref" href="#y:19"><span class="id" title="binder">y</span></a> <a id="z:20" class="idref" href="#z:20"><span class="id" title="binder">z</span></a> : <a class="idref" href="Nijn.Prelude.Orders.CompatibleRelation.html#carrier"><span class="id" title="projection">carrier</span></a> <a class="idref" href="Nijn.Prelude.Orders.CompatibleRelation.html#X:16"><span class="id" title="variable">X</span></a>},<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<a class="idref" href="Nijn.Prelude.Orders.CompatibleRelation.html#x:18"><span class="id" title="variable">x</span></a> <a class="idref" href="Nijn.Prelude.Orders.CompatibleRelation.html#::compat:x_'&gt;'_x"><span class="id" title="notation">&gt;</span></a> <a class="idref" href="Nijn.Prelude.Orders.CompatibleRelation.html#y:19"><span class="id" title="variable">y</span></a> <a class="idref" href="http://coq.inria.fr/distrib/V8.16.1/stdlib//Coq.Init.Logic.html#::type_scope:x_'-&gt;'_x"><span class="id" title="notation">→</span></a> <a class="idref" href="Nijn.Prelude.Orders.CompatibleRelation.html#y:19"><span class="id" title="variable">y</span></a> <a class="idref" href="Nijn.Prelude.Orders.CompatibleRelation.html#::compat:x_'&gt;'_x"><span class="id" title="notation">&gt;</span></a> <a class="idref" href="Nijn.Prelude.Orders.CompatibleRelation.html#z:20"><span class="id" title="variable">z</span></a> <a class="idref" href="http://coq.inria.fr/distrib/V8.16.1/stdlib//Coq.Init.Logic.html#::type_scope:x_'-&gt;'_x"><span class="id" title="notation">→</span></a> <a class="idref" href="Nijn.Prelude.Orders.CompatibleRelation.html#x:18"><span class="id" title="variable">x</span></a> <a class="idref" href="Nijn.Prelude.Orders.CompatibleRelation.html#::compat:x_'&gt;'_x"><span class="id" title="notation">&gt;</span></a> <a class="idref" href="Nijn.Prelude.Orders.CompatibleRelation.html#z:20"><span class="id" title="variable">z</span></a> ;<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<a id="ge_trans" class="idref" href="#ge_trans"><span class="id" title="projection">ge_trans</span></a> : <span class="id" title="keyword">∀</span> {<a id="x:22" class="idref" href="#x:22"><span class="id" title="binder">x</span></a> <a id="y:23" class="idref" href="#y:23"><span class="id" title="binder">y</span></a> <a id="z:24" class="idref" href="#z:24"><span class="id" title="binder">z</span></a> : <a class="idref" href="Nijn.Prelude.Orders.CompatibleRelation.html#X:16"><span class="id" title="variable">X</span></a>},<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<a class="idref" href="Nijn.Prelude.Orders.CompatibleRelation.html#x:22"><span class="id" title="variable">x</span></a> <a class="idref" href="Nijn.Prelude.Orders.CompatibleRelation.html#231a83d61b3d2e6aa3ef6e09c112a19e"><span class="id" title="notation">≥</span></a> <a class="idref" href="Nijn.Prelude.Orders.CompatibleRelation.html#y:23"><span class="id" title="variable">y</span></a> <a class="idref" href="http://coq.inria.fr/distrib/V8.16.1/stdlib//Coq.Init.Logic.html#::type_scope:x_'-&gt;'_x"><span class="id" title="notation">→</span></a> <a class="idref" href="Nijn.Prelude.Orders.CompatibleRelation.html#y:23"><span class="id" title="variable">y</span></a> <a class="idref" href="Nijn.Prelude.Orders.CompatibleRelation.html#231a83d61b3d2e6aa3ef6e09c112a19e"><span class="id" title="notation">≥</span></a> <a class="idref" href="Nijn.Prelude.Orders.CompatibleRelation.html#z:24"><span class="id" title="variable">z</span></a> <a class="idref" href="http://coq.inria.fr/distrib/V8.16.1/stdlib//Coq.Init.Logic.html#::type_scope:x_'-&gt;'_x"><span class="id" title="notation">→</span></a> <a class="idref" href="Nijn.Prelude.Orders.CompatibleRelation.html#x:22"><span class="id" title="variable">x</span></a> <a class="idref" href="Nijn.Prelude.Orders.CompatibleRelation.html#231a83d61b3d2e6aa3ef6e09c112a19e"><span class="id" title="notation">≥</span></a> <a class="idref" href="Nijn.Prelude.Orders.CompatibleRelation.html#z:24"><span class="id" title="variable">z</span></a> ;<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<a id="ge_refl" class="idref" href="#ge_refl"><span class="id" title="projection">ge_refl</span></a> : <span class="id" title="keyword">∀</span> (<a id="x:26" class="idref" href="#x:26"><span class="id" title="binder">x</span></a> : <a class="idref" href="Nijn.Prelude.Orders.CompatibleRelation.html#X:16"><span class="id" title="variable">X</span></a>),<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<a class="idref" href="Nijn.Prelude.Orders.CompatibleRelation.html#x:26"><span class="id" title="variable">x</span></a> <a class="idref" href="Nijn.Prelude.Orders.CompatibleRelation.html#231a83d61b3d2e6aa3ef6e09c112a19e"><span class="id" title="notation">≥</span></a> <a class="idref" href="Nijn.Prelude.Orders.CompatibleRelation.html#x:26"><span class="id" title="variable">x</span></a> ;<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<a id="compat" class="idref" href="#compat"><span class="id" title="projection">compat</span></a> : <span class="id" title="keyword">∀</span> {<a id="x:28" class="idref" href="#x:28"><span class="id" title="binder">x</span></a> <a id="y:29" class="idref" href="#y:29"><span class="id" title="binder">y</span></a> : <a class="idref" href="Nijn.Prelude.Orders.CompatibleRelation.html#X:16"><span class="id" title="variable">X</span></a>},<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<a class="idref" href="Nijn.Prelude.Orders.CompatibleRelation.html#x:28"><span class="id" title="variable">x</span></a> <a class="idref" href="Nijn.Prelude.Orders.CompatibleRelation.html#::compat:x_'&gt;'_x"><span class="id" title="notation">&gt;</span></a> <a class="idref" href="Nijn.Prelude.Orders.CompatibleRelation.html#y:29"><span class="id" title="variable">y</span></a> <a class="idref" href="http://coq.inria.fr/distrib/V8.16.1/stdlib//Coq.Init.Logic.html#::type_scope:x_'-&gt;'_x"><span class="id" title="notation">→</span></a> <a class="idref" href="Nijn.Prelude.Orders.CompatibleRelation.html#x:28"><span class="id" title="variable">x</span></a> <a class="idref" href="Nijn.Prelude.Orders.CompatibleRelation.html#231a83d61b3d2e6aa3ef6e09c112a19e"><span class="id" title="notation">≥</span></a> <a class="idref" href="Nijn.Prelude.Orders.CompatibleRelation.html#y:29"><span class="id" title="variable">y</span></a> ;<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<a id="ge_gt" class="idref" href="#ge_gt"><span class="id" title="projection">ge_gt</span></a> : <span class="id" title="keyword">∀</span> {<a id="x:31" class="idref" href="#x:31"><span class="id" title="binder">x</span></a> <a id="y:32" class="idref" href="#y:32"><span class="id" title="binder">y</span></a> <a id="z:33" class="idref" href="#z:33"><span class="id" title="binder">z</span></a> : <a class="idref" href="Nijn.Prelude.Orders.CompatibleRelation.html#X:16"><span class="id" title="variable">X</span></a>},<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<a class="idref" href="Nijn.Prelude.Orders.CompatibleRelation.html#x:31"><span class="id" title="variable">x</span></a> <a class="idref" href="Nijn.Prelude.Orders.CompatibleRelation.html#231a83d61b3d2e6aa3ef6e09c112a19e"><span class="id" title="notation">≥</span></a> <a class="idref" href="Nijn.Prelude.Orders.CompatibleRelation.html#y:32"><span class="id" title="variable">y</span></a> <a class="idref" href="http://coq.inria.fr/distrib/V8.16.1/stdlib//Coq.Init.Logic.html#::type_scope:x_'-&gt;'_x"><span class="id" title="notation">→</span></a> <a class="idref" href="Nijn.Prelude.Orders.CompatibleRelation.html#y:32"><span class="id" title="variable">y</span></a> <a class="idref" href="Nijn.Prelude.Orders.CompatibleRelation.html#::compat:x_'&gt;'_x"><span class="id" title="notation">&gt;</span></a> <a class="idref" href="Nijn.Prelude.Orders.CompatibleRelation.html#z:33"><span class="id" title="variable">z</span></a> <a class="idref" href="http://coq.inria.fr/distrib/V8.16.1/stdlib//Coq.Init.Logic.html#::type_scope:x_'-&gt;'_x"><span class="id" title="notation">→</span></a> <a class="idref" href="Nijn.Prelude.Orders.CompatibleRelation.html#x:31"><span class="id" title="variable">x</span></a> <a class="idref" href="Nijn.Prelude.Orders.CompatibleRelation.html#::compat:x_'&gt;'_x"><span class="id" title="notation">&gt;</span></a> <a class="idref" href="Nijn.Prelude.Orders.CompatibleRelation.html#z:33"><span class="id" title="variable">z</span></a> ;<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<a id="gt_ge" class="idref" href="#gt_ge"><span class="id" title="projection">gt_ge</span></a> : <span class="id" title="keyword">∀</span> {<a id="x:35" class="idref" href="#x:35"><span class="id" title="binder">x</span></a> <a id="y:36" class="idref" href="#y:36"><span class="id" title="binder">y</span></a> <a id="z:37" class="idref" href="#z:37"><span class="id" title="binder">z</span></a> : <a class="idref" href="Nijn.Prelude.Orders.CompatibleRelation.html#X:16"><span class="id" title="variable">X</span></a>},<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<a class="idref" href="Nijn.Prelude.Orders.CompatibleRelation.html#x:35"><span class="id" title="variable">x</span></a> <a class="idref" href="Nijn.Prelude.Orders.CompatibleRelation.html#::compat:x_'&gt;'_x"><span class="id" title="notation">&gt;</span></a> <a class="idref" href="Nijn.Prelude.Orders.CompatibleRelation.html#y:36"><span class="id" title="variable">y</span></a> <a class="idref" href="http://coq.inria.fr/distrib/V8.16.1/stdlib//Coq.Init.Logic.html#::type_scope:x_'-&gt;'_x"><span class="id" title="notation">→</span></a> <a class="idref" href="Nijn.Prelude.Orders.CompatibleRelation.html#y:36"><span class="id" title="variable">y</span></a> <a class="idref" href="Nijn.Prelude.Orders.CompatibleRelation.html#231a83d61b3d2e6aa3ef6e09c112a19e"><span class="id" title="notation">≥</span></a> <a class="idref" href="Nijn.Prelude.Orders.CompatibleRelation.html#z:37"><span class="id" title="variable">z</span></a> <a class="idref" href="http://coq.inria.fr/distrib/V8.16.1/stdlib//Coq.Init.Logic.html#::type_scope:x_'-&gt;'_x"><span class="id" title="notation">→</span></a> <a class="idref" href="Nijn.Prelude.Orders.CompatibleRelation.html#x:35"><span class="id" title="variable">x</span></a> <a class="idref" href="Nijn.Prelude.Orders.CompatibleRelation.html#::compat:x_'&gt;'_x"><span class="id" title="notation">&gt;</span></a> <a class="idref" href="Nijn.Prelude.Orders.CompatibleRelation.html#z:37"><span class="id" title="variable">z</span></a><br/>
+&nbsp;&nbsp;}.<br/>
+
+<br/>
+</div>
+
+<div class="doc">
+<a id="lab22"></a><h2 class="section">Lemmata for compatible relations</h2>
+
+</div>
+<div class="code">
+<span class="id" title="keyword">Proposition</span> <a id="eq_gt" class="idref" href="#eq_gt"><span class="id" title="lemma">eq_gt</span></a><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{<a id="X:39" class="idref" href="#X:39"><span class="id" title="binder">X</span></a> : <a class="idref" href="Nijn.Prelude.Orders.CompatibleRelation.html#CompatRel"><span class="id" title="record">CompatRel</span></a>}<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{<a id="x:40" class="idref" href="#x:40"><span class="id" title="binder">x</span></a> <a id="y:41" class="idref" href="#y:41"><span class="id" title="binder">y</span></a> <a id="z:42" class="idref" href="#z:42"><span class="id" title="binder">z</span></a> : <a class="idref" href="Nijn.Prelude.Orders.CompatibleRelation.html#X:39"><span class="id" title="variable">X</span></a>}<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(<a id="p:43" class="idref" href="#p:43"><span class="id" title="binder">p</span></a> : <a class="idref" href="Nijn.Prelude.Orders.CompatibleRelation.html#x:40"><span class="id" title="variable">x</span></a> <a class="idref" href="http://coq.inria.fr/distrib/V8.16.1/stdlib//Coq.Init.Logic.html#6cd0f7b28b6092304087c7049437bb1a"><span class="id" title="notation">=</span></a> <a class="idref" href="Nijn.Prelude.Orders.CompatibleRelation.html#y:41"><span class="id" title="variable">y</span></a>)<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(<a id="q:44" class="idref" href="#q:44"><span class="id" title="binder">q</span></a> : <a class="idref" href="Nijn.Prelude.Orders.CompatibleRelation.html#y:41"><span class="id" title="variable">y</span></a> <a class="idref" href="Nijn.Prelude.Orders.CompatibleRelation.html#::compat:x_'&gt;'_x"><span class="id" title="notation">&gt;</span></a> <a class="idref" href="Nijn.Prelude.Orders.CompatibleRelation.html#z:42"><span class="id" title="variable">z</span></a>)<br/>
+&nbsp;&nbsp;: <a class="idref" href="Nijn.Prelude.Orders.CompatibleRelation.html#x:40"><span class="id" title="variable">x</span></a> <a class="idref" href="Nijn.Prelude.Orders.CompatibleRelation.html#::compat:x_'&gt;'_x"><span class="id" title="notation">&gt;</span></a> <a class="idref" href="Nijn.Prelude.Orders.CompatibleRelation.html#z:42"><span class="id" title="variable">z</span></a>.<br/>
+<span class="id" title="keyword">Proof</span>.<br/>
+&nbsp;&nbsp;<span class="id" title="tactic">induction</span> <span class="id" title="var">p</span>.<br/>
+&nbsp;&nbsp;<span class="id" title="tactic">exact</span> <span class="id" title="var">q</span>.<br/>
+<span class="id" title="keyword">Qed</span>.<br/>
+
+<br/>
+<span class="id" title="keyword">Proposition</span> <a id="gt_eq" class="idref" href="#gt_eq"><span class="id" title="lemma">gt_eq</span></a><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{<a id="X:45" class="idref" href="#X:45"><span class="id" title="binder">X</span></a> : <a class="idref" href="Nijn.Prelude.Orders.CompatibleRelation.html#CompatRel"><span class="id" title="record">CompatRel</span></a>}<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{<a id="x:46" class="idref" href="#x:46"><span class="id" title="binder">x</span></a> <a id="y:47" class="idref" href="#y:47"><span class="id" title="binder">y</span></a> <a id="z:48" class="idref" href="#z:48"><span class="id" title="binder">z</span></a> : <a class="idref" href="Nijn.Prelude.Orders.CompatibleRelation.html#X:45"><span class="id" title="variable">X</span></a>}<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(<a id="p:49" class="idref" href="#p:49"><span class="id" title="binder">p</span></a> : <a class="idref" href="Nijn.Prelude.Orders.CompatibleRelation.html#x:46"><span class="id" title="variable">x</span></a> <a class="idref" href="Nijn.Prelude.Orders.CompatibleRelation.html#::compat:x_'&gt;'_x"><span class="id" title="notation">&gt;</span></a> <a class="idref" href="Nijn.Prelude.Orders.CompatibleRelation.html#y:47"><span class="id" title="variable">y</span></a>)<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(<a id="q:50" class="idref" href="#q:50"><span class="id" title="binder">q</span></a> : <a class="idref" href="Nijn.Prelude.Orders.CompatibleRelation.html#y:47"><span class="id" title="variable">y</span></a> <a class="idref" href="http://coq.inria.fr/distrib/V8.16.1/stdlib//Coq.Init.Logic.html#6cd0f7b28b6092304087c7049437bb1a"><span class="id" title="notation">=</span></a> <a class="idref" href="Nijn.Prelude.Orders.CompatibleRelation.html#z:48"><span class="id" title="variable">z</span></a>)<br/>
+&nbsp;&nbsp;: <a class="idref" href="Nijn.Prelude.Orders.CompatibleRelation.html#x:46"><span class="id" title="variable">x</span></a> <a class="idref" href="Nijn.Prelude.Orders.CompatibleRelation.html#::compat:x_'&gt;'_x"><span class="id" title="notation">&gt;</span></a> <a class="idref" href="Nijn.Prelude.Orders.CompatibleRelation.html#z:48"><span class="id" title="variable">z</span></a>.<br/>
+<span class="id" title="keyword">Proof</span>.<br/>
+&nbsp;&nbsp;<span class="id" title="tactic">induction</span> <span class="id" title="var">q</span>.<br/>
+&nbsp;&nbsp;<span class="id" title="tactic">exact</span> <span class="id" title="var">p</span>.<br/>
+<span class="id" title="keyword">Qed</span>.<br/>
+
+<br/>
+<span class="id" title="keyword">Proposition</span> <a id="eq_ge" class="idref" href="#eq_ge"><span class="id" title="lemma">eq_ge</span></a><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{<a id="X:51" class="idref" href="#X:51"><span class="id" title="binder">X</span></a> : <a class="idref" href="Nijn.Prelude.Orders.CompatibleRelation.html#CompatRel"><span class="id" title="record">CompatRel</span></a>}<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{<a id="x:52" class="idref" href="#x:52"><span class="id" title="binder">x</span></a> <a id="y:53" class="idref" href="#y:53"><span class="id" title="binder">y</span></a> <a id="z:54" class="idref" href="#z:54"><span class="id" title="binder">z</span></a> : <a class="idref" href="Nijn.Prelude.Orders.CompatibleRelation.html#X:51"><span class="id" title="variable">X</span></a>}<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(<a id="p:55" class="idref" href="#p:55"><span class="id" title="binder">p</span></a> : <a class="idref" href="Nijn.Prelude.Orders.CompatibleRelation.html#x:52"><span class="id" title="variable">x</span></a> <a class="idref" href="http://coq.inria.fr/distrib/V8.16.1/stdlib//Coq.Init.Logic.html#6cd0f7b28b6092304087c7049437bb1a"><span class="id" title="notation">=</span></a> <a class="idref" href="Nijn.Prelude.Orders.CompatibleRelation.html#y:53"><span class="id" title="variable">y</span></a>)<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(<a id="q:56" class="idref" href="#q:56"><span class="id" title="binder">q</span></a> : <a class="idref" href="Nijn.Prelude.Orders.CompatibleRelation.html#y:53"><span class="id" title="variable">y</span></a> <a class="idref" href="Nijn.Prelude.Orders.CompatibleRelation.html#231a83d61b3d2e6aa3ef6e09c112a19e"><span class="id" title="notation">≥</span></a> <a class="idref" href="Nijn.Prelude.Orders.CompatibleRelation.html#z:54"><span class="id" title="variable">z</span></a>)<br/>
+&nbsp;&nbsp;: <a class="idref" href="Nijn.Prelude.Orders.CompatibleRelation.html#x:52"><span class="id" title="variable">x</span></a> <a class="idref" href="Nijn.Prelude.Orders.CompatibleRelation.html#231a83d61b3d2e6aa3ef6e09c112a19e"><span class="id" title="notation">≥</span></a> <a class="idref" href="Nijn.Prelude.Orders.CompatibleRelation.html#z:54"><span class="id" title="variable">z</span></a>.<br/>
+<span class="id" title="keyword">Proof</span>.<br/>
+&nbsp;&nbsp;<span class="id" title="tactic">induction</span> <span class="id" title="var">p</span>.<br/>
+&nbsp;&nbsp;<span class="id" title="tactic">exact</span> <span class="id" title="var">q</span>.<br/>
+<span class="id" title="keyword">Qed</span>.<br/>
+
+<br/>
+<span class="id" title="keyword">Proposition</span> <a id="ge_eq" class="idref" href="#ge_eq"><span class="id" title="lemma">ge_eq</span></a><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{<a id="X:57" class="idref" href="#X:57"><span class="id" title="binder">X</span></a> : <a class="idref" href="Nijn.Prelude.Orders.CompatibleRelation.html#CompatRel"><span class="id" title="record">CompatRel</span></a>}<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{<a id="x:58" class="idref" href="#x:58"><span class="id" title="binder">x</span></a> <a id="y:59" class="idref" href="#y:59"><span class="id" title="binder">y</span></a> <a id="z:60" class="idref" href="#z:60"><span class="id" title="binder">z</span></a> : <a class="idref" href="Nijn.Prelude.Orders.CompatibleRelation.html#X:57"><span class="id" title="variable">X</span></a>}<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(<a id="p:61" class="idref" href="#p:61"><span class="id" title="binder">p</span></a> : <a class="idref" href="Nijn.Prelude.Orders.CompatibleRelation.html#x:58"><span class="id" title="variable">x</span></a> <a class="idref" href="Nijn.Prelude.Orders.CompatibleRelation.html#231a83d61b3d2e6aa3ef6e09c112a19e"><span class="id" title="notation">≥</span></a> <a class="idref" href="Nijn.Prelude.Orders.CompatibleRelation.html#y:59"><span class="id" title="variable">y</span></a>)<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(<a id="q:62" class="idref" href="#q:62"><span class="id" title="binder">q</span></a> : <a class="idref" href="Nijn.Prelude.Orders.CompatibleRelation.html#y:59"><span class="id" title="variable">y</span></a> <a class="idref" href="http://coq.inria.fr/distrib/V8.16.1/stdlib//Coq.Init.Logic.html#6cd0f7b28b6092304087c7049437bb1a"><span class="id" title="notation">=</span></a> <a class="idref" href="Nijn.Prelude.Orders.CompatibleRelation.html#z:60"><span class="id" title="variable">z</span></a>)<br/>
+&nbsp;&nbsp;: <a class="idref" href="Nijn.Prelude.Orders.CompatibleRelation.html#x:58"><span class="id" title="variable">x</span></a> <a class="idref" href="Nijn.Prelude.Orders.CompatibleRelation.html#231a83d61b3d2e6aa3ef6e09c112a19e"><span class="id" title="notation">≥</span></a> <a class="idref" href="Nijn.Prelude.Orders.CompatibleRelation.html#z:60"><span class="id" title="variable">z</span></a>.<br/>
+<span class="id" title="keyword">Proof</span>.<br/>
+&nbsp;&nbsp;<span class="id" title="tactic">induction</span> <span class="id" title="var">q</span>.<br/>
+&nbsp;&nbsp;<span class="id" title="tactic">exact</span> <span class="id" title="var">p</span>.<br/>
+<span class="id" title="keyword">Qed</span>.<br/>
+
+<br/>
+<span class="id" title="keyword">Proposition</span> <a id="eq_to_ge" class="idref" href="#eq_to_ge"><span class="id" title="lemma">eq_to_ge</span></a><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{<a id="X:63" class="idref" href="#X:63"><span class="id" title="binder">X</span></a> : <a class="idref" href="Nijn.Prelude.Orders.CompatibleRelation.html#CompatRel"><span class="id" title="record">CompatRel</span></a>}<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;`{<a id="H:64" class="idref" href="#H:64"><span class="id" title="binder">isCompatRel</span></a> <a id="H:64" class="idref" href="#H:64"><span class="id" title="binder">X</span></a>}<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{<a id="x:65" class="idref" href="#x:65"><span class="id" title="binder">x</span></a> <a id="y:66" class="idref" href="#y:66"><span class="id" title="binder">y</span></a> : <a class="idref" href="Nijn.Prelude.Orders.CompatibleRelation.html#X:63"><span class="id" title="variable">X</span></a>}<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(<a id="p:67" class="idref" href="#p:67"><span class="id" title="binder">p</span></a> : <a class="idref" href="Nijn.Prelude.Orders.CompatibleRelation.html#x:65"><span class="id" title="variable">x</span></a> <a class="idref" href="http://coq.inria.fr/distrib/V8.16.1/stdlib//Coq.Init.Logic.html#6cd0f7b28b6092304087c7049437bb1a"><span class="id" title="notation">=</span></a> <a class="idref" href="Nijn.Prelude.Orders.CompatibleRelation.html#y:66"><span class="id" title="variable">y</span></a>)<br/>
+&nbsp;&nbsp;: <a class="idref" href="Nijn.Prelude.Orders.CompatibleRelation.html#x:65"><span class="id" title="variable">x</span></a> <a class="idref" href="Nijn.Prelude.Orders.CompatibleRelation.html#231a83d61b3d2e6aa3ef6e09c112a19e"><span class="id" title="notation">≥</span></a> <a class="idref" href="Nijn.Prelude.Orders.CompatibleRelation.html#y:66"><span class="id" title="variable">y</span></a>.<br/>
+<span class="id" title="keyword">Proof</span>.<br/>
+&nbsp;&nbsp;<span class="id" title="tactic">induction</span> <span class="id" title="var">p</span>.<br/>
+&nbsp;&nbsp;<span class="id" title="tactic">apply</span> <a class="idref" href="Nijn.Prelude.Orders.CompatibleRelation.html#ge_refl"><span class="id" title="method">ge_refl</span></a>.<br/>
+<span class="id" title="keyword">Qed</span>.<br/>
+
+<br/>
+</div>
+
+<div class="doc">
+<a id="lab23"></a><h2 class="section">Minimal elements in a compatible relation</h2>
+
+</div>
+<div class="code">
+<span class="id" title="keyword">Definition</span> <a id="is_minimal_element" class="idref" href="#is_minimal_element"><span class="id" title="definition">is_minimal_element</span></a><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{<a id="X:68" class="idref" href="#X:68"><span class="id" title="binder">X</span></a> : <a class="idref" href="Nijn.Prelude.Orders.CompatibleRelation.html#CompatRel"><span class="id" title="record">CompatRel</span></a>}<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(<a id="x:69" class="idref" href="#x:69"><span class="id" title="binder">x</span></a> : <a class="idref" href="Nijn.Prelude.Orders.CompatibleRelation.html#X:68"><span class="id" title="variable">X</span></a>)<br/>
+&nbsp;&nbsp;: <span class="id" title="keyword">Prop</span><br/>
+&nbsp;&nbsp;:= <span class="id" title="keyword">∀</span> (<a id="y:70" class="idref" href="#y:70"><span class="id" title="binder">y</span></a> : <a class="idref" href="Nijn.Prelude.Orders.CompatibleRelation.html#X:68"><span class="id" title="variable">X</span></a>), <a class="idref" href="Nijn.Prelude.Orders.CompatibleRelation.html#y:70"><span class="id" title="variable">y</span></a> <a class="idref" href="Nijn.Prelude.Orders.CompatibleRelation.html#231a83d61b3d2e6aa3ef6e09c112a19e"><span class="id" title="notation">≥</span></a> <a class="idref" href="Nijn.Prelude.Orders.CompatibleRelation.html#x:69"><span class="id" title="variable">x</span></a>.<br/>
+
+<br/>
+<span class="id" title="keyword">Record</span> <a id="minimal_element" class="idref" href="#minimal_element"><span class="id" title="record">minimal_element</span></a> (<a id="X:71" class="idref" href="#X:71"><span class="id" title="binder">X</span></a> : <a class="idref" href="Nijn.Prelude.Orders.CompatibleRelation.html#CompatRel"><span class="id" title="record">CompatRel</span></a>) :=<br/>
+&nbsp;&nbsp;<span class="id" title="var">make_min_el</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;{<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<a id="min_el" class="idref" href="#min_el"><span class="id" title="projection">min_el</span></a> :&gt; <a class="idref" href="Nijn.Prelude.Orders.CompatibleRelation.html#X:71"><span class="id" title="variable">X</span></a> ;<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<a id="is_minimal" class="idref" href="#is_minimal"><span class="id" title="projection">is_minimal</span></a> : <a class="idref" href="Nijn.Prelude.Orders.CompatibleRelation.html#is_minimal_element"><span class="id" title="definition">is_minimal_element</span></a> <a class="idref" href="Nijn.Prelude.Orders.CompatibleRelation.html#min_el:73"><span class="id" title="method">min_el</span></a><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;}.<br/>
+
+<br/>
+<span class="id" title="keyword">Definition</span> <a id="is_strict_minimal_element" class="idref" href="#is_strict_minimal_element"><span class="id" title="definition">is_strict_minimal_element</span></a><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{<a id="X:75" class="idref" href="#X:75"><span class="id" title="binder">X</span></a> : <a class="idref" href="Nijn.Prelude.Orders.CompatibleRelation.html#CompatRel"><span class="id" title="record">CompatRel</span></a>}<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(<a id="x:76" class="idref" href="#x:76"><span class="id" title="binder">x</span></a> : <a class="idref" href="Nijn.Prelude.Orders.CompatibleRelation.html#X:75"><span class="id" title="variable">X</span></a>)<br/>
+&nbsp;&nbsp;: <span class="id" title="keyword">Prop</span><br/>
+&nbsp;&nbsp;:= <span class="id" title="keyword">∀</span> (<a id="y:77" class="idref" href="#y:77"><span class="id" title="binder">y</span></a> : <a class="idref" href="Nijn.Prelude.Orders.CompatibleRelation.html#X:75"><span class="id" title="variable">X</span></a>), <a class="idref" href="Nijn.Prelude.Orders.CompatibleRelation.html#y:77"><span class="id" title="variable">y</span></a> <a class="idref" href="http://coq.inria.fr/distrib/V8.16.1/stdlib//Coq.Init.Logic.html#::type_scope:x_'&lt;&gt;'_x"><span class="id" title="notation">≠</span></a> <a class="idref" href="Nijn.Prelude.Orders.CompatibleRelation.html#x:76"><span class="id" title="variable">x</span></a> <a class="idref" href="http://coq.inria.fr/distrib/V8.16.1/stdlib//Coq.Init.Logic.html#::type_scope:x_'-&gt;'_x"><span class="id" title="notation">→</span></a> <a class="idref" href="Nijn.Prelude.Orders.CompatibleRelation.html#y:77"><span class="id" title="variable">y</span></a> <a class="idref" href="Nijn.Prelude.Orders.CompatibleRelation.html#::compat:x_'&gt;'_x"><span class="id" title="notation">&gt;</span></a> <a class="idref" href="Nijn.Prelude.Orders.CompatibleRelation.html#x:76"><span class="id" title="variable">x</span></a>.<br/>
+
+<br/>
+<span class="id" title="keyword">Record</span> <a id="strict_minimal_element" class="idref" href="#strict_minimal_element"><span class="id" title="record">strict_minimal_element</span></a> (<a id="X:78" class="idref" href="#X:78"><span class="id" title="binder">X</span></a> : <a class="idref" href="Nijn.Prelude.Orders.CompatibleRelation.html#CompatRel"><span class="id" title="record">CompatRel</span></a>) :=<br/>
+&nbsp;&nbsp;<span class="id" title="var">make_strict_min_el</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;{<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<a id="strict_min_el" class="idref" href="#strict_min_el"><span class="id" title="projection">strict_min_el</span></a> :&gt; <a class="idref" href="Nijn.Prelude.Orders.CompatibleRelation.html#X:78"><span class="id" title="variable">X</span></a> ;<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<a id="is_strict_minimal" class="idref" href="#is_strict_minimal"><span class="id" title="projection">is_strict_minimal</span></a> : <a class="idref" href="Nijn.Prelude.Orders.CompatibleRelation.html#is_strict_minimal_element"><span class="id" title="definition">is_strict_minimal_element</span></a> <a class="idref" href="Nijn.Prelude.Orders.CompatibleRelation.html#strict_min_el:80"><span class="id" title="method">strict_min_el</span></a><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;}.<br/>
+
+<br/>
+<span class="id" title="keyword">Definition</span> <a id="is_minimal_to_strict_minimal" class="idref" href="#is_minimal_to_strict_minimal"><span class="id" title="definition">is_minimal_to_strict_minimal</span></a><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{<a id="X:82" class="idref" href="#X:82"><span class="id" title="binder">X</span></a> : <a class="idref" href="Nijn.Prelude.Orders.CompatibleRelation.html#CompatRel"><span class="id" title="record">CompatRel</span></a>}<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;`{<a id="H:83" class="idref" href="#H:83"><span class="id" title="binder">decEq</span></a> <a id="H:83" class="idref" href="#H:83"><span class="id" title="binder">X</span></a>}<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;`{<a id="H0:84" class="idref" href="#H0:84"><span class="id" title="binder">isCompatRel</span></a> <a id="H0:84" class="idref" href="#H0:84"><span class="id" title="binder">X</span></a>}<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(<a id="x:85" class="idref" href="#x:85"><span class="id" title="binder">x</span></a> : <a class="idref" href="Nijn.Prelude.Orders.CompatibleRelation.html#strict_minimal_element"><span class="id" title="record">strict_minimal_element</span></a> <a class="idref" href="Nijn.Prelude.Orders.CompatibleRelation.html#X:82"><span class="id" title="variable">X</span></a>)<br/>
+&nbsp;&nbsp;: <a class="idref" href="Nijn.Prelude.Orders.CompatibleRelation.html#minimal_element"><span class="id" title="record">minimal_element</span></a> <a class="idref" href="Nijn.Prelude.Orders.CompatibleRelation.html#X:82"><span class="id" title="variable">X</span></a>.<br/>
+<span class="id" title="keyword">Proof</span>.<br/>
+&nbsp;&nbsp;<span class="id" title="tactic">simple</span> <span class="id" title="tactic">refine</span> (<a class="idref" href="Nijn.Prelude.Orders.CompatibleRelation.html#make_min_el"><span class="id" title="constructor">make_min_el</span></a> <span class="id" title="var">_</span> <span class="id" title="var">_</span> <span class="id" title="var">_</span>).<br/>
+&nbsp;&nbsp;- <span class="id" title="tactic">exact</span> <span class="id" title="var">x</span>.<br/>
+&nbsp;&nbsp;- <span class="id" title="tactic">intros</span> <span class="id" title="var">y</span>.<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="tactic">destruct</span> (<a class="idref" href="Nijn.Prelude.Basics.Decidable.html#dec_eq"><span class="id" title="method">dec_eq</span></a> <span class="id" title="var">y</span> <span class="id" title="var">x</span>) <span class="id" title="keyword">as</span> [ <span class="id" title="var">p</span> | <span class="id" title="var">p</span> ].<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;+ <span class="id" title="tactic">apply</span> <a class="idref" href="Nijn.Prelude.Orders.CompatibleRelation.html#eq_to_ge"><span class="id" title="lemma">eq_to_ge</span></a>.<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="tactic">exact</span> <span class="id" title="var">p</span>.<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;+ <span class="id" title="tactic">exact</span> (<a class="idref" href="Nijn.Prelude.Orders.CompatibleRelation.html#compat"><span class="id" title="method">compat</span></a> (<a class="idref" href="Nijn.Prelude.Orders.CompatibleRelation.html#is_strict_minimal"><span class="id" title="projection">is_strict_minimal</span></a> <span class="id" title="var">_</span> <span class="id" title="var">x</span> <span class="id" title="var">y</span> <span class="id" title="var">p</span>)).<br/>
+<span class="id" title="keyword">Defined</span>.<br/>
+</div>
+</div>
+
+<div id="footer">
+<hr/><a href="index.html">Index</a><hr/>This page has been generated by <a href="http://coq.inria.fr/">coqdoc</a>
+</div>
+
+</div>
+
+</body>
+</html>

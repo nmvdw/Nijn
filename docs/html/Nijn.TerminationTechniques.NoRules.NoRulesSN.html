@@ -1,0 +1,86 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+"http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<link href="coqdoc.css" rel="stylesheet" type="text/css" />
+<title>Nijn.TerminationTechniques.NoRules.NoRulesSN</title>
+</head>
+
+<body>
+
+<div id="page">
+
+<div id="header">
+</div>
+
+<div id="main">
+
+<h1 class="libtitle">Library Nijn.TerminationTechniques.NoRules.NoRulesSN</h1>
+
+<div class="code">
+<span class="id" title="keyword">Require</span> <span class="id" title="keyword">Import</span> <a class="idref" href="Nijn.Prelude.html#"><span class="id" title="library">Nijn.Prelude</span></a>.<br/>
+<span class="id" title="keyword">Require</span> <span class="id" title="keyword">Import</span> <a class="idref" href="Nijn.Syntax.html#"><span class="id" title="library">Nijn.Syntax</span></a>.<br/>
+<span class="id" title="keyword">Require</span> <span class="id" title="keyword">Import</span> <a class="idref" href="Nijn.Interpretation.OrderInterpretation.html#"><span class="id" title="library">Nijn.Interpretation.OrderInterpretation</span></a>.<br/>
+<span class="id" title="keyword">Require</span> <span class="id" title="keyword">Import</span> <a class="idref" href="Nijn.TerminationTechniques.PolynomialMethod.html#"><span class="id" title="library">Nijn.TerminationTechniques.PolynomialMethod</span></a>.<br/>
+<span class="id" title="keyword">Require</span> <span class="id" title="keyword">Import</span> <a class="idref" href="http://coq.inria.fr/distrib/V8.16.1/stdlib//Coq.Lists.List.html#"><span class="id" title="library">List</span></a>.<br/>
+
+<br/>
+</div>
+
+<div class="doc">
+<a id="lab118"></a><h1 class="section">Strong normalization for the trivial AFS</h1>
+
+<div class="paragraph"> </div>
+
+ The AFS without any rewrite rules is strongly normalizing. We prove that using the polynomial method. All function symbols are interpreted as the polynomial that is constantly 0. This is sufficient to conclude strong normalization, because there are no rewrite rules
+</div>
+<div class="code">
+<span class="id" title="keyword">Fixpoint</span> <a id="zero_poly" class="idref" href="#zero_poly"><span class="id" title="definition">zero_poly</span></a><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{<a id="B:1" class="idref" href="#B:1"><span class="id" title="binder">B</span></a> : <span class="id" title="keyword">Type</span>}<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(<a id="A:2" class="idref" href="#A:2"><span class="id" title="binder">A</span></a> : <a class="idref" href="Nijn.Syntax.Signature.Types.html#ty"><span class="id" title="inductive">ty</span></a> <a class="idref" href="Nijn.TerminationTechniques.NoRules.NoRulesSN.html#B:1"><span class="id" title="variable">B</span></a>)<br/>
+&nbsp;&nbsp;: <span class="id" title="keyword">∀</span> (<a id="C:3" class="idref" href="#C:3"><span class="id" title="binder">C</span></a> : <a class="idref" href="Nijn.Syntax.Signature.Contexts.html#con"><span class="id" title="inductive">con</span></a> <a class="idref" href="Nijn.TerminationTechniques.NoRules.NoRulesSN.html#B:1"><span class="id" title="variable">B</span></a>), <a class="idref" href="Nijn.TerminationTechniques.PolynomialMethod.Polynomial.html#poly"><span class="id" title="inductive">poly</span></a> <a class="idref" href="Nijn.TerminationTechniques.NoRules.NoRulesSN.html#C:3"><span class="id" title="variable">C</span></a> <a class="idref" href="Nijn.TerminationTechniques.NoRules.NoRulesSN.html#A:2"><span class="id" title="variable">A</span></a><br/>
+&nbsp;&nbsp;:= <span class="id" title="keyword">match</span> <a class="idref" href="Nijn.TerminationTechniques.NoRules.NoRulesSN.html#A:2"><span class="id" title="variable">A</span></a> <span class="id" title="keyword">with</span><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;| <a class="idref" href="Nijn.Syntax.Signature.Types.html#Base"><span class="id" title="constructor">Base</span></a> <span class="id" title="var">_</span> ⇒ <span class="id" title="keyword">fun</span> <span class="id" title="var">_</span> ⇒ <a class="idref" href="Nijn.TerminationTechniques.PolynomialMethod.Polynomial.html#P_base"><span class="id" title="constructor">P_base</span></a> (<a class="idref" href="Nijn.TerminationTechniques.PolynomialMethod.Polynomial.html#P_const"><span class="id" title="constructor">P_const</span></a> 0)<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;| <span class="id" title="var">A₁</span> <a class="idref" href="Nijn.Syntax.Signature.Types.html#6e26407ff775f81c0e5df1dbad6b95a1"><span class="id" title="notation">⟶</span></a> <span class="id" title="var">A₂</span> ⇒ <span class="id" title="keyword">fun</span> <span class="id" title="var">_</span> ⇒ <a class="idref" href="Nijn.TerminationTechniques.PolynomialMethod.PolynomialNotation.html#9f0075f3a8c95e38cc4e321971802868"><span class="id" title="notation">λP</span></a> <a class="idref" href="Nijn.TerminationTechniques.PolynomialMethod.PolynomialNotation.html#9f0075f3a8c95e38cc4e321971802868"><span class="id" title="notation">(</span></a><a class="idref" href="Nijn.TerminationTechniques.NoRules.NoRulesSN.html#zero_poly:4"><span class="id" title="definition">zero_poly</span></a> <span class="id" title="var">A₂</span> <span class="id" title="var">_</span><a class="idref" href="Nijn.TerminationTechniques.PolynomialMethod.PolynomialNotation.html#9f0075f3a8c95e38cc4e321971802868"><span class="id" title="notation">)</span></a><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="keyword">end</span>.<br/>
+
+<br/>
+<span class="id" title="keyword">Theorem</span> <a id="no_rules_SN" class="idref" href="#no_rules_SN"><span class="id" title="lemma">no_rules_SN</span></a><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{<a id="B:6" class="idref" href="#B:6"><span class="id" title="binder">B</span></a> <a id="F:7" class="idref" href="#F:7"><span class="id" title="binder">F</span></a> : <span class="id" title="keyword">Type</span>}<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(<a id="X:8" class="idref" href="#X:8"><span class="id" title="binder">X</span></a> : <a class="idref" href="Nijn.Syntax.Signature.html#afs"><span class="id" title="record">afs</span></a> <a class="idref" href="Nijn.TerminationTechniques.NoRules.NoRulesSN.html#B:6"><span class="id" title="variable">B</span></a> <a class="idref" href="Nijn.TerminationTechniques.NoRules.NoRulesSN.html#F:7"><span class="id" title="variable">F</span></a>)<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(<a id="H:9" class="idref" href="#H:9"><span class="id" title="binder">H</span></a> : <a class="idref" href="Nijn.Syntax.Signature.html#rewriteRules"><span class="id" title="definition">rewriteRules</span></a> <a class="idref" href="Nijn.TerminationTechniques.NoRules.NoRulesSN.html#X:8"><span class="id" title="variable">X</span></a> <a class="idref" href="http://coq.inria.fr/distrib/V8.16.1/stdlib//Coq.Init.Logic.html#::type_scope:x_'-&gt;'_x"><span class="id" title="notation">→</span></a> <a class="idref" href="http://coq.inria.fr/distrib/V8.16.1/stdlib//Coq.Init.Logic.html#False"><span class="id" title="inductive">False</span></a>)<br/>
+&nbsp;&nbsp;: <a class="idref" href="Nijn.Syntax.StrongNormalization.SN.html#isSN"><span class="id" title="definition">isSN</span></a> <a class="idref" href="Nijn.TerminationTechniques.NoRules.NoRulesSN.html#X:8"><span class="id" title="variable">X</span></a>.<br/>
+<span class="id" title="keyword">Proof</span>.<br/>
+&nbsp;&nbsp;<span class="id" title="tactic">apply</span> <a class="idref" href="Nijn.Interpretation.OrderInterpretation.html#afs_is_SN_from_Interpretation"><span class="id" title="lemma">afs_is_SN_from_Interpretation</span></a>.<br/>
+&nbsp;&nbsp;<span class="id" title="tactic">simple</span> <span class="id" title="tactic">refine</span> (<a class="idref" href="Nijn.TerminationTechniques.PolynomialMethod.Polynomial.html#poly_Interpretation"><span class="id" title="definition">poly_Interpretation</span></a> <span class="id" title="var">_</span> <span class="id" title="var">_</span> <span class="id" title="var">_</span>).<br/>
+&nbsp;&nbsp;- <span class="id" title="tactic">intro</span> <span class="id" title="var">f</span>.<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="tactic">apply</span> <a class="idref" href="Nijn.TerminationTechniques.NoRules.NoRulesSN.html#zero_poly"><span class="id" title="definition">zero_poly</span></a>.<br/>
+&nbsp;&nbsp;- <span class="id" title="tactic">intro</span> <span class="id" title="var">r</span>.<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="var">contradiction</span>.<br/>
+<span class="id" title="keyword">Defined</span>.<br/>
+
+<br/>
+<span class="id" title="keyword">Proposition</span> <a id="empty_list_SN" class="idref" href="#empty_list_SN"><span class="id" title="lemma">empty_list_SN</span></a><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{<a id="B:10" class="idref" href="#B:10"><span class="id" title="binder">B</span></a> <a id="F:11" class="idref" href="#F:11"><span class="id" title="binder">F</span></a> : <span class="id" title="keyword">Type</span>}<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(<a id="X:12" class="idref" href="#X:12"><span class="id" title="binder">X</span></a> : <a class="idref" href="Nijn.Syntax.Signature.html#afs"><span class="id" title="record">afs</span></a> <a class="idref" href="Nijn.TerminationTechniques.NoRules.NoRulesSN.html#B:10"><span class="id" title="variable">B</span></a> <a class="idref" href="Nijn.TerminationTechniques.NoRules.NoRulesSN.html#F:11"><span class="id" title="variable">F</span></a>)<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(<a id="HX:13" class="idref" href="#HX:13"><span class="id" title="binder">HX</span></a> : <a class="idref" href="Nijn.Prelude.Basics.Lemmas.html#isNil"><span class="id" title="definition">isNil</span></a> (<a class="idref" href="Nijn.Syntax.Signature.html#list_of_rewriteRules"><span class="id" title="projection">list_of_rewriteRules</span></a> <a class="idref" href="Nijn.TerminationTechniques.NoRules.NoRulesSN.html#X:12"><span class="id" title="variable">X</span></a>))<br/>
+&nbsp;&nbsp;: <a class="idref" href="Nijn.Syntax.StrongNormalization.SN.html#isSN"><span class="id" title="definition">isSN</span></a> <a class="idref" href="Nijn.TerminationTechniques.NoRules.NoRulesSN.html#X:12"><span class="id" title="variable">X</span></a>.<br/>
+<span class="id" title="keyword">Proof</span>.<br/>
+&nbsp;&nbsp;<span class="id" title="tactic">apply</span> <a class="idref" href="Nijn.TerminationTechniques.NoRules.NoRulesSN.html#no_rules_SN"><span class="id" title="lemma">no_rules_SN</span></a>.<br/>
+&nbsp;&nbsp;<span class="id" title="tactic">intro</span> <span class="id" title="var">r</span>.<br/>
+&nbsp;&nbsp;<span class="id" title="tactic">destruct</span> <span class="id" title="var">r</span> <span class="id" title="keyword">as</span> [ <span class="id" title="var">r</span> <span class="id" title="var">Hr</span> ].<br/>
+&nbsp;&nbsp;<span class="id" title="tactic">pose</span> (<a class="idref" href="Nijn.Prelude.Basics.Lemmas.html#isNil_no_member"><span class="id" title="lemma">isNil_no_member</span></a> <span class="id" title="var">_</span> <span class="id" title="var">HX</span> <span class="id" title="var">r</span> <span class="id" title="var">Hr</span>).<br/>
+&nbsp;&nbsp;<span class="id" title="var">contradiction</span>.<br/>
+<span class="id" title="keyword">Qed</span>.<br/>
+</div>
+</div>
+
+<div id="footer">
+<hr/><a href="index.html">Index</a><hr/>This page has been generated by <a href="http://coq.inria.fr/">coqdoc</a>
+</div>
+
+</div>
+
+</body>
+</html>

@@ -1,0 +1,64 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+"http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<link href="coqdoc.css" rel="stylesheet" type="text/css" />
+<title>Nijn.TerminationTechniques.CertificateTactics</title>
+</head>
+
+<body>
+
+<div id="page">
+
+<div id="header">
+</div>
+
+<div id="main">
+
+<h1 class="libtitle">Library Nijn.TerminationTechniques.CertificateTactics</h1>
+
+<div class="code">
+<span class="id" title="keyword">Require</span> <span class="id" title="keyword">Import</span> <a class="idref" href="Nijn.TerminationTechniques.PolynomialMethod.html#"><span class="id" title="library">Nijn.TerminationTechniques.PolynomialMethod</span></a>.<br/>
+<span class="id" title="keyword">Require</span> <span class="id" title="keyword">Import</span> <a class="idref" href="Nijn.TerminationTechniques.RuleRemoval.RuleSelector.html#"><span class="id" title="library">Nijn.TerminationTechniques.RuleRemoval.RuleSelector</span></a>.<br/>
+<span class="id" title="keyword">Require</span> <span class="id" title="keyword">Import</span> <a class="idref" href="Nijn.TerminationTechniques.Certificate.html#"><span class="id" title="library">Nijn.TerminationTechniques.Certificate</span></a>.<br/>
+<span class="id" title="keyword">Require</span> <span class="id" title="keyword">Import</span> <a class="idref" href="http://coq.inria.fr/distrib/V8.16.1/stdlib//Coq.micromega.Lia.html#"><span class="id" title="library">Lia</span></a>.<br/>
+
+<br/>
+<span class="id" title="keyword">Ltac</span> <span class="id" title="var">nat_lt</span> :=<br/>
+&nbsp;&nbsp;<span class="id" title="keyword">match</span> <span class="id" title="keyword">goal</span> <span class="id" title="keyword">with</span><br/>
+&nbsp;&nbsp;| [ <span class="id" title="var">n</span> : <a class="idref" href="http://coq.inria.fr/distrib/V8.16.1/stdlib//Coq.Init.Datatypes.html#nat"><span class="id" title="inductive">nat</span></a> |- <span class="id" title="var">_</span> ] ⇒ <span class="id" title="tactic">destruct</span> <span class="id" title="var">n</span> ; <span class="id" title="tactic">try</span> (<span class="id" title="var">nia</span> ; <span class="id" title="var">nat_lt</span>)<br/>
+&nbsp;&nbsp;| <span class="id" title="var">_</span> ⇒ <span class="id" title="tactic">idtac</span><br/>
+&nbsp;&nbsp;<span class="id" title="keyword">end</span>.<br/>
+
+<br/>
+<span class="id" title="keyword">Ltac</span> <span class="id" title="var">empty_certificate</span> := <span class="id" title="tactic">apply</span> <a class="idref" href="Nijn.TerminationTechniques.Certificate.html#EmptySN"><span class="id" title="constructor">EmptySN</span></a> ; <span class="id" title="var">cbn</span> ; <span class="id" title="tactic">auto</span>.<br/>
+
+<br/>
+<span class="id" title="keyword">Ltac</span> <span class="id" title="var">poly_certificate</span> <span class="id" title="var">pols</span> :=<br/>
+&nbsp;&nbsp;<span class="id" title="keyword">match</span> <span class="id" title="keyword">goal</span> <span class="id" title="keyword">with</span><br/>
+&nbsp;&nbsp;| [ |- <a class="idref" href="Nijn.TerminationTechniques.Certificate.html#rule_removal_certificate"><span class="id" title="inductive">rule_removal_certificate</span></a> ?<span class="id" title="var">X</span> <span class="id" title="var">_</span> ] ⇒ <span class="id" title="tactic">apply</span> (<a class="idref" href="Nijn.TerminationTechniques.Certificate.html#PolySRP"><span class="id" title="constructor">PolySRP</span></a> <span class="id" title="var">X</span> <span class="id" title="var">_</span> <span class="id" title="var">pols</span>)<br/>
+&nbsp;&nbsp;| [ |- <a class="idref" href="Nijn.TerminationTechniques.Certificate.html#certificate"><span class="id" title="inductive">certificate</span></a> <span class="id" title="var">_</span> ] ⇒ <span class="id" title="tactic">apply</span> (<a class="idref" href="Nijn.TerminationTechniques.Certificate.html#PolySN"><span class="id" title="constructor">PolySN</span></a> <span class="id" title="var">_</span> <span class="id" title="var">pols</span>)<br/>
+&nbsp;&nbsp;<span class="id" title="keyword">end</span> ; <span class="id" title="var">solve_poly</span>.<br/>
+
+<br/>
+<span class="id" title="keyword">Ltac</span> <span class="id" title="var">solve_included</span> := <span class="id" title="tactic">abstract</span> (<span class="id" title="var">cbn</span> ; <span class="id" title="tactic">repeat</span> <span class="id" title="tactic">split</span> ; <span class="id" title="var">lia</span>).<br/>
+
+<br/>
+<span class="id" title="keyword">Ltac</span> <span class="id" title="var">rule_removal_certificate</span> <span class="id" title="var">rules</span> :=<br/>
+&nbsp;&nbsp;<span class="id" title="tactic">simple</span> <span class="id" title="tactic">refine</span> (<a class="idref" href="Nijn.TerminationTechniques.Certificate.html#RuleRemovalSN"><span class="id" title="constructor">RuleRemovalSN</span></a> <span class="id" title="var">_</span> (<a class="idref" href="Nijn.TerminationTechniques.RuleRemoval.RuleSelector.html#select_list_nats"><span class="id" title="definition">select_list_nats</span></a> <span class="id" title="var">_</span> <span class="id" title="var">rules</span> <span class="id" title="var">_</span>) <span class="id" title="var">_</span> <span class="id" title="var">_</span>) ;<br/>
+&nbsp;&nbsp;[ <span class="id" title="var">solve_included</span> | | ].<br/>
+
+<br/>
+<span class="id" title="keyword">Ltac</span> <span class="id" title="var">certificate_SN</span> := <span class="id" title="tactic">apply</span> <a class="idref" href="Nijn.TerminationTechniques.Certificate.html#certificate_to_isSN"><span class="id" title="lemma">certificate_to_isSN</span></a>.<br/>
+</div>
+</div>
+
+<div id="footer">
+<hr/><a href="index.html">Index</a><hr/>This page has been generated by <a href="http://coq.inria.fr/">coqdoc</a>
+</div>
+
+</div>
+
+</body>
+</html>
