@@ -360,7 +360,7 @@ Proof.
   apply beta_betaRed.
 Defined.
 
-(** * Rewriting 43lq5ion ro4 an AFS *)
+(** * Rewriting relation for an AFS *)
 
 (** An algebraic functional system is given by a type of base types, a type of function symbols, an arity for every function symbols, and a collection of rewrite rules. Given such data, we can define the rewrite relation. *)
 
