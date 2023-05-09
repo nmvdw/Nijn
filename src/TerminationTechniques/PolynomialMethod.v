@@ -1,0 +1,3 @@
+Require Export Nijn.TerminationTechniques.PolynomialMethod.Polynomial.
+Require Export Nijn.TerminationTechniques.PolynomialMethod.PolynomialNotation.
+Require Export Nijn.TerminationTechniques.PolynomialMethod.PolynomialTactics.
