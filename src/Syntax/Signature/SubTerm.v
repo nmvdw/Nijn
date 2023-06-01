@@ -398,6 +398,15 @@ Section SubTerm.
        end.             
 
   (** * Properties of the subterm relation *)
+  Definition subTm_refl
+             {C : con B}
+             {A : ty B}
+             (t : tm ar C A)
+    : t ≼ t.
+  Proof.
+    exact (EqSubTm t t (eq_refl _) (eq_refl _) (eq_refl _)).
+  Defined.
+
   Definition subTm_trans
              {C₁ C₂ C₃ : con B}
              {A₁ A₂ A₃ : ty B}

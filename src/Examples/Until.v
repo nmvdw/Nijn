@@ -48,13 +48,13 @@ Program Definition rule_0 :=
     (se · tt ·  V 0 ·  V 1)
      V 0.
 
-     Program Definition rule_1 :=
+Program Definition rule_1 :=
     make_rewrite
     (_ ,, _ ,, ∙) _
     (se · ff ·  V 0 ·  V 1)
      V 1.
 
-     Program Definition rule_2 :=
+Program Definition rule_2 :=
     make_rewrite
     (_ ,, _ ,, _ ,, ∙) _
     (until ·  V 0 ·  V 1 ·  V 2)
@@ -65,7 +65,98 @@ Definition trs :=
     fn_arity
     (rule_0 :: rule_1 :: rule_2 :: List.nil).
 
-(* NO
+Import AFSNotation.
+
+Definition no_left
+  : tm trs (a ⟶ b ,, a ,, ∙) a
+  := let f := TmVar Vz in
+     let x := TmVar (Vs Vz) in
+     until · f · (λ TmVar Vz) · x.
+
+Definition no_right
+  : tm trs (a ⟶ b ,, a ,, ∙) a
+  := let f := TmVar Vz in
+     let x := TmVar (Vs Vz) in
+     se · (f · x) · x · (until · f · (λ TmVar Vz) · x).
+
+Definition paard
+  : no_left ≼ no_right.
+Proof.
+  apply SubAppR.
+  apply subTm_refl.
+Qed.
+
+Definition no_red
+  : no_left ∼> no_right.
+Proof.
+  unfold no_left, no_right.
+(*
+  trans
+  {
+    find place
+    apply rule
+  }
+  cbn
+  trans
+  {
+    find place
+    apply rule
+  }
+  cbn
+  trans
+  {
+    find place
+    apply rule
+  }
+  cbn
+  trans
+  {
+    find place
+    apply rule
+  }
+  cbn
+  trans
+  {
+    find place
+    apply rule
+  }
+  cbn
+  fihd place
+  apply rule
+ *)
+  refine (rew_Trans _ _).
+  {
+    refine (rew_rewrite_rule
+              trs
+              (MakeMem rule_2 _)
+              (ToEmpty _ && _ && _ && _)).
+    solve_In.
+  }
+  cbn.
+  apply rew_App_r.
+  apply rew_App_r.
+  apply rew_betaRed.
+Qed.
+
+Theorem koe
+  : ~(isSN trs).
+Proof.
+  apply inc_loop_to_notSN.
+  apply (Build_inc_loop
+           trs
+           _ _
+           no_left
+           no_right
+           no_red).
+  apply paard.
+
+
+Theorem inc_loop_to_notSN
+          (l : inc_loop)
+    : ~(isSN X).
+
+
+(* No
 We consider the system AotoYamada_05__003.
 
   Alphabet:
