@@ -65,3 +65,28 @@ Definition trs :=
     fn_arity
     (rule_0 :: rule_1 :: rule_2 :: List.nil).
 
+(* NO
+We consider the system AotoYamada_05__003.
+
+  Alphabet:
+
+    false : [] --> a
+    if : [a * b * b] --> b
+    true : [] --> a
+    until : [b -> a * b -> b * b] --> b
+
+  Rules:
+
+    if(true, x, y) => x
+    if(false, x, y) => y
+    until(f, g, x) => if(f x, x, until(f, g, g x))
+
+This AFS is converted to an AFSM simply by replacing all free variables by meta-variables (with arity 0).
+
+It is easy to see that this system is non-terminating:
+
+  until(f, g, x)
+    => if(f x, x, until(f, g, g x))
+    |> until(f, g, g x)
+
+That is, a term s reduces to a term t which has a subterm that is an instance of the original term. *)
