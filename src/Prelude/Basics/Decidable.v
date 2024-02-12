@@ -2,7 +2,9 @@ Require Import Nijn.Prelude.Checks.
 Require Import Nijn.Prelude.Funext.
 Require Import Bool.
 
-(** * Decidable propositions *)
+(** ######################################################################### *)
+(** * Decidable Propositions *)
+(** ######################################################################### *)
 
 (** A proposition is called decidable if we can either find an element of it or if we can refute it. As such, decidable propositions are those for which the law of excluded middle holds. *)
 
@@ -147,7 +149,7 @@ Definition dec_eq_bool
 
 Global Instance decEq_bool : decEq bool
   := {| dec_eq := dec_eq_bool |}.
-  
+
 (** The product of types with decidable equality has decidable equality *)
 Section ProductDecEq.
   Context {A B : Type}
@@ -224,7 +226,7 @@ Section SumDecEq.
   Proof.
     discriminate.
   Qed.
-  
+
   Definition dec_eq_sum
              (x y : A + B)
     : dec (x = y)
