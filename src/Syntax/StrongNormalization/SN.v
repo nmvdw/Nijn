@@ -1,6 +1,6 @@
-Require Import Nijn.Prelude.
-Require Import Nijn.Syntax.Signature.
-Require Import Nijn.Syntax.Signature.RewriteLemmas.
+From Nijn Require Import Prelude.
+From Nijn Require Import Syntax.Signature.
+From Nijn Require Import Syntax.Signature.RewriteLemmas.
 
 Import AFSNotation.
 
@@ -59,4 +59,4 @@ Proof.
   - exact (map_Tm _).
   - intros t1 t2.
     exact Rew_map_Tm.
-Qed.    
+Qed.

@@ -1,7 +1,7 @@
-Require Import Nijn.Prelude.
-Require Import Nijn.Syntax.Signature.
-Require Import Nijn.Syntax.Signature.RewriteLemmas.
-Require Import Coq.Program.Equality.
+From Nijn Require Import Prelude.
+From Nijn Require Import Syntax.Signature.
+From Nijn Require Import Syntax.Signature.RewriteLemmas.
+From Stdlib Require Import Program.Equality.
 
 Local Open Scope type.
 

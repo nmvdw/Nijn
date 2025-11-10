@@ -1,8 +1,8 @@
-Require Import Nijn.Prelude.
-Require Import Nijn.Syntax.
-Require Import Coq.Program.Equality.
-Require Import Lia.
-Require Import List.
+From Nijn Require Import Prelude.
+From Nijn Require Import Syntax.
+From Stdlib Require Import Program.Equality.
+From Stdlib Require Import Lia.
+From Stdlib Require Import List.
 
 (** * Rule selecting *)
 

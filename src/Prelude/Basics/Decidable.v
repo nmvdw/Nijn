@@ -1,6 +1,5 @@
-Require Import Nijn.Prelude.Checks.
-Require Import Nijn.Prelude.Funext.
-Require Import Bool.
+From Stdlib Require Import Bool.
+From Nijn.Prelude Require Import Checks Funext.
 
 (** * Decidable propositions *)
 
@@ -147,7 +146,7 @@ Definition dec_eq_bool
 
 Global Instance decEq_bool : decEq bool
   := {| dec_eq := dec_eq_bool |}.
-  
+
 (** The product of types with decidable equality has decidable equality *)
 Section ProductDecEq.
   Context {A B : Type}
@@ -224,7 +223,7 @@ Section SumDecEq.
   Proof.
     discriminate.
   Qed.
-  
+
   Definition dec_eq_sum
              (x y : A + B)
     : dec (x = y)

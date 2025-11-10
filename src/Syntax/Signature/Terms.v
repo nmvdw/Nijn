@@ -1,7 +1,7 @@
-Require Import Nijn.Prelude.
-Require Import Nijn.Syntax.Signature.Types.
-Require Import Nijn.Syntax.Signature.Contexts.
-Require Import Coq.Program.Equality.
+From Nijn Require Import Prelude.
+From Nijn Require Import Syntax.Signature.Types.
+From Nijn Require Import Syntax.Signature.Contexts.
+From Stdlib Require Import Program.Equality.
 
 Open Scope signature.
 
@@ -33,7 +33,7 @@ Record tm_with_ty
        (ar : F -> ty B)
        (C : con B)
   : Type
-  := { type : ty B ; term :> tm ar C type }.    
+  := { type : ty B ; term :> tm ar C type }.
 
 Definition v_idx
            {B : Type}

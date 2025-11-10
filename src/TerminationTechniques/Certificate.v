@@ -1,9 +1,9 @@
-Require Import Nijn.Prelude.
-Require Import Nijn.Syntax.
-Require Import Nijn.TerminationTechniques.RuleRemoval.
-Require Import Nijn.Interpretation.OrderInterpretation.
-Require Import Nijn.TerminationTechniques.PolynomialMethod.
-Require Import Nijn.TerminationTechniques.NoRules.
+From Nijn Require Import Prelude.
+From Nijn Require Import Syntax.
+From Nijn Require Import TerminationTechniques.RuleRemoval.
+From Nijn Require Import Interpretation.OrderInterpretation.
+From Nijn Require Import TerminationTechniques.PolynomialMethod.
+From Nijn Require Import TerminationTechniques.NoRules.
 
 Local Open Scope compat.
 

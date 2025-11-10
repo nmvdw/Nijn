@@ -1,8 +1,7 @@
-Require Import Nijn.Prelude.
-Require Import Nijn.Syntax.Signature.Types.
-Require Import Coq.Program.Equality.
-Require Import List.
-Require Import Lia.
+From Nijn Require Import Prelude.
+From Nijn Require Import Syntax.Signature.Types.
+From Stdlib Require Import Lia List Program.Equality.
+
 
 (** * Contexts *)
 

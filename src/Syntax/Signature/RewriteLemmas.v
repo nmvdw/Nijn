@@ -1,7 +1,7 @@
-Require Import Nijn.Prelude.
-Require Import Nijn.Syntax.Signature.
-Require Import Nijn.Syntax.Signature.SubstitutionLemmas.
-Require Import Coq.Program.Equality.
+From Nijn Require Import Prelude.
+From Nijn Require Import Syntax.Signature.
+From Nijn Require Import Syntax.Signature.SubstitutionLemmas.
+From Stdlib Require Import Program.Equality.
 
 (** * Lemmas on the rewriting relation *)
 
@@ -200,9 +200,9 @@ Proof.
            simpl ;
            rewrite dropSub_is_compSubWk ;
            rewrite <- compSub_compWkSub ;
-           simpl ; cbn; 
-           rewrite compWkSub_id ; 
-           rewrite Sub_id_right ; 
+           simpl ; cbn;
+           rewrite compWkSub_id ;
+           rewrite Sub_id_right ;
            reflexivity).
     + simpl.
       apply CStep.
@@ -364,7 +364,7 @@ Proof.
   revert C1.
   induction p ; intros C1 w ; simpl.
   - apply rew_step.
-    revert C1 w.    
+    revert C1 w.
     induction r ; intros C1 w.
     + exact (App_l _ (IHr _ w)).
     + exact (App_r _ (IHr _ w)).
@@ -400,7 +400,7 @@ Proof.
   revert C1.
   induction p ; intros C1 s ; simpl.
   - apply rew_step.
-    revert C1 s.    
+    revert C1 s.
     induction r ; intros C1 s.
     + exact (App_l _ (IHr _ s)).
     + exact (App_r _ (IHr _ s)).

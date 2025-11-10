@@ -1,7 +1,7 @@
-Require Import Nijn.Syntax.Signature.Types.
-Require Import Nijn.Syntax.Signature.Contexts.
-Require Import Nijn.Syntax.Signature.Terms.
-Require Import Nijn.Syntax.Signature.TermWeakenings.
+From Nijn Require Import Syntax.Signature.Types.
+From Nijn Require Import Syntax.Signature.Contexts.
+From Nijn Require Import Syntax.Signature.Terms.
+From Nijn Require Import Syntax.Signature.TermWeakenings.
 
 (** * Substitutions *)
 
@@ -103,7 +103,7 @@ Fixpoint subTm
      | BaseTm f => fun _ _ => BaseTm f
      | TmVar v => fun _ s => subVar v s
      | Lam f => fun _ s => Lam (subTm f (keepSub _ s))
-     | App f t => fun _ s => App (subTm f s) (subTm t s) 
+     | App f t => fun _ s => App (subTm f s) (subTm t s)
      end.
 
 Notation "t [ s ]" := (subTm t s) (at level 20).

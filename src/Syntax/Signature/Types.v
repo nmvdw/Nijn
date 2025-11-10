@@ -1,4 +1,4 @@
-Require Import Nijn.Prelude.
+From Nijn Require Import Prelude.
 
 Declare Scope signature.
 Open Scope signature.

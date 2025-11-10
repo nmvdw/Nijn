@@ -1,9 +1,9 @@
-Require Import Nijn.Prelude.
-Require Import Nijn.Syntax.Signature.
-Require Import Nijn.Syntax.StrongNormalization.SN.
-Require Import Nijn.Syntax.Signature.SubTerm.
-Require Import Nijn.Syntax.Signature.RewriteLemmas.
-Require Import Nijn.Syntax.Signature.SubstitutionLemmas.
+From Nijn Require Import Prelude.
+From Nijn Require Import Syntax.Signature.
+From Nijn Require Import Syntax.StrongNormalization.SN.
+From Nijn Require Import Syntax.Signature.SubTerm.
+From Nijn Require Import Syntax.Signature.RewriteLemmas.
+From Nijn Require Import Syntax.Signature.SubstitutionLemmas.
 
 Import AFSNotation.
 
@@ -58,7 +58,7 @@ Section IncreasingLoops.
       inc_loop_s : tm X inc_loop_con inc_loop_ty ;
       inc_loop_t : tm X inc_loop_con inc_loop_ty ;
       inc_loop_rew : inc_loop_s ∼> inc_loop_t ;
-      inc_loop_subTm : inc_loop_s ≼ inc_loop_t 
+      inc_loop_subTm : inc_loop_s ≼ inc_loop_t
     }.
 
   Record loop_point (l : inc_loop) :=
@@ -92,7 +92,7 @@ Section IncreasingLoops.
     - exact (rew_subTerm X (inc_loop_rew l) (inc_loop_subTm l)).
     - exact (rew_subTerm X (inc_loop_rew l) _).
   Defined.
-      
+
   Theorem inc_loop_to_notSN
           (l : inc_loop)
     : ~(isSN X).

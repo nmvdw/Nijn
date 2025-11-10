@@ -1,7 +1,5 @@
-Require Import Nijn.Prelude.Checks.
-Require Import Nijn.Prelude.Funext.
-Require Import Nijn.Prelude.Basics.Decidable.
-Require Import List.
+From Stdlib Require Import List.
+From Nijn.Prelude Require Import Checks Funext Basics.Decidable.
 
 (** * Finite types *)
 
@@ -143,7 +141,7 @@ Program Fixpoint els_members
          {A : Type}
          (el_A : list A)
          (l : list A)
-  : (forall (a : A), In a l -> In a el_A) -> list (members el_A) 
+  : (forall (a : A), In a l -> In a el_A) -> list (members el_A)
   := match l with
      | nil => fun p => nil
      | x :: xs =>
@@ -179,7 +177,7 @@ Proof.
     + right.
       apply (IHl (fun a0 H => p a0 (or_intror H))).
 Qed.
-  
+
 Global Instance isFinite_members
        {A : Type}
        (l : list A)

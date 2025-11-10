@@ -1,7 +1,7 @@
-Require Import Nijn.Prelude.
-Require Import Nijn.Syntax.
-Require Import Nijn.TerminationTechniques.RuleRemoval.RuleSelector.
-Require Import List.
+From Nijn Require Import Prelude.
+From Nijn Require Import Syntax.
+From Nijn Require Import TerminationTechniques.RuleRemoval.RuleSelector.
+From Stdlib Require Import List.
 
 Import AFSNotation.
 
@@ -24,7 +24,7 @@ Section RuleRemoval.
              (t : tm X C A)
     : tm X C A * tm X C A
     := (t , t).
-  
+
   Definition rule_removal_rewrite_lexico
              {C : con B}
              {A : ty B}

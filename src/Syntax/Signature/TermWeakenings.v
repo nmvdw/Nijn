@@ -1,6 +1,6 @@
-Require Import Nijn.Syntax.Signature.Types.
-Require Import Nijn.Syntax.Signature.Contexts.
-Require Import Nijn.Syntax.Signature.Terms.
+From Nijn Require Import Syntax.Signature.Types.
+From Nijn Require Import Syntax.Signature.Contexts.
+From Nijn Require Import Syntax.Signature.Terms.
 
 (** * Weakenings of contexts *)
 
@@ -77,5 +77,5 @@ Fixpoint wkTm
      | BaseTm f => fun _ _ => BaseTm f
      | TmVar v => fun _ w => TmVar (wkVar v w)
      | Lam f => fun _ w => Lam (wkTm f (Keep _ w))
-     | App f t => fun _ w => App (wkTm f w) (wkTm t w) 
+     | App f t => fun _ w => App (wkTm f w) (wkTm t w)
      end.

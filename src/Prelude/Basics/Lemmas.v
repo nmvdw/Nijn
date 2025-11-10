@@ -1,5 +1,4 @@
-Require Import Lia.
-Require Import List.
+From Stdlib Require Import Lia List.
 
 (** * Basic lemmas and functions *)
 
@@ -21,7 +20,7 @@ Proof.
   - exact (fun z => z).
   - contradiction.
 Qed.
-  
+
 (** ** Lemma about addition *)
 Proposition plus_ge
             {n1 n2 m1 m2 : nat}

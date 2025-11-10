@@ -1,4 +1,4 @@
-Require Import List.
+From Stdlib Require Import List.
 
 Ltac solve_In :=
   cbn -[In] ;

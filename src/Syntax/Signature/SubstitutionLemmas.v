@@ -1,9 +1,9 @@
-Require Import Nijn.Syntax.Signature.Types.
-Require Import Nijn.Syntax.Signature.Contexts.
-Require Import Nijn.Syntax.Signature.Terms.
-Require Import Nijn.Syntax.Signature.TermWeakenings.
-Require Import Nijn.Syntax.Signature.TermSubstitutions.
-Require Import Coq.Program.Equality.
+From Nijn Require Import Syntax.Signature.Types.
+From Nijn Require Import Syntax.Signature.Contexts.
+From Nijn Require Import Syntax.Signature.Terms.
+From Nijn Require Import Syntax.Signature.TermWeakenings.
+From Nijn Require Import Syntax.Signature.TermSubstitutions.
+From Stdlib Require Import Program.Equality.
 
 (** * Laws for weakenings *)
 
@@ -233,7 +233,7 @@ Proof.
     rewrite wkVar_id.
     reflexivity.
 Qed.
-    
+
 Proposition wkTm_is_subTm
             {B : Type}
             {C2 : con B}
@@ -377,7 +377,7 @@ Proof.
   induction s.
   - apply ToEmpty.
   - exact (IHs w && wkTm t w).
-Defined.    
+Defined.
 
 Definition dropId
            {B : Type}

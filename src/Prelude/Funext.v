@@ -1,6 +1,6 @@
-Require Import Nijn.Prelude.Checks.
-Require Export ProofIrrelevance.
-Require Import Coq.Logic.FunctionalExtensionality.
+From Nijn Require Import Prelude.Checks.
+From Stdlib Require Import Logic.FunctionalExtensionality.
+From Stdlib Require Export ProofIrrelevance.
 
 (** * Functional extensionality *)
 

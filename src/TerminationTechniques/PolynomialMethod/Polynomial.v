@@ -1,9 +1,9 @@
-Require Import Nijn.Prelude.
-Require Import Nijn.Syntax.
-Require Import Nijn.Interpretation.OrderInterpretation.
-Require Import Nijn.TerminationTechniques.RuleRemoval.RuleSelector.
+From Nijn Require Import Prelude.
+From Nijn Require Import Syntax.
+From Nijn Require Import Interpretation.OrderInterpretation.
+From Nijn Require Import TerminationTechniques.RuleRemoval.RuleSelector.
 
-Require Import Lia.
+From Stdlib Require Import Lia.
 
 (** * The polynomial method *)
 
@@ -36,7 +36,7 @@ Section PolyAlgebra.
 
   Definition p_base : B -> CompatRel
     := fun (_ : B) => nat_CompatRel.
-  
+
   Notation "⟦ C ⟧con" := (sem_Con p_base C).
   Notation "⟦ A ⟧ty" := (sem_Ty p_base A).
 
@@ -56,7 +56,7 @@ Section PolyAlgebra.
         {A : ty B}
         (P : poly C A)
     : ⟦ C ⟧con →wm ⟦ A ⟧ty
-    := match P with 
+    := match P with
        | P_base P     => sem_base_poly P
        | P_var v      => sem_Var _ v
        | P_app P1 P2  => sem_poly P1 ·wm sem_poly P2
@@ -166,7 +166,7 @@ Section PolyAlgebra.
              (A1 A2 : ty B)
     : ⟦ A1 ⟶ A2 ⟧ty * ⟦ A1 ⟧ty →wm ⟦ A2 ⟧ty
     := p_app.
-  
+
   Proposition p_app_ge_id
               (A₁ A₂ : ty B)
               (f : ⟦ A₁ ⟧ty →wm ⟦ A₂ ⟧ty)
@@ -237,7 +237,7 @@ Section PolyAlgebra.
     rewrite !sub_Lemma.
     apply Hr.
   Qed.
-  
+
   (** ** Interpretation from polynomials *)
   Definition poly_InterpretationData
     : InterpretationData X.

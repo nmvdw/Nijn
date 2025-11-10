@@ -1,10 +1,10 @@
-Require Import Nijn.Prelude.
-Require Import Nijn.Syntax.Signature.
-Require Import Nijn.Syntax.Signature.SubstitutionLemmas.
-Require Import Nijn.Syntax.Signature.RewriteLemmas.
-Require Import Nijn.Syntax.StrongNormalization.SN.
-Require Import Nijn.Syntax.StrongNormalization.BetaNormalForm.
-Require Import Coq.Program.Equality.
+From Nijn Require Import Prelude.
+From Nijn Require Import Syntax.Signature.
+From Nijn Require Import Syntax.Signature.SubstitutionLemmas.
+From Nijn Require Import Syntax.Signature.RewriteLemmas.
+From Nijn Require Import Syntax.StrongNormalization.SN.
+From Nijn Require Import Syntax.StrongNormalization.BetaNormalForm.
+From Stdlib Require Import Program.Equality.
 
 Local Open Scope type.
 
@@ -307,7 +307,7 @@ Lemma neutral_is_logical_SN_and_logical_SN_to_SN
     (is_neutral t -> logical_SN t)
     /\
     (logical_SN t -> term_is_beta_SN t).
-Proof.      
+Proof.
   induction A as [ b | A1 IHA1 A2 IHA2 ] ; simpl.
   - intros C t.
     split ; intro p.
@@ -643,7 +643,7 @@ Proof.
       exact q.
     + right.
       rewrite p, q.
-      reflexivity.    
+      reflexivity.
 Qed.
 
 Proposition sub_beta_red_or_eq

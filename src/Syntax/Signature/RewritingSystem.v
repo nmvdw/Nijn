@@ -1,9 +1,9 @@
-Require Import Nijn.Prelude.
-Require Import Nijn.Syntax.Signature.Types.
-Require Import Nijn.Syntax.Signature.Contexts.
-Require Import Nijn.Syntax.Signature.Terms.
-Require Import Nijn.Syntax.Signature.TermWeakenings.
-Require Import Nijn.Syntax.Signature.TermSubstitutions.
+From Nijn Require Import Prelude.
+From Nijn Require Import Syntax.Signature.Types.
+From Nijn Require Import Syntax.Signature.Contexts.
+From Nijn Require Import Syntax.Signature.Terms.
+From Nijn Require Import Syntax.Signature.TermWeakenings.
+From Nijn Require Import Syntax.Signature.TermSubstitutions.
 
 (** * Rewriting systems *)
 
@@ -502,7 +502,7 @@ Definition rew_App_l
            (x : tm ar C A1)
            (p : rew lhs rhs f1 f2)
   : rew lhs rhs (f1 · x) (f2 · x)
-  := rew_App_l_help x p eq_refl. 
+  := rew_App_l_help x p eq_refl.
 
 Definition rew_App_r
            {B : Type}

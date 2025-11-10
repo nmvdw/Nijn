@@ -1,6 +1,4 @@
-Require Import Nijn.Prelude.Checks.
-Require Import Nijn.Prelude.Basics.Decidable.
-Require Import Nijn.Prelude.Relations.WellfoundedRelation.
+From Nijn.Prelude Require Import Checks Basics.Decidable Relations.WellfoundedRelation.
 
 Declare Scope qr.
 Open Scope qr.
@@ -32,7 +30,7 @@ Close Scope qr.
 Declare Scope compat.
 Open Scope compat.
 Delimit Scope compat with compat.
-      
+
 (** A compatible relation is a type equipped with two relations *)
 Record CompatRel :=
   {

@@ -1,7 +1,7 @@
-Require Import Nijn.Prelude.
-Require Import Nijn.Syntax.
-Require Import Nijn.TerminationTechniques.RuleRemoval.RuleSelector.
-Require Import Coq.Program.Equality.
+From Nijn Require Import Prelude.
+From Nijn Require Import Syntax.
+From Nijn Require Import TerminationTechniques.RuleRemoval.RuleSelector.
+From Stdlib Require Import Program.Equality.
 
 (** * Interpretations of algebraic functional systems  *)
 Section OrderInterpretation.
@@ -33,8 +33,8 @@ Section OrderInterpretation.
        | Base b    => (els b : sem_Ty (Base b))
        | A1 ⟶ A2  => const_wm (sem_Ty_el els A2)
        end.
-  
-  (** ** Interpretation of contexts *)  
+
+  (** ** Interpretation of contexts *)
   Fixpoint sem_Con
            (C : con B)
     : CompatRel
@@ -361,7 +361,7 @@ Proof.
     cbn.
     specialize (IHt _ (keepSub _ s) (y , x)).
     etransitivity.
-    { 
+    {
       apply IHt.
     }
     simpl.
@@ -516,7 +516,7 @@ Proof.
       * apply els.
     + apply IHA₂.
 Defined.
-  
+
 (** * Strong normalization from interpretations *)
 Definition interpretation_to_lexico
            {B F : Type}

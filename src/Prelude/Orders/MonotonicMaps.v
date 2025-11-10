@@ -1,7 +1,7 @@
-Require Import Nijn.Prelude.Checks.
-Require Import Nijn.Prelude.Funext.
-Require Import Nijn.Prelude.Relations.WellfoundedRelation.
-Require Import Nijn.Prelude.Orders.CompatibleRelation.
+From Nijn Require Import Prelude.Checks.
+From Nijn Require Import Prelude.Funext.
+From Nijn Require Import Prelude.Relations.WellfoundedRelation.
+From Nijn Require Import Prelude.Orders.CompatibleRelation.
 
 (** * Monotone maps *)
 

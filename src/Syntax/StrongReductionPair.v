@@ -1,5 +1,5 @@
-Require Import Nijn.Prelude.
-Require Import Nijn.Syntax.Signature.
+From Nijn Require Import Prelude.
+From Nijn Require Import Syntax.Signature.
 
 Declare Scope srp.
 
@@ -21,7 +21,7 @@ Section StrongReductionPair.
 
   Local Notation "x ≺[ O ] y" := (tm_gt O _ _ x y) (at level 70).
   Local Notation "x ≼[ O ] y" := (tm_ge O _ _ x y) (at level 70).
-  
+
   Definition term_CompatRel
              (C : con B)
              (A : ty B)
@@ -82,7 +82,7 @@ Section StrongReductionPair.
                        (t : tm ar C A₁),
                   (λ f) · t ≼[ O ] f [ beta_sub t ]
     }.
-  
+
   Record strong_reduction_pair : Type :=
     make_srp
       {

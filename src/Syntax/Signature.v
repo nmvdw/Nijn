@@ -1,4 +1,4 @@
-Require Import Nijn.Prelude.
+From Nijn Require Import Prelude.
 Require Export Nijn.Syntax.Signature.Types.
 Require Export Nijn.Syntax.Signature.Contexts.
 Require Export Nijn.Syntax.Signature.Terms.

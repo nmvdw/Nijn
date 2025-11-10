@@ -1,9 +1,9 @@
-Require Import Nijn.Prelude.Checks.
-Require Import Nijn.Prelude.Basics.Lemmas.
-Require Import Nijn.Prelude.Relations.WellfoundedRelation.
-Require Import Nijn.Prelude.Orders.CompatibleRelation.
-Require Import Nijn.Prelude.Orders.MonotonicMaps.
-Require Import Lia.
+From Nijn Require Import Prelude.Checks.
+From Nijn Require Import Prelude.Basics.Lemmas.
+From Nijn Require Import Prelude.Relations.WellfoundedRelation.
+From Nijn Require Import Prelude.Orders.CompatibleRelation.
+From Nijn Require Import Prelude.Orders.MonotonicMaps.
+From Stdlib Require Import Lia.
 
 Declare Scope compat.
 Open Scope compat.
@@ -213,7 +213,7 @@ Proof.
   apply isWf_pair_tuple.
   apply HX.
 Qed.
-          
+
 (** Dependent product of well-founded relations *)
 Definition depprod_CompatRel
            {X : Type}
@@ -763,7 +763,7 @@ Proof.
   exact (is_weak_monotone _ _ (f a2) _ _ (is_weak_monotone _ _ x _ _ p)).
 Qed.
 
-(** Application *)  
+(** Application *)
 Definition app_wm
            {X Y Z : CompatRel}
            `{isCompatRel Z}
@@ -819,7 +819,7 @@ Proof.
   intros h₁ h₂ p.
   apply p.
 Qed.
-  
+
 Definition apply_el_wm
            {X Y : CompatRel}
            (x : X)

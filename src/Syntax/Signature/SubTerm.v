@@ -1,6 +1,6 @@
-Require Import Nijn.Prelude.
-Require Import Nijn.Syntax.Signature.
-Require Import Coq.Program.Equality.
+From Nijn Require Import Prelude.
+From Nijn Require Import Syntax.Signature.
+From Stdlib Require Import Program.Equality.
 
 (** * The subterm relation *)
 Section SubTerm.
@@ -70,7 +70,7 @@ Section SubTerm.
       }
       contradiction.
   Qed.
-  
+
   Definition subTm_baseTm
              {C₁ C₂ : con B}
              {A₁ : ty B}
@@ -111,7 +111,7 @@ Section SubTerm.
       }
       contradiction.
   Qed.
-  
+
   Definition subTm_TmVar
              {C₁ C₂ : con B}
              {A₁ A₂ : ty B}
@@ -394,8 +394,8 @@ Section SubTerm.
              end
            | No r₂ => inr (not_subTerm_lam_1 r₁ r₂)
            end
-         end           
-       end.             
+         end
+       end.
 
   (** * Properties of the subterm relation *)
   Definition subTm_trans

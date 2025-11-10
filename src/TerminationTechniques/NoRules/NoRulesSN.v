@@ -1,8 +1,8 @@
-Require Import Nijn.Prelude.
-Require Import Nijn.Syntax.
-Require Import Nijn.Interpretation.OrderInterpretation.
-Require Import Nijn.TerminationTechniques.PolynomialMethod.
-Require Import List.
+From Nijn Require Import Prelude.
+From Nijn Require Import Syntax.
+From Nijn Require Import Interpretation.OrderInterpretation.
+From Nijn Require Import TerminationTechniques.PolynomialMethod.
+From Stdlib Require Import List.
 
 (** * Strong normalization for the trivial AFS *)
 
@@ -29,7 +29,7 @@ Proof.
   - intro r.
     contradiction.
 Defined.
-    
+
 Proposition empty_list_SN
             {B F : Type}
             (X : afs B F)

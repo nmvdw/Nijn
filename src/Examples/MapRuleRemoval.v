@@ -1,4 +1,4 @@
-Require Import Nijn.Nijn.
+From Nijn Require Import Nijn.
 
 Open Scope poly_scope.
 

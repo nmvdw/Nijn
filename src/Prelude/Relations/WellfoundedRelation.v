@@ -1,4 +1,4 @@
-Require Import Nijn.Prelude.Checks.
+From Nijn Require Import Prelude.Checks.
 
 (** * Well-founded types *)
 
@@ -108,7 +108,7 @@ Section Classical.
   Context {X : Type}
           (R : X -> X -> Type)
           (DN : forall (P : Type), ((P -> False) -> False) -> P).
-             
+
   Definition next_one_pair
              (x : X)
              (Hx : isWf R x -> False)
@@ -150,7 +150,7 @@ Section Classical.
     - contradiction.
     - assumption.
   Qed.
-  
+
   Definition next_one
              (x : X)
              (Hx : isWf R x -> False)
@@ -168,7 +168,7 @@ Section Classical.
              (Hx : isWf R x -> False)
     : isWf R (next_one x Hx) -> False
     := snd (projT2 (next_one_pair x Hx)).
-  
+
   Definition infinite_seq_from_not_isWf_pair
              (x : X)
              (Hx : isWf R x -> False)
@@ -203,7 +203,7 @@ Section Classical.
               (n : nat)
     : R (infinite_seq_from_not_isWf x Hx n) (infinite_seq_from_not_isWf x Hx (S n)).
   Proof.
-    apply next_one_rel. 
+    apply next_one_rel.
   Qed.
 
   Definition infinite_chain_from_not_isWf
@@ -214,7 +214,7 @@ Section Classical.
           seq := infinite_seq_from_not_isWf x Hx ;
           decr := infinite_seq_from_decr x Hx
        |}.
-  
+
   Theorem no_inifnite_chain_to_wf
           (H : infinite_chain R -> False)
     : Wf R.

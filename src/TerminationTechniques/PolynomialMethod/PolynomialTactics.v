@@ -1,12 +1,12 @@
-Require Import Nijn.Prelude.
-Require Import Nijn.Syntax.
-Require Import Nijn.Interpretation.OrderInterpretation.
-Require Import Nijn.TerminationTechniques.RuleRemoval.RuleSelector.
-Require Import Nijn.TerminationTechniques.PolynomialMethod.Polynomial.
-Require Import Lia.
-Require Import PeanoNat.
+From Nijn Require Import Prelude.
+From Nijn Require Import Syntax.
+From Nijn Require Import Interpretation.OrderInterpretation.
+From Nijn Require Import TerminationTechniques.RuleRemoval.RuleSelector.
+From Nijn Require Import TerminationTechniques.PolynomialMethod.Polynomial.
+From Stdlib Require Import Lia.
+From Stdlib Require Import PeanoNat.
 Import Nat.
-Require Import List.
+From Stdlib Require Import List.
 
 Open Scope nat.
 
@@ -15,7 +15,7 @@ Open Scope nat.
 (** ** Generating goals *)
 (** An AFS comes with a list of rewrite rules. As such, if we need to prove something for every rewrite rule, we start with an assumption that we have a rewrite rule that is a member of the list of rewrite rules. This tactic destructs this goal so that we have a goal for every rewrite rule. In each of those goals, the goal is simplified *)
 Ltac generate_goals :=
-  intros ; 
+  intros ;
   unfold rewriteRules in * ;
   match goal with
   | [ x : members _ |- _ ] => destruct x
@@ -31,7 +31,7 @@ Ltac generate_goals :=
           | _ => idtac
           end) ;
   try discriminate.
-  
+
 (** ** Solving inequalities *)
 (** We also need to solve inequalities that involve some weakly monotonic map. This tactic solves such goals. It gets an assumption which is the proof of monotonicity *)
 Ltac solve_ineq Hf := subst ; apply Hf ; cbn ; nia.

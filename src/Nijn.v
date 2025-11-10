@@ -1,13 +1,9 @@
-Require Export Nijn.Prelude.
+From Nijn Require Export Prelude.
 
-Require Export Nijn.Syntax.
+From Nijn Require Export Syntax.
 
-Require Export Nijn.Interpretation.OrderInterpretation.
+From Nijn Require Export Interpretation.OrderInterpretation.
 
-Require Export Nijn.TerminationTechniques.
+From Nijn Require Export TerminationTechniques.
 
-Require Export Lia.
-Require Export PeanoNat.
-Export Nat.
-Require Export List.
-
+From Stdlib Require Export Lia PeanoNat Nat List.

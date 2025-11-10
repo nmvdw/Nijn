@@ -1,8 +1,5 @@
-Require Import Nijn.Prelude.Basics.Decidable.
-Require Import Nijn.Prelude.Basics.Finite.
-Require Import Lia.
-Require Import List.
-Require Import Coq.Program.Equality.
+From Nijn.Prelude.Basics Require Import Decidable Finite.
+From Stdlib Require Import Lia List Program.Equality.
 
 (** * Positions in lists *)
 
@@ -243,7 +240,7 @@ Proof.
   - f_equal.
     apply Hi.
 Qed.
-  
+
 Proposition pos_tonat_eq
             {A : Type}
             {l : list A}
@@ -275,7 +272,7 @@ Definition dec_eq_pos
      | Yes p => Yes (pos_tonat_eq p)
      | No p => No (fun q => p (f_equal _ q))
      end.
-  
+
 Global Instance decEq_pos {A : Type} (l : list A) : decEq (pos l) :=
   {| dec_eq := dec_eq_pos |}.
 
