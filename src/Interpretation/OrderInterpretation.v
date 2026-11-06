@@ -212,7 +212,8 @@ Proposition sem_keepWk
     =
     sem_Tm semB semF semApp t (y , sem_Wk semB w x).
 Proof.
-  dependent induction t.
+  revert C1 w x.
+  dependent induction t ; intros C1 w x.
   - reflexivity.
   - dependent induction v.
     + reflexivity.
@@ -222,16 +223,14 @@ Proof.
     apply eq_weakMonotoneMap.
     intro a.
     simpl.
-Admitted.
-    (* This proof needed Admitted for Rocq version. *)
-    (* refine (IHt _ semF semApp _ _ (Keep _ w) _ t _ _ _ _). *)
-    (* Check (IHt _ (Keep _ w)). *)
-    (* refine (IHt _ _ _ _ _ _ _ _). *)
-  (* - simpl.
+    refine (IHt _ _ _ _ _ _ _ (Keep _ w) _).
+    + reflexivity.
+    + reflexivity.
+  - simpl.
     do 2 f_equal.
     + apply IHt1 ; auto.
     + apply IHt2 ; auto.
-Qed. *)
+Qed.
 
 Proposition sem_dropIdWk
             {B : Type}
