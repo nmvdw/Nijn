@@ -1,0 +1,8 @@
+COQC = coqc
+COQDEP = coqdep
+# This is a hack so the coq language server can detect the vo files compiled
+# by dune.
+# Check,
+# - https://github.com/rocq-prover/vscoq/issues/134
+# - https://github.com/tomtomjhj/coq-lsp.nvim/issues/7
+-R _build/default/src Nijn
